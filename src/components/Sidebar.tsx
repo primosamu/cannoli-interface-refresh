@@ -1,7 +1,7 @@
 
 import { 
-  BookOpen,
   Home,
+  BookOpen,
   Users,
   Gift,
   Award,
@@ -11,8 +11,23 @@ import {
   PlusCircle,
   HelpCircle,
   Menu,
-  X
+  X,
+  Truck,
+  MapPin,
+  FileBarChart,
+  Link,
+  ShoppingCart,
+  MessageSquare,
+  CreditCard,
+  Settings,
+  User,
+  Image,
+  Printer,
+  Server,
+  Key,
+  Target
 } from "lucide-react";
+
 import { 
   Sidebar as ShadcnSidebar,
   SidebarContent,
@@ -44,17 +59,84 @@ const menuItems = [
   },
   { icon: Users, label: "Clientes", path: "/membros" },
   { icon: Gift, label: "Cupons", path: "/cupons" },
+  { icon: Target, label: "Campanhas", path: "/campanhas" },
   { icon: Award, label: "Fidelidade", path: "/fidelidade" },
+  {
+    icon: Truck,
+    label: "Entrega",
+    submenu: [
+      { icon: MapPin, label: "Áreas de Entrega", path: "/areas-entrega" },
+      { icon: Users, label: "Entregadores", path: "/entregadores" },
+      { icon: FileBarChart, label: "Relatório de Entregas", path: "/relatorio-entregas" },
+    ],
+  },
+  {
+    icon: Link,
+    label: "Integrações",
+    submenu: [
+      { icon: ShoppingCart, label: "Marketplaces", path: "/marketplaces" },
+      { icon: MessageSquare, label: "WhatsApp", path: "/whatsapp" },
+      { icon: CreditCard, label: "Pagamentos", path: "/pagamentos" },
+    ],
+  },
+  {
+    icon: Settings,
+    label: "Configurações",
+    submenu: [
+      { icon: User, label: "Minha Conta", path: "/minha-conta" },
+      { icon: Users, label: "Usuários", path: "/usuarios" },
+      { icon: Image, label: "Imagens", path: "/imagens" },
+      {
+        icon: Printer,
+        label: "Impressão de Pedidos",
+        submenu: [
+          { icon: MapPin, label: "Local de Preparo", path: "/local-preparo" },
+          { icon: Server, label: "Cannoli Server", path: "/cannoli-server" },
+        ],
+      },
+      { icon: Key, label: "Tokens", path: "/tokens" },
+    ],
+  },
 ];
 
 const Sidebar = () => {
   const { state, toggleSidebar } = useSidebar();
 
+  const renderSubmenu = (items: any[], parentPath = '') => {
+    return items.map((subItem) => (
+      <SidebarMenuSubItem key={subItem.label}>
+        {subItem.submenu ? (
+          <Collapsible>
+            <CollapsibleTrigger asChild>
+              <SidebarMenuSubButton>
+                <subItem.icon className="w-4 h-4" />
+                <span>{subItem.label}</span>
+                <ChevronDown className="w-4 h-4 ml-auto" />
+              </SidebarMenuSubButton>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarMenuSub>
+                {renderSubmenu(subItem.submenu, subItem.path)}
+              </SidebarMenuSub>
+            </CollapsibleContent>
+          </Collapsible>
+        ) : (
+          <SidebarMenuSubButton asChild>
+            <Link to={subItem.path}>
+              <subItem.icon className="w-4 h-4" />
+              <span>{subItem.label}</span>
+            </Link>
+          </SidebarMenuSubButton>
+        )}
+      </SidebarMenuSubItem>
+    ));
+  };
+
   return (
     <ShadcnSidebar collapsible="icon">
       <div className="flex items-center justify-between p-4">
         {state === 'expanded' && (
-          <h1 className="text-xl font-bold text-green-600">Cannoli</h1>
+          <h1 className="text-xl font-bold text-primary">Cannoli</h1>
         )}
         <SidebarTrigger>
           {state === 'expanded' ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -77,16 +159,7 @@ const Sidebar = () => {
                       </CollapsibleTrigger>
                       <CollapsibleContent>
                         <SidebarMenuSub>
-                          {item.submenu.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.label}>
-                              <SidebarMenuSubButton asChild>
-                                <Link to={subItem.path}>
-                                  <subItem.icon className="w-4 h-4" />
-                                  <span>{subItem.label}</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
+                          {renderSubmenu(item.submenu)}
                         </SidebarMenuSub>
                       </CollapsibleContent>
                     </Collapsible>
