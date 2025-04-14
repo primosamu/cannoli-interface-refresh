@@ -11,7 +11,8 @@ import {
   Share,
   BarChart,
   Settings,
-  Menu
+  Menu,
+  X
 } from "lucide-react";
 import { 
   Sidebar as ShadcnSidebar,
@@ -22,7 +23,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger
+  SidebarTrigger,
+  useSidebar
 } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
 
@@ -41,12 +43,14 @@ const menuItems = [
 ];
 
 const Sidebar = () => {
+  const { state, toggleSidebar } = useSidebar();
+
   return (
     <ShadcnSidebar>
       <div className="flex items-center justify-between p-4">
         <h1 className="text-xl font-bold text-purple-600">Cannoli</h1>
         <SidebarTrigger>
-          <Menu className="w-6 h-6" />
+          {state === 'expanded' ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </SidebarTrigger>
       </div>
       <SidebarContent>
