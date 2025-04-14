@@ -6,6 +6,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import Dashboard from "@/pages/Dashboard";
+import Analytics from "@/pages/Analytics";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,14 @@ const App = () => (
             element={
               <DashboardLayout>
                 <Dashboard />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <DashboardLayout>
+                <Analytics />
               </DashboardLayout>
             }
           />
