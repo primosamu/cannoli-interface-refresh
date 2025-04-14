@@ -7,10 +7,11 @@ import {
   Package,
   BookOpen,
   Images,
-  Apps,
+  AppWindow,
   Share,
   BarChart,
-  Settings
+  Settings,
+  Menu
 } from "lucide-react";
 import { 
   Sidebar as ShadcnSidebar,
@@ -33,7 +34,7 @@ const menuItems = [
   { icon: Package, label: "Mercadoria", path: "/mercadoria" },
   { icon: BookOpen, label: "Catálogo", path: "/catalogo" },
   { icon: Images, label: "Imagens", path: "/imagens" },
-  { icon: Apps, label: "Aplicativos", path: "/aplicativos" },
+  { icon: AppWindow, label: "Aplicativos", path: "/aplicativos" },
   { icon: Share, label: "Canais de Vendas", path: "/canais-de-vendas" },
   { icon: BarChart, label: "Relatórios", path: "/relatorios" },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },
