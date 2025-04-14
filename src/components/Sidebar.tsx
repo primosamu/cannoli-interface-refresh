@@ -15,7 +15,7 @@ import {
   Truck,
   MapPin,
   FileBarChart,
-  Link,
+  Link as LinkIcon,
   ShoppingCart,
   MessageSquare,
   CreditCard,
@@ -42,7 +42,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { Link } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 
 const menuItems = [
@@ -71,7 +71,7 @@ const menuItems = [
     ],
   },
   {
-    icon: Link,
+    icon: LinkIcon,
     label: "Integrações",
     submenu: [
       { icon: ShoppingCart, label: "Marketplaces", path: "/marketplaces" },
@@ -122,10 +122,10 @@ const Sidebar = () => {
           </Collapsible>
         ) : (
           <SidebarMenuSubButton asChild>
-            <Link to={subItem.path}>
+            <RouterLink to={subItem.path}>
               <subItem.icon className="w-4 h-4" />
               <span>{subItem.label}</span>
-            </Link>
+            </RouterLink>
           </SidebarMenuSubButton>
         )}
       </SidebarMenuSubItem>
@@ -165,10 +165,10 @@ const Sidebar = () => {
                     </Collapsible>
                   ) : (
                     <SidebarMenuButton asChild tooltip={state === 'collapsed' ? item.label : undefined}>
-                      <Link to={item.path} className="flex items-center gap-3">
+                      <RouterLink to={item.path} className="flex items-center gap-3">
                         <item.icon className="w-5 h-5" />
                         <span>{item.label}</span>
-                      </Link>
+                      </RouterLink>
                     </SidebarMenuButton>
                   )}
                 </SidebarMenuItem>
