@@ -1,16 +1,15 @@
 
 import { 
+  BookOpen,
   Home,
-  User,
   Users,
   Gift,
+  Award,
+  ChevronDown,
   Package,
-  BookOpen,
-  Images,
-  AppWindow,
-  Share,
-  BarChart,
-  Settings,
+  FileText,
+  PlusCircle,
+  HelpCircle,
   Menu,
   X
 } from "lucide-react";
@@ -19,27 +18,33 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarTrigger,
-  useSidebar
+  useSidebar,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 
 const menuItems = [
   { icon: Home, label: "Home", path: "/" },
-  { icon: User, label: "Minha Conta", path: "/minha-conta" },
-  { icon: Users, label: "Membros", path: "/membros" },
+  {
+    icon: BookOpen,
+    label: "Cardápios",
+    submenu: [
+      { icon: FileText, label: "Catálogos", path: "/catalogo" },
+      { icon: Package, label: "Produtos", path: "/mercadoria" },
+      { icon: PlusCircle, label: "Complementos", path: "/complementos" },
+      { icon: HelpCircle, label: "Perguntas", path: "/perguntas" },
+    ],
+  },
+  { icon: Users, label: "Clientes", path: "/membros" },
   { icon: Gift, label: "Cupons", path: "/cupons" },
-  { icon: Package, label: "Mercadoria", path: "/mercadoria" },
-  { icon: BookOpen, label: "Catálogo", path: "/catalogo" },
-  { icon: Images, label: "Imagens", path: "/imagens" },
-  { icon: AppWindow, label: "Aplicativos", path: "/aplicativos" },
-  { icon: Share, label: "Canais de Vendas", path: "/canais-de-vendas" },
-  { icon: BarChart, label: "Relatórios", path: "/relatorios" },
-  { icon: Settings, label: "Configurações", path: "/configuracoes" },
+  { icon: Award, label: "Fidelidade", path: "/fidelidade" },
 ];
 
 const Sidebar = () => {
@@ -48,7 +53,9 @@ const Sidebar = () => {
   return (
     <ShadcnSidebar collapsible="icon">
       <div className="flex items-center justify-between p-4">
-        <h1 className="text-xl font-bold text-purple-600">Cannoli</h1>
+        {state === 'expanded' && (
+          <h1 className="text-xl font-bold text-green-600">Cannoli</h1>
+        )}
         <SidebarTrigger>
           {state === 'expanded' ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </SidebarTrigger>
@@ -59,12 +66,38 @@ const Sidebar = () => {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton asChild tooltip={item.label}>
-                    <Link to={item.path} className="flex items-center gap-3 px-4 py-2">
-                      <item.icon className="w-5 h-5" />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
+                  {item.submenu ? (
+                    <Collapsible>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton tooltip={state === 'collapsed' ? item.label : undefined}>
+                          <item.icon className="w-5 h-5" />
+                          <span>{item.label}</span>
+                          <ChevronDown className="w-4 h-4 ml-auto" />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {item.submenu.map((subItem) => (
+                            <SidebarMenuSubItem key={subItem.label}>
+                              <SidebarMenuSubButton asChild>
+                                <Link to={subItem.path}>
+                                  <subItem.icon className="w-4 h-4" />
+                                  <span>{subItem.label}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  ) : (
+                    <SidebarMenuButton asChild tooltip={state === 'collapsed' ? item.label : undefined}>
+                      <Link to={item.path} className="flex items-center gap-3">
+                        <item.icon className="w-5 h-5" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
