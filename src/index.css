@@ -51,6 +51,71 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
+  @font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 400;
+    src: url("/fonts/Inter-Regular.ttf") format("truetype");
+  }
+
+  @font-face {
+    font-family: "Inter";
+    font-weight: 700;
+    src: url("/fonts/Inter-Bold.ttf") format("truetype");
+  }
+
+  @font-face {
+    font-family: "Inter";
+    font-weight: 600;
+    src: url("/fonts/Inter-Medium.ttf") format("truetype");
+  }
+
+  @font-face {
+    font-family: "Inter";
+    font-weight: 500;
+    src: url("/fonts/Inter-Medium.ttf") format("truetype");
+  }
+
+  @font-face {
+    font-family: "Inter";
+    font-weight: 300;
+    src: url("/fonts/Inter-Light.ttf") format("truetype");
+  }
+
+  @font-face {
+    font-family: "Inter";
+    font-weight: 900;
+    src: url("/fonts/Inter-Black.ttf") format("truetype");
+  }
+
+  @font-face {
+    font-family: "Inter";
+    font-style: italic;
+    font-weight: 400;
+    src: url("/fonts/Inter-Italic.ttf") format("truetype");
+  }
+
+  @font-face {
+    font-family: "Inter";
+    font-style: italic;
+    font-weight: 700;
+    src: url("/fonts/Inter-BoldItalic.ttf") format("truetype");
+  }
+
+  @font-face {
+    font-family: "Inter",
+    font-style: italic;
+    font-weight: 900;
+    src: url("/fonts/Inter-BlackItalic.ttf") format("truetype");
+  }
+
+  @font-face {
+    font-family: "Inter";
+    font-style: italic;
+    font-weight: 300;
+    src: url("/fonts/Inter-LightItalic.ttf") format("truetype");
+  }
+
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
@@ -88,14 +153,21 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-inter;
+  }
+
+  .gradient-bar {
+    @apply absolute bottom-0 left-0 w-full h-1;
+    background: linear-gradient(to right, #6366f1, #8b5cf6);
+  }
+
+  .spinner-container {
+    @apply flex items-center justify-center h-full w-full;
   }
 }
