@@ -103,7 +103,7 @@
   }
 
   @font-face {
-    font-family: "Inter",
+    font-family: "Inter";
     font-style: italic;
     font-weight: 900;
     src: url("/fonts/Inter-BlackItalic.ttf") format("truetype");
