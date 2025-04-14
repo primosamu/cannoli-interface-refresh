@@ -1,5 +1,6 @@
 
 import { Bell, User } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,12 +11,32 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
+const getPageTitle = (pathname: string) => {
+  const titles: { [key: string]: string } = {
+    "/": "Home",
+    "/minha-conta": "Minha Conta",
+    "/membros": "Membros",
+    "/cupons": "Cupons",
+    "/mercadoria": "Mercadoria",
+    "/catalogo": "Catálogo",
+    "/imagens": "Imagens",
+    "/aplicativos": "Aplicativos",
+    "/canais-de-vendas": "Canais de Vendas",
+    "/relatorios": "Relatórios",
+    "/configuracoes": "Configurações",
+  };
+  return titles[pathname] || "Dashboard";
+};
+
 const Navbar = () => {
+  const location = useLocation();
+  const pageTitle = getPageTitle(location.pathname);
+
   return (
     <nav className="border-b bg-white/50 backdrop-blur-sm">
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-4">
-          <h2 className="text-lg font-semibold text-gray-800">Dashboard</h2>
+          <h2 className="text-lg font-semibold text-gray-800">{pageTitle}</h2>
         </div>
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon">
@@ -28,11 +49,11 @@ const Navbar = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem>Perfil</DropdownMenuItem>
+              <DropdownMenuItem>Configurações</DropdownMenuItem>
+              <DropdownMenuItem>Sair</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

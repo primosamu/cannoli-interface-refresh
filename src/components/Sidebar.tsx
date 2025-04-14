@@ -1,5 +1,17 @@
 
-import { Home, PieChart, FileText, Settings, Menu } from "lucide-react";
+import { 
+  Home,
+  User,
+  Users,
+  Gift,
+  Package,
+  BookOpen,
+  Images,
+  Apps,
+  Share,
+  BarChart,
+  Settings
+} from "lucide-react";
 import { 
   Sidebar as ShadcnSidebar,
   SidebarContent,
@@ -14,10 +26,17 @@ import {
 import { Link } from "react-router-dom";
 
 const menuItems = [
-  { icon: Home, label: "Dashboard", path: "/dashboard" },
-  { icon: PieChart, label: "Analytics", path: "/analytics" },
-  { icon: FileText, label: "Reports", path: "/reports" },
-  { icon: Settings, label: "Settings", path: "/settings" },
+  { icon: Home, label: "Home", path: "/" },
+  { icon: User, label: "Minha Conta", path: "/minha-conta" },
+  { icon: Users, label: "Membros", path: "/membros" },
+  { icon: Gift, label: "Cupons", path: "/cupons" },
+  { icon: Package, label: "Mercadoria", path: "/mercadoria" },
+  { icon: BookOpen, label: "Catálogo", path: "/catalogo" },
+  { icon: Images, label: "Imagens", path: "/imagens" },
+  { icon: Apps, label: "Aplicativos", path: "/aplicativos" },
+  { icon: Share, label: "Canais de Vendas", path: "/canais-de-vendas" },
+  { icon: BarChart, label: "Relatórios", path: "/relatorios" },
+  { icon: Settings, label: "Configurações", path: "/configuracoes" },
 ];
 
 const Sidebar = () => {
@@ -31,7 +50,6 @@ const Sidebar = () => {
       </div>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
