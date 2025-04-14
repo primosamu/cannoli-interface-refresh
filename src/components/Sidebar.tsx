@@ -46,7 +46,7 @@ const Sidebar = () => {
   const { state, toggleSidebar } = useSidebar();
 
   return (
-    <ShadcnSidebar>
+    <ShadcnSidebar collapsible="icon">
       <div className="flex items-center justify-between p-4">
         <h1 className="text-xl font-bold text-purple-600">Cannoli</h1>
         <SidebarTrigger>
@@ -59,7 +59,7 @@ const Sidebar = () => {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild tooltip={item.label}>
                     <Link to={item.path} className="flex items-center gap-3 px-4 py-2">
                       <item.icon className="w-5 h-5" />
                       <span>{item.label}</span>
