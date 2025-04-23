@@ -29,6 +29,7 @@ import UsuariosPage from "@/pages/UsuariosPage";
 import LocalPreparoPage from "@/pages/LocalPreparoPage";
 import CannaliServerPage from "@/pages/CannaliServerPage";
 import TokensPage from "@/pages/TokensPage";
+import GruposEconomicosPage from "@/pages/GruposEconomicosPage";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
           <Route path="/local-preparo" element={<DashboardLayout><LocalPreparoPage /></DashboardLayout>} />
           <Route path="/cannoli-server" element={<DashboardLayout><CannaliServerPage /></DashboardLayout>} />
           <Route path="/tokens" element={<DashboardLayout><TokensPage /></DashboardLayout>} />
+          <Route path="/grupos-economicos" element={<DashboardLayout><GruposEconomicosPage /></DashboardLayout>} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
