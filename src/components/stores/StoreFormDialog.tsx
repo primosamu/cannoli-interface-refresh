@@ -3,11 +3,9 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { X } from "lucide-react";
 import { Store } from "@/types/store";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -121,10 +119,6 @@ export function StoreFormDialog({
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Editar Loja" : "Nova Loja"}</DialogTitle>
-          <DialogClose className="absolute right-4 top-4">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Fechar</span>
-          </DialogClose>
         </DialogHeader>
         
         <Form {...form}>

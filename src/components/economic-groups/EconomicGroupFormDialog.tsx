@@ -3,11 +3,9 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { X } from "lucide-react";
 import { EconomicGroup } from "@/types/economic-group";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -117,10 +115,6 @@ export function EconomicGroupFormDialog({
           <DialogTitle>
             {isEditing ? "Editar Grupo Econômico" : "Novo Grupo Econômico"}
           </DialogTitle>
-          <DialogClose className="absolute right-4 top-4">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Fechar</span>
-          </DialogClose>
         </DialogHeader>
         
         <Form {...form}>
