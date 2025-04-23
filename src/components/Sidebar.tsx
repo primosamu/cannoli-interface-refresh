@@ -1,4 +1,3 @@
-
 import { 
   Home,
   BookOpen,
@@ -48,10 +47,12 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/component
 const menuItems = [
   { icon: Home, label: "Home", path: "/" },
   {
-    icon: BookOpen,
-    label: "Cardápios",
+    icon: Users,
+    label: "Cadastros",
     submenu: [
-      { icon: FileText, label: "Catálogos", path: "/catalogo" },
+      { icon: Users, label: "Grupos Econômicos", path: "/grupos-economicos" },
+      { icon: FileText, label: "Marcas", path: "/marcas" },
+      { icon: MapPin, label: "Lojas", path: "/lojas" },
       { icon: Package, label: "Produtos", path: "/mercadoria" },
       { icon: PlusCircle, label: "Complementos", path: "/complementos" },
       { icon: HelpCircle, label: "Perguntas", path: "/perguntas" },

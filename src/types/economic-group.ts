@@ -1,6 +1,4 @@
 
-export type EconomicGroupStatus = "Ativo" | "Inativo" | "Em Auditoria";
-
 export interface EconomicGroup {
   id: string;
   name: string;
@@ -15,5 +13,5 @@ export interface EconomicGroup {
   legalRepresentative?: string;
   mainActivities?: string;
   notes?: string;
-  status: EconomicGroupStatus;
+  status: 'Ativo' | 'Inativo' | 'Em Auditoria';
 }
