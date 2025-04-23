@@ -12,7 +12,7 @@ interface EnrichClientsDialogProps {
 
 const EnrichClientsDialog = ({ open, onOpenChange }: EnrichClientsDialogProps) => {
   const { toast } = useToast();
-  const clientsWithoutPhone = 5; // This would come from your data source
+  const clientsWithoutPhone: number = 5; // Explicitly typed as number
 
   const handleEnrichClientsData = () => {
     toast({
