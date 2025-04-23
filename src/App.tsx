@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -30,6 +31,8 @@ import LocalPreparoPage from "@/pages/LocalPreparoPage";
 import CannaliServerPage from "@/pages/CannaliServerPage";
 import TokensPage from "@/pages/TokensPage";
 import GruposEconomicosPage from "@/pages/GruposEconomicosPage";
+import MarcasPage from "@/pages/MarcasPage";
+import LojasPage from "@/pages/LojasPage";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +65,8 @@ const App = () => (
           <Route path="/cannoli-server" element={<DashboardLayout><CannaliServerPage /></DashboardLayout>} />
           <Route path="/tokens" element={<DashboardLayout><TokensPage /></DashboardLayout>} />
           <Route path="/grupos-economicos" element={<DashboardLayout><GruposEconomicosPage /></DashboardLayout>} />
+          <Route path="/marcas" element={<DashboardLayout><MarcasPage /></DashboardLayout>} />
+          <Route path="/lojas" element={<DashboardLayout><LojasPage /></DashboardLayout>} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

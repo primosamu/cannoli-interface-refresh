@@ -24,6 +24,9 @@ const getPageTitle = (pathname: string) => {
     "/canais-de-vendas": "Canais de Vendas",
     "/relatorios": "Relatórios",
     "/configuracoes": "Configurações",
+    "/grupos-economicos": "Grupos Econômicos",
+    "/marcas": "Marcas",
+    "/lojas": "Lojas",
   };
   return titles[pathname] || "Dashboard";
 };
