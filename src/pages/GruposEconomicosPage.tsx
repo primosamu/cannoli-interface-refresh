@@ -1,10 +1,14 @@
 
+import { useState } from "react";
 import { Plus, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import EconomicGroupList from "@/components/economic-groups/EconomicGroupList";
+import { EconomicGroupFormDialog } from "@/components/economic-groups/EconomicGroupFormDialog";
 
 const GruposEconomicosPage = () => {
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -12,7 +16,7 @@ const GruposEconomicosPage = () => {
           <Users className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-bold">Grupos Econômicos</h1>
         </div>
-        <Button>
+        <Button onClick={() => setDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Novo Grupo
         </Button>
@@ -26,6 +30,12 @@ const GruposEconomicosPage = () => {
           <EconomicGroupList />
         </CardContent>
       </Card>
+      
+      <EconomicGroupFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSubmit={() => {}}
+      />
     </div>
   );
 };
