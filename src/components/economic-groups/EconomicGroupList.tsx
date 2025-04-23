@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";  // Added this import
 import { EconomicGroup } from "@/types/economic-group";
 
 const mockGroups: EconomicGroup[] = [
