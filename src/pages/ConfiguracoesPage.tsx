@@ -1,3 +1,5 @@
+
+import { Layout } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Accordion,
@@ -180,15 +182,20 @@ const entitiesData = {
 const ConfiguracoesPage = () => {
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Configurações</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Layout className="h-6 w-6 text-primary" />
+          <h1 className="text-2xl font-bold">Estrutura do Sistema</h1>
+        </div>
+      </div>
       <Card className="bg-white/50 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle>Configurações do Sistema</CardTitle>
+          <CardTitle>Entidades do Sistema</CardTitle>
         </CardHeader>
         <CardContent>
           <Accordion type="single" collapsible>
             <AccordionItem value="entities">
-              <AccordionTrigger>Entidades do Sistema</AccordionTrigger>
+              <AccordionTrigger>Diagrama de Entidades</AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-6">
                   {entitiesData.entities.map((entity) => (
