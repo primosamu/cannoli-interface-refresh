@@ -19,7 +19,7 @@ const EntityCard = ({ entity }: EntityCardProps) => {
         
         <div className="space-y-4">
           <EntityFields fields={entity.fields} />
-          <EntityRelationships relationships={entity.relationships} />
+          {entity.relationships.length > 0 && <EntityRelationships relationships={entity.relationships} />}
         </div>
       </CardContent>
     </Card>
