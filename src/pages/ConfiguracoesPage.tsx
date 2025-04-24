@@ -1,5 +1,181 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
+const entitiesData = {
+  entities: [
+    {
+      name: "User",
+      description: "Representa um usuário do sistema com acesso via autenticação JWT.",
+      fields: [
+        {
+          name: "id",
+          type: "uuid",
+          required: true,
+          label: "ID do Usuário"
+        },
+        {
+          name: "name",
+          type: "string",
+          required: true,
+          label: "Nome Completo",
+          message: "O nome do usuário é obrigatório."
+        },
+        {
+          name: "email",
+          type: "string",
+          required: true,
+          label: "Email",
+          message: "O email é obrigatório."
+        },
+        {
+          name: "password",
+          type: "string",
+          required: true,
+          label: "Senha",
+          message: "A senha é obrigatória."
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: ["Ativo", "Inativo"],
+          required: true,
+          label: "Status",
+          message: "O status do usuário é obrigatório."
+        }
+      ],
+      relationships: [
+        {
+          type: "many-to-one",
+          entity: "Profile",
+          foreignKey: "profileId",
+          required: true,
+          label: "Perfil de Acesso",
+          message: "O perfil do usuário é obrigatório."
+        }
+      ]
+    },
+    {
+      name: "Profile",
+      description: "Representa o perfil de acesso de um usuário, como Admin, Suporte, Diretor, etc.",
+      fields: [
+        {
+          name: "id",
+          type: "uuid",
+          required: true,
+          label: "ID do Perfil"
+        },
+        {
+          name: "name",
+          type: "string",
+          required: true,
+          label: "Nome do Perfil",
+          message: "O nome do perfil é obrigatório."
+        },
+        {
+          name: "description",
+          type: "string",
+          required: false,
+          label: "Descrição"
+        }
+      ],
+      relationships: []
+    },
+    {
+      name: "Module",
+      description: "Representa as entidades (tabelas, módulos ou telas) disponíveis no sistema.",
+      fields: [
+        {
+          name: "id",
+          type: "uuid",
+          required: true,
+          label: "ID da Entidade"
+        },
+        {
+          name: "name",
+          type: "string",
+          required: true,
+          label: "Nome da Entidade",
+          message: "O nome da entidade é obrigatório."
+        },
+        {
+          name: "description",
+          type: "string",
+          required: false,
+          label: "Descrição da Entidade"
+        }
+      ],
+      relationships: []
+    },
+    {
+      name: "AccessLevel",
+      description: "Define os níveis de acesso permitidos para um perfil, por entidade, considerando escopo hierárquico.",
+      fields: [
+        {
+          name: "id",
+          type: "uuid",
+          required: true,
+          label: "ID da Permissão"
+        },
+        {
+          name: "canRead",
+          type: "boolean",
+          required: false,
+          label: "Pode Visualizar"
+        },
+        {
+          name: "canCreate",
+          type: "boolean",
+          required: false,
+          label: "Pode Criar"
+        },
+        {
+          name: "canUpdate",
+          type: "boolean",
+          required: false,
+          label: "Pode Atualizar"
+        },
+        {
+          name: "canDelete",
+          type: "boolean",
+          required: false,
+          label: "Pode Excluir"
+        },
+        {
+          name: "scope",
+          type: "enum",
+          values: ["Global", "Grupo Econômico", "Marca", "Loja"],
+          required: true,
+          label: "Escopo",
+          message: "O escopo da permissão é obrigatório."
+        }
+      ],
+      relationships: [
+        {
+          type: "many-to-one",
+          entity: "Profile",
+          foreignKey: "profileId",
+          required: true,
+          label: "Perfil",
+          message: "O perfil é obrigatório."
+        },
+        {
+          type: "many-to-one",
+          entity: "Module",
+          foreignKey: "moduleId",
+          required: true,
+          label: "Entidade",
+          message: "A entidade é obrigatória."
+        }
+      ]
+    }
+  ]
+};
 
 const ConfiguracoesPage = () => {
   return (
@@ -10,7 +186,55 @@ const ConfiguracoesPage = () => {
           <CardTitle>Configurações do Sistema</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>Conteúdo da página Configurações</p>
+          <Accordion type="single" collapsible>
+            <AccordionItem value="entities">
+              <AccordionTrigger>Entidades do Sistema</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-6">
+                  {entitiesData.entities.map((entity) => (
+                    <Card key={entity.name} className="bg-white">
+                      <CardHeader>
+                        <CardTitle className="text-lg">{entity.name}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground mb-4">{entity.description}</p>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="font-medium mb-2">Campos</h4>
+                            <div className="grid gap-2">
+                              {entity.fields.map((field) => (
+                                <div key={field.name} className="text-sm">
+                                  <span className="font-medium">{field.label}</span>
+                                  <span className="text-muted-foreground"> - {field.type}</span>
+                                  {field.required && <span className="text-destructive ml-1">*</span>}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {entity.relationships.length > 0 && (
+                            <div>
+                              <h4 className="font-medium mb-2">Relacionamentos</h4>
+                              <div className="grid gap-2">
+                                {entity.relationships.map((rel, index) => (
+                                  <div key={index} className="text-sm">
+                                    <span className="font-medium">{rel.label}</span>
+                                    <span className="text-muted-foreground"> - {rel.type} com {rel.entity}</span>
+                                    {rel.required && <span className="text-destructive ml-1">*</span>}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </CardContent>
       </Card>
     </div>
