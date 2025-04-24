@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Accordion,
@@ -6,6 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import EntityCard from "@/components/system-entities/EntityCard";
 
 const entitiesData = {
   entities: [
@@ -192,44 +192,7 @@ const ConfiguracoesPage = () => {
               <AccordionContent>
                 <div className="space-y-6">
                   {entitiesData.entities.map((entity) => (
-                    <Card key={entity.name} className="bg-white">
-                      <CardHeader>
-                        <CardTitle className="text-lg">{entity.name}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground mb-4">{entity.description}</p>
-                        
-                        <div className="space-y-4">
-                          <div>
-                            <h4 className="font-medium mb-2">Campos</h4>
-                            <div className="grid gap-2">
-                              {entity.fields.map((field) => (
-                                <div key={field.name} className="text-sm">
-                                  <span className="font-medium">{field.label}</span>
-                                  <span className="text-muted-foreground"> - {field.type}</span>
-                                  {field.required && <span className="text-destructive ml-1">*</span>}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {entity.relationships.length > 0 && (
-                            <div>
-                              <h4 className="font-medium mb-2">Relacionamentos</h4>
-                              <div className="grid gap-2">
-                                {entity.relationships.map((rel, index) => (
-                                  <div key={index} className="text-sm">
-                                    <span className="font-medium">{rel.label}</span>
-                                    <span className="text-muted-foreground"> - {rel.type} com {rel.entity}</span>
-                                    {rel.required && <span className="text-destructive ml-1">*</span>}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <EntityCard key={entity.name} entity={entity} />
                   ))}
                 </div>
               </AccordionContent>
