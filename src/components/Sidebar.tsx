@@ -96,6 +96,7 @@ const menuItems = [
         ],
       },
       { icon: Key, label: "Tokens", path: "/tokens" },
+      { icon: Server, label: "Estrutura do Sistema", path: "/configuracoes" },
     ],
   },
 ];
