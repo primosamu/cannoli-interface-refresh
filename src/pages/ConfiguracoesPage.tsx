@@ -12,6 +12,293 @@ import EntityCard from "@/components/system-entities/EntityCard";
 const entitiesData = {
   entities: [
     {
+      name: "EconomicGroup",
+      description: "Representa um conglomerado ou grupo empresarial que controla diversas marcas e unidades.",
+      fields: [
+        {
+          name: "id",
+          type: "uuid",
+          required: true,
+          label: "ID do Grupo Econômico"
+        },
+        {
+          name: "name",
+          type: "string",
+          required: true,
+          label: "Nome do Grupo Econômico",
+          message: "O nome do grupo econômico é obrigatório."
+        },
+        {
+          name: "taxId",
+          type: "string",
+          required: true,
+          label: "CNPJ ou Número de Identificação Fiscal",
+          message: "O CNPJ é obrigatório e deve ser válido."
+        },
+        {
+          name: "legalName",
+          type: "string",
+          required: false,
+          label: "Razão Social"
+        },
+        {
+          name: "logoUrl",
+          type: "string",
+          required: false,
+          label: "Logo"
+        },
+        {
+          name: "headquartersAddress",
+          type: "string",
+          required: false,
+          label: "Endereço da Sede"
+        },
+        {
+          name: "mainPhone",
+          type: "string",
+          required: false,
+          label: "Telefone Principal"
+        },
+        {
+          name: "corporateEmail",
+          type: "string",
+          required: false,
+          label: "Email Corporativo"
+        },
+        {
+          name: "website",
+          type: "string",
+          required: false,
+          label: "Website"
+        },
+        {
+          name: "foundationDate",
+          type: "date",
+          required: false,
+          label: "Data de Fundação"
+        },
+        {
+          name: "legalRepresentative",
+          type: "string",
+          required: false,
+          label: "Representante Legal"
+        },
+        {
+          name: "mainActivities",
+          type: "string",
+          required: false,
+          label: "Atividades Econômicas Principais"
+        },
+        {
+          name: "notes",
+          type: "text",
+          required: false,
+          label: "Observações Gerais"
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: ["Ativo", "Inativo", "Em Auditoria"],
+          required: true,
+          label: "Status do Grupo",
+          message: "O status do grupo é obrigatório."
+        }
+      ],
+      relationships: []
+    },
+    {
+      name: "Brand",
+      description: "Representa cada marca ou linha de produtos que pertence a um grupo econômico.",
+      fields: [
+        {
+          name: "id",
+          type: "uuid",
+          required: true,
+          label: "ID da Marca"
+        },
+        {
+          name: "name",
+          type: "string",
+          required: true,
+          label: "Nome da Marca",
+          message: "O nome da marca é obrigatório."
+        },
+        {
+          name: "logoUrl",
+          type: "string",
+          required: false,
+          label: "Logo da Marca"
+        },
+        {
+          name: "description",
+          type: "text",
+          required: false,
+          label: "Descrição da Marca"
+        },
+        {
+          name: "taxId",
+          type: "string",
+          required: false,
+          label: "CNPJ ou Identificação Fiscal da Marca"
+        },
+        {
+          name: "marketSector",
+          type: "string",
+          required: false,
+          label: "Setor de Atuação"
+        },
+        {
+          name: "mainAddress",
+          type: "string",
+          required: false,
+          label: "Endereço Principal"
+        },
+        {
+          name: "contactPhone",
+          type: "string",
+          required: false,
+          label: "Telefone de Contato"
+        },
+        {
+          name: "businessEmail",
+          type: "string",
+          required: false,
+          label: "Email Comercial"
+        },
+        {
+          name: "website",
+          type: "string",
+          required: false,
+          label: "Website"
+        },
+        {
+          name: "creationDate",
+          type: "date",
+          required: false,
+          label: "Data de Criação"
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: ["Ativa", "Inativa"],
+          required: true,
+          label: "Status",
+          message: "O status da marca é obrigatório."
+        }
+      ],
+      relationships: [
+        {
+          type: "many-to-one",
+          entity: "EconomicGroup",
+          foreignKey: "economicGroupId",
+          required: true,
+          label: "Grupo Econômico",
+          message: "A marca precisa estar vinculada a um grupo econômico."
+        }
+      ]
+    },
+    {
+      name: "Store",
+      description: "Representa a estrutura física e operacional de cada marca, incluindo as várias unidades associadas.",
+      fields: [
+        {
+          name: "id",
+          type: "uuid",
+          required: true,
+          label: "ID da Loja"
+        },
+        {
+          name: "name",
+          type: "string",
+          required: true,
+          label: "Nome da Loja",
+          message: "O nome da loja é obrigatório."
+        },
+        {
+          name: "taxId",
+          type: "string",
+          required: true,
+          label: "CNPJ ou Identificação Fiscal",
+          message: "O CNPJ da loja é obrigatório."
+        },
+        {
+          name: "locations",
+          type: "text",
+          required: true,
+          label: "Localizações",
+          message: "As localizações da loja são obrigatórias."
+        },
+        {
+          name: "unitManager",
+          type: "string",
+          required: false,
+          label: "Gerente da Unidade"
+        },
+        {
+          name: "contactPhone",
+          type: "string",
+          required: false,
+          label: "Telefone de Contato"
+        },
+        {
+          name: "contactEmail",
+          type: "string",
+          required: false,
+          label: "Email de Contato"
+        },
+        {
+          name: "openingHours",
+          type: "string",
+          required: false,
+          label: "Horário de Funcionamento"
+        },
+        {
+          name: "openingDate",
+          type: "date",
+          required: false,
+          label: "Data de Início de Operação"
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: ["Ativa", "Inativa"],
+          required: true,
+          label: "Status",
+          message: "O status da loja é obrigatório."
+        },
+        {
+          name: "notes",
+          type: "text",
+          required: false,
+          label: "Observações Gerais"
+        },
+        {
+          name: "coverageArea",
+          type: "string",
+          required: false,
+          label: "Área de Cobertura"
+        }
+      ],
+      relationships: [
+        {
+          type: "many-to-one",
+          entity: "Brand",
+          foreignKey: "brandId",
+          required: true,
+          label: "Marca Associada",
+          message: "A loja precisa estar vinculada a uma marca."
+        },
+        {
+          type: "many-to-one",
+          entity: "EconomicGroup",
+          foreignKey: "economicGroupId",
+          required: true,
+          label: "Grupo Econômico",
+          message: "A loja precisa estar vinculada a um grupo econômico."
+        }
+      ]
+    },
+    {
       name: "User",
       description: "Representa um usuário do sistema com acesso via autenticação JWT.",
       fields: [
