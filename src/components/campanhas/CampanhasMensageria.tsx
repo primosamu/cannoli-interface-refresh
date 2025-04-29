@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -129,7 +128,7 @@ const CampanhasMensageria = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Envio de mensagens para seus clientes</h3>
+        <h3 className="text-lg font-medium">Campanhas de Mensageria</h3>
         <Dialog>
           <DialogTrigger asChild>
             <Button>
@@ -163,85 +162,8 @@ const CampanhasMensageria = () => {
           </DialogContent>
         </Dialog>
       </div>
-      
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <div className="bg-green-100 p-2 rounded-full">
-                <MessageSquare className="h-5 w-5 text-green-600" />
-              </div>
-              WhatsApp
-            </CardTitle>
-            <CardDescription>Envie mensagens diretas para o WhatsApp dos seus clientes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">98%</span> de taxa de abertura
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">45%</span> de taxa de conversão
-              </div>
-            </div>
-            <Button variant="outline" className="w-full mt-4" onClick={() => handleCreateCampaign("WhatsApp")}>
-              Criar Campanha
-            </Button>
-          </CardContent>
-        </Card>
 
-        <Card className="bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <div className="bg-blue-100 p-2 rounded-full">
-                <Phone className="h-5 w-5 text-blue-600" />
-              </div>
-              SMS
-            </CardTitle>
-            <CardDescription>Envie mensagens de texto para os celulares dos clientes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">92%</span> de taxa de abertura
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">12%</span> de taxa de conversão
-              </div>
-            </div>
-            <Button variant="outline" className="w-full mt-4" onClick={() => handleCreateCampaign("SMS")}>
-              Criar Campanha
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <div className="bg-purple-100 p-2 rounded-full">
-                <Mail className="h-5 w-5 text-purple-600" />
-              </div>
-              Email
-            </CardTitle>
-            <CardDescription>Envie emails personalizados para seus clientes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">32%</span> de taxa de abertura
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">8%</span> de taxa de conversão
-              </div>
-            </div>
-            <Button variant="outline" className="w-full mt-4" onClick={() => handleCreateCampaign("Email")}>
-              Criar Campanha
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Campanhas Predefinidas */}
+      {/* Campanhas Predefinidas - Moved to the top */}
       <Card className="bg-white">
         <CardHeader>
           <CardTitle className="text-xl">Campanhas Predefinidas</CardTitle>
@@ -343,6 +265,84 @@ const CampanhasMensageria = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Opções de canais - Moved after campanhas predefinidas */}
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card className="bg-white">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <div className="bg-green-100 p-2 rounded-full">
+                <MessageSquare className="h-5 w-5 text-green-600" />
+              </div>
+              WhatsApp
+            </CardTitle>
+            <CardDescription>Envie mensagens diretas para o WhatsApp dos seus clientes</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">98%</span> de taxa de abertura
+              </div>
+              <div className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">45%</span> de taxa de conversão
+              </div>
+            </div>
+            <Button variant="outline" className="w-full mt-4" onClick={() => handleCreateCampaign("WhatsApp")}>
+              Criar Campanha
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <div className="bg-blue-100 p-2 rounded-full">
+                <Phone className="h-5 w-5 text-blue-600" />
+              </div>
+              SMS
+            </CardTitle>
+            <CardDescription>Envie mensagens de texto para os celulares dos clientes</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">92%</span> de taxa de abertura
+              </div>
+              <div className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">12%</span> de taxa de conversão
+              </div>
+            </div>
+            <Button variant="outline" className="w-full mt-4" onClick={() => handleCreateCampaign("SMS")}>
+              Criar Campanha
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <div className="bg-purple-100 p-2 rounded-full">
+                <Mail className="h-5 w-5 text-purple-600" />
+              </div>
+              Email
+            </CardTitle>
+            <CardDescription>Envie emails personalizados para seus clientes</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">32%</span> de taxa de abertura
+              </div>
+              <div className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">8%</span> de taxa de conversão
+              </div>
+            </div>
+            <Button variant="outline" className="w-full mt-4" onClick={() => handleCreateCampaign("Email")}>
+              Criar Campanha
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="bg-muted/50 rounded-lg p-4">
         <h4 className="font-medium mb-2 flex items-center gap-2">
