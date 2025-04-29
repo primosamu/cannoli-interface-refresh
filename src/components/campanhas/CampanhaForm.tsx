@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -5,12 +6,12 @@ import * as z from "zod";
 import { MessageSquare, Mail, Phone, Send, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  Sheet,
-  SheetContent, 
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Drawer,
+  DrawerContent, 
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { 
   Form,
   FormControl, 
@@ -23,7 +24,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Select, 
   SelectContent, 
@@ -61,12 +61,52 @@ const mockCoupons: Coupon[] = [
   { id: "coup3", code: "DESCONTO20", discount: 20, discountType: "percentage", expiresAt: "2025-05-25" }
 ];
 
+const predefinedTemplates = {
+  "sentimos-sua-falta": {
+    name: "Sentimos sua falta",
+    segment: "inactive-30",
+    incentiveType: "coupon" as IncentiveType,
+    couponId: "coup1",
+    channel: "whatsapp" as CampaignChannel,
+    content: "Olá! Sentimos sua falta! Faz um tempo que não vemos você por aqui. Que tal voltar com esse cupom especial? Use o código VOLTA10 e ganhe 10% de desconto na sua próxima compra!",
+    imageUrl: "",
+  },
+  "volte-para-nos": {
+    name: "Volte para nós",
+    segment: "inactive-60",
+    incentiveType: "coupon" as IncentiveType,
+    couponId: "coup3",
+    channel: "email" as CampaignChannel,
+    content: "<h2>Estamos com saudades!</h2><p>Olá! Sentimos muito sua falta em nossa loja.</p><p>Para celebrar seu retorno, preparamos um desconto especial de 20% na sua próxima compra.</p><p>Basta usar o código <strong>DESCONTO20</strong> no checkout.</p><p>Esperamos ver você em breve!</p>",
+    imageUrl: "https://images.unsplash.com/photo-1500673922987-e212871fec22",
+  },
+  "cliente-vip": {
+    name: "Cliente VIP",
+    segment: "high-ticket",
+    incentiveType: "loyalty" as IncentiveType,
+    loyaltyPoints: 100,
+    channel: "email" as CampaignChannel,
+    content: "<h2>Parabéns! Você é um cliente VIP!</h2><p>Como reconhecimento pela sua fidelidade e pelo seu histórico de compras, estamos oferecendo 100 pontos extras no nosso programa de fidelidade!</p><p>Você pode usar esses pontos na sua próxima compra para obter descontos exclusivos.</p><p>Obrigado por escolher nossa loja!</p>",
+    imageUrl: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07",
+  },
+  "primeiro-pedido": {
+    name: "Obrigado pelo primeiro pedido",
+    segment: "first-purchase",
+    incentiveType: "loyalty" as IncentiveType,
+    loyaltyPoints: 50,
+    channel: "whatsapp" as CampaignChannel,
+    content: "Olá! Muito obrigado pelo seu primeiro pedido conosco. Como forma de agradecimento, adicionamos 50 pontos de fidelidade na sua conta! Continue comprando e ganhe ainda mais benefícios exclusivos.",
+    imageUrl: "",
+  }
+};
+
 interface CampanhaFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  predefinedCampaignId?: string;
 }
 
-const CampanhaForm = ({ open, onOpenChange }: CampanhaFormProps) => {
+const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaFormProps) => {
   const { toast } = useToast();
   const [step, setStep] = useState<number>(1);
   const [previewChannel, setPreviewChannel] = useState<CampaignChannel>("whatsapp");
@@ -81,6 +121,17 @@ const CampanhaForm = ({ open, onOpenChange }: CampanhaFormProps) => {
     },
   });
 
+  // Apply predefined template if provided
+  React.useEffect(() => {
+    if (predefinedCampaignId && open) {
+      const template = predefinedTemplates[predefinedCampaignId as keyof typeof predefinedTemplates];
+      if (template) {
+        form.reset(template);
+        setPreviewChannel(template.channel);
+      }
+    }
+  }, [predefinedCampaignId, form, open]);
+
   const selectedChannel = form.watch("channel");
   const selectedIncentiveType = form.watch("incentiveType");
 
@@ -88,21 +139,23 @@ const CampanhaForm = ({ open, onOpenChange }: CampanhaFormProps) => {
   const onChannelChange = (channel: CampaignChannel) => {
     setPreviewChannel(channel);
     
-    // Set default content based on channel
-    let defaultContent = "";
-    switch (channel) {
-      case "whatsapp":
-        defaultContent = "Olá! Temos uma oferta especial para você. Aproveite!";
-        break;
-      case "sms":
-        defaultContent = "Oferta especial! Aproveite nossos produtos com desconto.";
-        break;
-      case "email":
-        defaultContent = "<h1>Oferta Especial</h1><p>Olá! Temos promoções exclusivas para você.</p>";
-        break;
-    }
+    // Set default content based on channel if no predefined content
+    if (!form.getValues("content")) {
+      let defaultContent = "";
+      switch (channel) {
+        case "whatsapp":
+          defaultContent = "Olá! Temos uma oferta especial para você. Aproveite!";
+          break;
+        case "sms":
+          defaultContent = "Oferta especial! Aproveite nossos produtos com desconto.";
+          break;
+        case "email":
+          defaultContent = "<h1>Oferta Especial</h1><p>Olá! Temos promoções exclusivas para você.</p>";
+          break;
+      }
 
-    form.setValue("content", defaultContent);
+      form.setValue("content", defaultContent);
+    }
   };
 
   const nextStep = () => {
@@ -172,16 +225,16 @@ const CampanhaForm = ({ open, onOpenChange }: CampanhaFormProps) => {
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[95%] sm:w-[540px] md:w-[600px] lg:w-[800px] overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Nova Campanha Personalizada</SheetTitle>
-          <SheetDescription>
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent className="h-[90%] max-h-[90%]">
+        <DrawerHeader className="border-b pb-4">
+          <DrawerTitle className="text-xl">Nova Campanha Personalizada</DrawerTitle>
+          <DrawerDescription>
             Crie sua campanha em poucos passos
-          </SheetDescription>
-        </SheetHeader>
+          </DrawerDescription>
+        </DrawerHeader>
         
-        <div className="mt-6">
+        <div className="p-6 overflow-y-auto h-[calc(100%-60px)]">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
@@ -237,34 +290,34 @@ const CampanhaForm = ({ open, onOpenChange }: CampanhaFormProps) => {
                       <FormItem>
                         <FormLabel>Selecione o segmento</FormLabel>
                         <FormControl>
-                          <RadioGroup 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                            className="grid grid-cols-1 gap-4 md:grid-cols-2"
-                          >
+                          <div className="border rounded-md divide-y">
                             {mockSegments.map((segment) => (
-                              <div key={segment.id} className="flex items-start space-x-2">
-                                <RadioGroupItem value={segment.id} id={segment.id} />
-                                <div className="grid gap-1.5 leading-none">
-                                  <label
-                                    htmlFor={segment.id}
-                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                  >
-                                    {segment.name}
-                                  </label>
-                                  <p className="text-sm text-muted-foreground">
-                                    {segment.description}
-                                  </p>
-                                  <p className="text-xs text-blue-600">
-                                    {segment.customerCount} clientes neste segmento
-                                  </p>
+                              <div 
+                                key={segment.id} 
+                                className={`flex items-center space-x-3 p-3 hover:bg-muted/50 cursor-pointer ${field.value === segment.id ? 'bg-muted' : ''}`}
+                                onClick={() => field.onChange(segment.id)}
+                              >
+                                <div className="flex-1">
+                                  <div className="font-medium">{segment.name}</div>
+                                  <div className="text-sm text-muted-foreground">{segment.description}</div>
+                                </div>
+                                <div className="text-blue-600 text-sm font-medium">
+                                  {segment.customerCount} clientes
+                                </div>
+                                <div className="flex items-center">
+                                  <input
+                                    type="radio"
+                                    className="h-4 w-4 text-primary border-gray-300 focus:ring-primary"
+                                    checked={field.value === segment.id}
+                                    onChange={() => field.onChange(segment.id)}
+                                  />
                                 </div>
                               </div>
                             ))}
-                          </RadioGroup>
+                          </div>
                         </FormControl>
                         <FormDescription>
-                          {form.getValues("segment") && (
+                          {field.value && (
                             <span>
                               Selecionado: {getSelectedSegmentCount()} clientes
                             </span>
@@ -351,6 +404,7 @@ const CampanhaForm = ({ open, onOpenChange }: CampanhaFormProps) => {
                           <Select 
                             onValueChange={field.onChange} 
                             defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -386,6 +440,7 @@ const CampanhaForm = ({ open, onOpenChange }: CampanhaFormProps) => {
                               type="number" 
                               placeholder="Ex: 100" 
                               onChange={e => field.onChange(parseInt(e.target.value))}
+                              value={field.value || ""}
                             />
                           </FormControl>
                           <FormDescription>
@@ -410,6 +465,7 @@ const CampanhaForm = ({ open, onOpenChange }: CampanhaFormProps) => {
                               onChannelChange(value as CampaignChannel);
                             }} 
                             defaultValue={field.value}
+                            value={field.value || undefined}
                             className="grid grid-cols-1 gap-4 md:grid-cols-3"
                           >
                             <div className="flex items-center space-x-2">
@@ -528,7 +584,7 @@ const CampanhaForm = ({ open, onOpenChange }: CampanhaFormProps) => {
                 </div>
               )}
 
-              <div className="flex justify-between pt-6 border-t">
+              <div className="flex justify-between pt-6 border-t mt-6">
                 {step > 1 ? (
                   <Button type="button" variant="outline" onClick={prevStep}>Voltar</Button>
                 ) : (
@@ -555,8 +611,8 @@ const CampanhaForm = ({ open, onOpenChange }: CampanhaFormProps) => {
             </form>
           </Form>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 };
 
