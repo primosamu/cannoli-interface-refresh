@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,9 +23,11 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
+import CampanhaForm from "./CampanhaForm";
 
 const CampanhasMensageria = () => {
   const { toast } = useToast();
+  const [openCampaignForm, setOpenCampaignForm] = useState(false);
   
   const handleCreateCampaign = (type: string) => {
     toast({
@@ -128,7 +129,7 @@ const CampanhasMensageria = () => {
 
   return (
     <div className="space-y-6">
-      {/* Campanhas Predefinidas - Moved to the top */}
+      {/* Campanhas Predefinidas */}
       <Card className="bg-white">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
@@ -137,38 +138,10 @@ const CampanhasMensageria = () => {
               Campanhas prontas para você começar a enviar mensagens rapidamente
             </CardDescription>
           </div>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Nova Campanha Personalizada
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Criar nova campanha</DialogTitle>
-                <DialogDescription>
-                  Escolha o canal para sua nova campanha personalizada
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-3 gap-4">
-                  <Button onClick={() => handleCreateCampaign("WhatsApp")} variant="outline" className="flex flex-col h-auto py-4 gap-2">
-                    <MessageSquare className="h-10 w-10 text-green-600" />
-                    <span>WhatsApp</span>
-                  </Button>
-                  <Button onClick={() => handleCreateCampaign("SMS")} variant="outline" className="flex flex-col h-auto py-4 gap-2">
-                    <Phone className="h-10 w-10 text-blue-600" />
-                    <span>SMS</span>
-                  </Button>
-                  <Button onClick={() => handleCreateCampaign("Email")} variant="outline" className="flex flex-col h-auto py-4 gap-2">
-                    <Mail className="h-10 w-10 text-purple-600" />
-                    <span>Email</span>
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => setOpenCampaignForm(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Campanha Personalizada
+          </Button>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Recuperação de Clientes */}
@@ -265,7 +238,7 @@ const CampanhasMensageria = () => {
         </CardContent>
       </Card>
 
-      {/* Opções de canais - Moved after campanhas predefinidas */}
+      {/* Opções de canais */}
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="bg-white">
           <CardHeader className="pb-2">
@@ -361,9 +334,14 @@ const CampanhasMensageria = () => {
         <h4 className="font-medium">Campanhas recentes</h4>
         <p className="text-sm text-muted-foreground">Você ainda não possui campanhas de mensageria. Crie sua primeira campanha agora!</p>
       </div>
+
+      {/* Campaign Form */}
+      <CampanhaForm 
+        open={openCampaignForm} 
+        onOpenChange={setOpenCampaignForm} 
+      />
     </div>
   );
 };
 
 export default CampanhasMensageria;
-
