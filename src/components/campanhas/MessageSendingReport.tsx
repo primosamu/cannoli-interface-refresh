@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Calendar, BarChart2, Eye, Send } from "lucide-react";
+import { Calendar, BarChart2, Eye, Send, MessageSquare, Mail, Phone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getRecentCampaigns } from "./CampanhaForm";
 import { Campaign } from "@/types/campaign";
