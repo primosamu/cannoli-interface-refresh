@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import CampanhasMensageria from "@/components/campanhas/CampanhasMensageria";
 import CampanhasTrafegoPago from "@/components/campanhas/CampanhasTrafegoPago";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const CampanhasPage = () => {
   const location = useLocation();
@@ -23,9 +24,19 @@ const CampanhasPage = () => {
   return (
     <div className="space-y-6">
       <Card className="bg-white/50 backdrop-blur-sm">
-        <CardContent className="pt-6">
-          {activeTab === "mensageria" && <CampanhasMensageria />}
-          {activeTab === "trafego-pago" && <CampanhasTrafegoPago />}
+        <CardContent className="p-0">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="w-full grid grid-cols-2">
+              <TabsTrigger value="mensageria">Mensageria</TabsTrigger>
+              <TabsTrigger value="trafego-pago">Tráfego Pago</TabsTrigger>
+            </TabsList>
+            <TabsContent value="mensageria" className="p-4">
+              <CampanhasMensageria />
+            </TabsContent>
+            <TabsContent value="trafego-pago" className="p-4">
+              <CampanhasTrafegoPago />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>

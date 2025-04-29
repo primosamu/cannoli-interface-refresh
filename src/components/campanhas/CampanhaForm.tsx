@@ -132,6 +132,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
   const [step, setStep] = useState<number>(1);
   const [previewChannel, setPreviewChannel] = useState<CampaignChannel>("whatsapp");
   const [selectedTab, setSelectedTab] = useState("edit");
+  const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -154,6 +155,14 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
       }
     }
   }, [predefinedCampaignId, form, open]);
+
+  // Reset state when drawer opens/closes
+  useEffect(() => {
+    if (open) {
+      setStep(1);
+      setIsSubmitting(false);
+    }
+  }, [open]);
 
   const selectedChannel = form.watch("channel");
   const selectedIncentiveType = form.watch("incentiveType");
@@ -189,6 +198,8 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
 
   // Fixed nextStep function to properly validate each step before proceeding
   const nextStep = () => {
+    console.log("Current step:", step);
+    
     // Step 1 validation: Campaign name
     if (step === 1) {
       const nameValue = form.getValues("name");
@@ -245,6 +256,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
       
       // Clear any existing errors if validation passes
       form.clearErrors(["channel", "whatsappType", "couponId", "loyaltyPoints"]);
+      console.log("Moving to step 4");
       setStep(4);
       return;
     }
@@ -255,6 +267,8 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
   };
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
+    setIsSubmitting(true);
+    
     // Create campaign object
     const campaign: Campaign = {
       id: `camp-${Date.now()}`,
@@ -283,6 +297,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
       description: `A campanha "${values.name}" foi salva como rascunho.`,
     });
     
+    setIsSubmitting(false);
     onOpenChange(false);
   };
 
@@ -292,6 +307,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
       return;
     }
 
+    setIsSubmitting(true);
     const values = form.getValues();
     const segmentName = mockSegments.find(seg => seg.id === values.segment)?.name || "Desconhecido";
     
@@ -321,6 +337,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
       description: `A campanha "${values.name}" foi enviada para ${mockSegments.find(seg => seg.id === values.segment)?.customerCount || 0} clientes do segmento ${segmentName}.`,
     });
     
+    setIsSubmitting(false);
     onOpenChange(false);
   };
 
@@ -343,7 +360,11 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
   ];
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer open={open} onOpenChange={(state) => {
+      // Prevent closing while submitting
+      if (isSubmitting) return;
+      onOpenChange(state);
+    }}>
       <DrawerContent className="h-[90%] max-h-[90%]">
         <DrawerHeader className="border-b pb-4">
           <DrawerTitle className="text-xl">Nova Campanha Personalizada</DrawerTitle>
@@ -794,23 +815,25 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
 
               <div className="flex justify-between pt-6 border-t mt-6">
                 {step > 1 ? (
-                  <Button type="button" variant="outline" onClick={prevStep}>Voltar</Button>
+                  <Button type="button" variant="outline" onClick={prevStep} disabled={isSubmitting}>Voltar</Button>
                 ) : (
-                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancelar</Button>
                 )}
                 
                 <div className="space-x-2">
                   {step < 4 ? (
-                    <Button type="button" onClick={nextStep}>Continuar</Button>
+                    <Button type="button" onClick={nextStep} disabled={isSubmitting}>
+                      {isSubmitting ? "Processando..." : "Continuar"}
+                    </Button>
                   ) : (
                     <>
-                      <Button type="submit" variant="outline">
+                      <Button type="submit" variant="outline" disabled={isSubmitting}>
                         <Save className="mr-2 h-4 w-4" />
-                        Salvar campanha
+                        {isSubmitting ? "Salvando..." : "Salvar campanha"}
                       </Button>
-                      <Button type="button" variant="default" onClick={handleExecuteCampaign}>
+                      <Button type="button" variant="default" onClick={handleExecuteCampaign} disabled={isSubmitting}>
                         <Send className="mr-2 h-4 w-4" />
-                        Executar campanha
+                        {isSubmitting ? "Executando..." : "Executar campanha"}
                       </Button>
                     </>
                   )}
