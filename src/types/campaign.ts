@@ -1,5 +1,6 @@
 
 export type CampaignChannel = "sms" | "whatsapp" | "email";
+export type WhatsAppMessageType = "utility" | "marketing";
 export type CampaignStatus = "draft" | "scheduled" | "active" | "completed" | "paused";
 export type IncentiveType = "none" | "coupon" | "loyalty";
 
@@ -30,6 +31,7 @@ export interface Campaign {
   segment: CustomerSegment;
   incentive: CampaignIncentive;
   channel: CampaignChannel;
+  whatsappType?: WhatsAppMessageType;
   content: string;
   imageUrl?: string;
   status: CampaignStatus;

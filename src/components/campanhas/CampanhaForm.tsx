@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { MessageSquare, Mail, Phone, Send, Save } from "lucide-react";
+import { MessageSquare, Mail, Phone, Send, Save, WhatsApp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Drawer,
@@ -30,7 +30,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { CampaignChannel, CampaignIncentive, CustomerSegment, Coupon, IncentiveType } from "@/types/campaign";
+import { CampaignChannel, CampaignIncentive, CustomerSegment, Coupon, IncentiveType, WhatsAppMessageType } from "@/types/campaign";
 import CampanhaPreview from "./CampanhaPreview";
 
 // Validation schema
@@ -41,6 +41,7 @@ const formSchema = z.object({
   couponId: z.string().optional(),
   loyaltyPoints: z.number().optional(),
   channel: z.enum(["sms", "whatsapp", "email"], { required_error: "Por favor selecione um canal" }),
+  whatsappType: z.enum(["utility", "marketing"]).optional(),
   content: z.string().min(5, { message: "Conteúdo deve ter pelo menos 5 caracteres" }),
   imageUrl: z.string().optional(),
 });
@@ -67,6 +68,7 @@ const predefinedTemplates = {
     incentiveType: "coupon" as IncentiveType,
     couponId: "coup1",
     channel: "whatsapp" as CampaignChannel,
+    whatsappType: "utility" as WhatsAppMessageType,
     content: "Olá! Sentimos sua falta! Faz um tempo que não vemos você por aqui. Que tal voltar com esse cupom especial? Use o código VOLTA10 e ganhe 10% de desconto na sua próxima compra!",
     imageUrl: "",
   },
@@ -76,7 +78,7 @@ const predefinedTemplates = {
     incentiveType: "coupon" as IncentiveType,
     couponId: "coup3",
     channel: "email" as CampaignChannel,
-    content: "<h2>Estamos com saudades!</h2><p>Olá! Sentimos muito sua falta em nossa loja.</p><p>Para celebrar seu retorno, preparamos um desconto especial de 20% na sua próxima compra.</p><p>Basta usar o código <strong>DESCONTO20</strong> no checkout.</p><p>Esperamos ver você em breve!</p>",
+    content: "<h2 style='color: #6200ea; font-size: 20px; margin-bottom: 15px'>Estamos com saudades!</h2><p style='margin-bottom: 10px'>Olá! Sentimos muito sua falta em nossa loja.</p><p style='margin-bottom: 10px'>Para celebrar seu retorno, preparamos um desconto especial de 20% na sua próxima compra.</p><p style='margin-bottom: 15px'>Basta usar o código <strong style='background: #f3e8ff; padding: 2px 6px; border-radius: 4px;'>DESCONTO20</strong> no checkout.</p><p style='margin-bottom: 10px'>Esperamos ver você em breve!</p>",
     imageUrl: "https://images.unsplash.com/photo-1500673922987-e212871fec22",
   },
   "cliente-vip": {
@@ -85,8 +87,8 @@ const predefinedTemplates = {
     incentiveType: "loyalty" as IncentiveType,
     loyaltyPoints: 100,
     channel: "email" as CampaignChannel,
-    content: "<h2>Parabéns! Você é um cliente VIP!</h2><p>Como reconhecimento pela sua fidelidade e pelo seu histórico de compras, estamos oferecendo 100 pontos extras no nosso programa de fidelidade!</p><p>Você pode usar esses pontos na sua próxima compra para obter descontos exclusivos.</p><p>Obrigado por escolher nossa loja!</p>",
-    imageUrl: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07",
+    content: "<h2 style='color: #6200ea; font-size: 20px; margin-bottom: 15px'>Parabéns! Você é um cliente VIP!</h2><p style='margin-bottom: 10px'>Como reconhecimento pela sua fidelidade e pelo seu histórico de compras, estamos oferecendo 100 pontos extras no nosso programa de fidelidade!</p><p style='margin-bottom: 10px'>Você pode usar esses pontos na sua próxima compra para obter descontos exclusivos.</p><p style='margin-bottom: 10px'>Obrigado por escolher nossa loja!</p>",
+    imageUrl: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f44d",
   },
   "primeiro-pedido": {
     name: "Obrigado pelo primeiro pedido",
@@ -94,6 +96,7 @@ const predefinedTemplates = {
     incentiveType: "loyalty" as IncentiveType,
     loyaltyPoints: 50,
     channel: "whatsapp" as CampaignChannel,
+    whatsappType: "utility" as WhatsAppMessageType,
     content: "Olá! Muito obrigado pelo seu primeiro pedido conosco. Como forma de agradecimento, adicionamos 50 pontos de fidelidade na sua conta! Continue comprando e ganhe ainda mais benefícios exclusivos.",
     imageUrl: "",
   }
@@ -133,10 +136,16 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
 
   const selectedChannel = form.watch("channel");
   const selectedIncentiveType = form.watch("incentiveType");
+  const selectedWhatsAppType = form.watch("whatsappType");
 
   // Update preview channel when channel selection changes
   const onChannelChange = (channel: CampaignChannel) => {
     setPreviewChannel(channel);
+    
+    // If WhatsApp is selected, set a default whatsapp type if not already set
+    if (channel === "whatsapp" && !form.getValues("whatsappType")) {
+      form.setValue("whatsappType", "utility");
+    }
     
     // Set default content based on channel if no predefined content
     if (!form.getValues("content")) {
@@ -149,11 +158,16 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
           defaultContent = "Oferta especial! Aproveite nossos produtos com desconto.";
           break;
         case "email":
-          defaultContent = "<h1>Oferta Especial</h1><p>Olá! Temos promoções exclusivas para você.</p>";
+          defaultContent = "<h2 style='color: #6200ea; font-size: 20px; margin-bottom: 15px'>Oferta Especial</h2><p style='margin-bottom: 10px'>Olá! Temos promoções exclusivas para você.</p>";
           break;
       }
 
       form.setValue("content", defaultContent);
+    }
+    
+    // Clear imageUrl if switching to a channel that doesn't support images
+    if (channel !== "email" && form.getValues("imageUrl")) {
+      form.setValue("imageUrl", "");
     }
   };
 
@@ -473,7 +487,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
                                 htmlFor="channel-whatsapp"
                                 className="text-sm font-medium flex items-center gap-2"
                               >
-                                <MessageSquare className="h-4 w-4 text-green-600" />
+                                <WhatsApp className="h-4 w-4 text-green-600" />
                                 WhatsApp
                               </label>
                             </div>
@@ -503,6 +517,60 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
                       </FormItem>
                     )}
                   />
+
+                  {/* Add WhatsApp message type selection when WhatsApp is selected */}
+                  {selectedChannel === "whatsapp" && (
+                    <FormField
+                      control={form.control}
+                      name="whatsappType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tipo de mensagem WhatsApp</FormLabel>
+                          <FormControl>
+                            <RadioGroup 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value || "utility"}
+                              value={field.value || "utility"}
+                              className="grid grid-cols-1 gap-4 md:grid-cols-2"
+                            >
+                              <div className="flex items-start space-x-2">
+                                <RadioGroupItem value="utility" id="whatsapp-utility" />
+                                <div className="grid gap-1.5 leading-none">
+                                  <label
+                                    htmlFor="whatsapp-utility"
+                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                  >
+                                    Mensagem de Serviço
+                                  </label>
+                                  <p className="text-sm text-muted-foreground">
+                                    Confirmações, atualizações de pedidos, etc.
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-start space-x-2">
+                                <RadioGroupItem value="marketing" id="whatsapp-marketing" />
+                                <div className="grid gap-1.5 leading-none">
+                                  <label
+                                    htmlFor="whatsapp-marketing"
+                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                  >
+                                    Mensagem de Marketing
+                                  </label>
+                                  <p className="text-sm text-muted-foreground">
+                                    Promoções, campanhas (requer opt-in)
+                                  </p>
+                                </div>
+                              </div>
+                            </RadioGroup>
+                          </FormControl>
+                          <FormDescription>
+                            Mensagens de marketing exigem opt-in explícito dos clientes.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </div>
               )}
 
@@ -529,6 +597,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
                                 <textarea
                                   className="min-h-[150px] flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                   placeholder={`Conteúdo da mensagem de ${selectedChannel === "whatsapp" ? "WhatsApp" : "SMS"}`}
+                                  maxLength={selectedChannel === "sms" ? 160 : undefined}
                                   {...field}
                                 />
                               )}
@@ -538,7 +607,9 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
                                 ? "Você pode usar HTML básico para formatar seu email" 
                                 : selectedChannel === "sms" 
                                   ? "Limite de 160 caracteres para SMS" 
-                                  : "Escreva sua mensagem de WhatsApp"}
+                                  : selectedChannel === "whatsapp" && selectedWhatsAppType === "marketing"
+                                    ? "Mensagem de marketing (requer opt-in do cliente)"
+                                    : "Escreva sua mensagem de serviço do WhatsApp"}
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -559,7 +630,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
                                 />
                               </FormControl>
                               <FormDescription>
-                                Adicione o link de uma imagem para o email (opcional)
+                                Adicione o link de uma imagem para o email (recomendado)
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
@@ -572,6 +643,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
                       <h4 className="text-sm font-medium mb-3">Preview</h4>
                       <CampanhaPreview
                         channel={previewChannel}
+                        whatsappType={form.watch("whatsappType")}
                         content={form.watch("content")}
                         imageUrl={form.watch("imageUrl")}
                         incentiveType={form.watch("incentiveType") as IncentiveType}
