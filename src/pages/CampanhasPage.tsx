@@ -14,12 +14,14 @@ const CampanhasPage = () => {
     const tabParam = params.get("tab");
     if (tabParam && (tabParam === "mensageria" || tabParam === "trafego-pago")) {
       setActiveTab(tabParam);
+    } else if (!tabParam) {
+      // Default to mensageria if no tab is specified
+      setActiveTab("mensageria");
     }
   }, [location.search]);
 
   return (
-    <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Campanhas</h1>
+    <div className="space-y-6">
       <Card className="bg-white/50 backdrop-blur-sm">
         <CardContent className="pt-6">
           {activeTab === "mensageria" && <CampanhasMensageria />}

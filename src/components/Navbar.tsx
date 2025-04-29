@@ -11,7 +11,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
-const getPageTitle = (pathname: string) => {
+const getPageTitle = (pathname: string, search: string) => {
+  // Special case for Campanhas with tabs
+  if (pathname === "/campanhas") {
+    const params = new URLSearchParams(search);
+    const tab = params.get("tab");
+    if (tab === "mensageria") return "Campanhas de Mensageria";
+    if (tab === "trafego-pago") return "Campanhas de Tráfego Pago";
+    return "Campanhas";
+  }
+
   const titles: { [key: string]: string } = {
     "/": "Home",
     "/minha-conta": "Minha Conta",
@@ -33,7 +42,7 @@ const getPageTitle = (pathname: string) => {
 
 const Navbar = () => {
   const location = useLocation();
-  const pageTitle = getPageTitle(location.pathname);
+  const pageTitle = getPageTitle(location.pathname, location.search);
 
   return (
     <nav className="border-b bg-white/50 backdrop-blur-sm">
