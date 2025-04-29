@@ -1,6 +1,6 @@
 
 import { CampaignChannel, IncentiveType, WhatsAppMessageType } from "@/types/campaign";
-import { MessageSquare, Mail, Phone, WhatsApp } from "lucide-react";
+import { MessageSquare, Mail, Phone } from "lucide-react";
 
 interface Coupon {
   id: string;
@@ -52,7 +52,7 @@ const CampanhaPreview = ({
     return (
       <div className="rounded-lg overflow-hidden border bg-green-50 max-w-[350px]">
         <div className="bg-green-600 text-white p-2 text-sm flex items-center gap-1.5">
-          <WhatsApp className="h-4 w-4" />
+          <MessageSquare className="h-4 w-4" />
           Preview WhatsApp {whatsappType === "utility" ? "Serviço" : "Marketing"}
           {whatsappType === "marketing" && (
             <span className="ml-auto text-xs bg-yellow-400 text-black px-1 rounded">

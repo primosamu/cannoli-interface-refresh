@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { MessageSquare, Mail, Phone, Send, Save, WhatsApp } from "lucide-react";
+import { MessageSquare, Mail, Phone, Send, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Drawer,
@@ -487,7 +487,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
                                 htmlFor="channel-whatsapp"
                                 className="text-sm font-medium flex items-center gap-2"
                               >
-                                <WhatsApp className="h-4 w-4 text-green-600" />
+                                <MessageSquare className="h-4 w-4 text-green-600" />
                                 WhatsApp
                               </label>
                             </div>

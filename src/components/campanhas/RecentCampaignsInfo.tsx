@@ -1,6 +1,6 @@
 
 import React from "react";
-import { WhatsApp, Mail, Phone } from "lucide-react";
+import { MessageSquare, Mail, Phone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 type RecentCampaign = {
@@ -47,7 +47,7 @@ const RecentCampaignsInfo = () => {
   const getChannelIcon = (channel: string, type?: string) => {
     switch (channel) {
       case "whatsapp":
-        return <WhatsApp className="h-4 w-4 text-green-600" />;
+        return <MessageSquare className="h-4 w-4 text-green-600" />;
       case "email":
         return <Mail className="h-4 w-4 text-purple-600" />;
       case "sms":
