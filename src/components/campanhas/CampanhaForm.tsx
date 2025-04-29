@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -122,7 +121,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
   });
 
   // Apply predefined template if provided
-  React.useEffect(() => {
+  useEffect(() => {
     if (predefinedCampaignId && open) {
       const template = predefinedTemplates[predefinedCampaignId as keyof typeof predefinedTemplates];
       if (template) {
