@@ -19,6 +19,7 @@ import CommunicationChannelCard from "./CommunicationChannelCard";
 import { predefinedCampaigns } from "./predefinedCampaignsData";
 import AudienceSegmentationInfo from "./AudienceSegmentationInfo";
 import RecentCampaignsInfo from "./RecentCampaignsInfo";
+import MessageSendingReport from "./MessageSendingReport";
 
 const CampanhasMensageria = () => {
   const { toast } = useToast();
@@ -135,6 +136,7 @@ const CampanhasMensageria = () => {
 
       <AudienceSegmentationInfo />
       <RecentCampaignsInfo />
+      <MessageSendingReport />
 
       {/* Campaign Form */}
       <CampanhaForm 

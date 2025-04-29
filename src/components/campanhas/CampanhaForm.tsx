@@ -108,7 +108,19 @@ let recentCampaigns: Campaign[] = [];
 
 // Function to add a campaign to recent campaigns
 export const addToRecentCampaigns = (campaign: Campaign) => {
-  recentCampaigns = [campaign, ...recentCampaigns.slice(0, 2)]; // Keep only the 3 most recent
+  // Check if campaign already exists in recent campaigns, if so update it
+  const existingIndex = recentCampaigns.findIndex(c => c.id === campaign.id);
+  if (existingIndex >= 0) {
+    recentCampaigns = [
+      ...recentCampaigns.slice(0, existingIndex),
+      campaign,
+      ...recentCampaigns.slice(existingIndex + 1)
+    ];
+  } else {
+    // Add new campaign at the beginning
+    recentCampaigns = [campaign, ...recentCampaigns.slice(0, 2)]; // Keep only the 3 most recent
+  }
+  
   console.log("Updated recent campaigns:", recentCampaigns);
   
   // Dispatch an event to notify components about the update
@@ -125,9 +137,10 @@ interface CampanhaFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   predefinedCampaignId?: string;
+  campaignToEdit?: Campaign;
 }
 
-const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaFormProps) => {
+const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId, campaignToEdit }: CampanhaFormProps) => {
   const { toast } = useToast();
   const [step, setStep] = useState<number>(1);
   const [previewChannel, setPreviewChannel] = useState<CampaignChannel>("whatsapp");
@@ -150,29 +163,63 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
     },
   });
 
-  // Apply predefined template if provided
+  // Apply predefined template or edit existing campaign data
   useEffect(() => {
-    if (predefinedCampaignId && open) {
+    if (!open) return;
+    
+    if (campaignToEdit) {
+      // Editing existing campaign
+      form.reset({
+        name: campaignToEdit.name,
+        segment: campaignToEdit.segment.id,
+        incentiveType: campaignToEdit.incentive.type,
+        couponId: campaignToEdit.incentive.couponId,
+        loyaltyPoints: campaignToEdit.incentive.loyaltyPoints,
+        channel: campaignToEdit.channel,
+        whatsappType: campaignToEdit.whatsappType,
+        content: campaignToEdit.content,
+        imageUrl: campaignToEdit.imageUrl || "",
+      });
+      setPreviewChannel(campaignToEdit.channel);
+      setStepValidated({
+        step1: true,
+        step2: true,
+        step3: true
+      });
+      setStep(4); // Go directly to content editing for existing campaigns
+    } else if (predefinedCampaignId) {
+      // Using predefined template
       const template = predefinedTemplates[predefinedCampaignId as keyof typeof predefinedTemplates];
       if (template) {
         form.reset(template);
         setPreviewChannel(template.channel);
       }
+    } else {
+      // Reset form for new campaigns
+      form.reset({
+        name: "",
+        segment: "",
+        incentiveType: "none",
+        content: "",
+        imageUrl: "",
+      });
     }
-  }, [predefinedCampaignId, form, open]);
+  }, [predefinedCampaignId, campaignToEdit, form, open]);
 
   // Reset state when drawer opens/closes
   useEffect(() => {
     if (open) {
-      setStep(1);
+      if (!campaignToEdit) {
+        setStep(1);
+        setStepValidated({
+          step1: false,
+          step2: false,
+          step3: false
+        });
+      }
       setIsSubmitting(false);
-      setStepValidated({
-        step1: false,
-        step2: false,
-        step3: false
-      });
     }
-  }, [open]);
+  }, [open, campaignToEdit]);
 
   // Debug useEffect to log state changes
   useEffect(() => {
@@ -295,7 +342,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
     
     // Create campaign object
     const campaign: Campaign = {
-      id: `camp-${Date.now()}`,
+      id: campaignToEdit ? campaignToEdit.id : `camp-${Date.now()}`,
       name: values.name,
       segment: mockSegments.find(seg => seg.id === values.segment) || mockSegments[0],
       incentive: {
@@ -307,18 +354,18 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
       whatsappType: values.whatsappType,
       content: values.content,
       imageUrl: values.imageUrl,
-      status: "draft",
-      createdAt: new Date().toISOString()
+      status: campaignToEdit ? campaignToEdit.status : "draft",
+      createdAt: campaignToEdit ? campaignToEdit.createdAt : new Date().toISOString()
     };
 
-    console.log("Campaign created:", campaign);
+    console.log(campaignToEdit ? "Campaign updated:" : "Campaign created:", campaign);
     
     // Add to recent campaigns
     addToRecentCampaigns(campaign);
     
     toast({
-      title: "Campanha criada com sucesso",
-      description: `A campanha "${values.name}" foi salva como rascunho.`,
+      title: campaignToEdit ? "Campanha atualizada com sucesso" : "Campanha criada com sucesso",
+      description: `A campanha "${values.name}" foi salva como ${campaign.status === "draft" ? "rascunho" : campaign.status}.`,
     });
     
     setIsSubmitting(false);
@@ -337,7 +384,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
     
     // Create campaign object with "active" status
     const campaign: Campaign = {
-      id: `camp-${Date.now()}`,
+      id: campaignToEdit ? campaignToEdit.id : `camp-${Date.now()}`,
       name: values.name,
       segment: mockSegments.find(seg => seg.id === values.segment) || mockSegments[0],
       incentive: {
@@ -350,14 +397,14 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
       content: values.content,
       imageUrl: values.imageUrl,
       status: "active",
-      createdAt: new Date().toISOString()
+      createdAt: campaignToEdit ? campaignToEdit.createdAt : new Date().toISOString()
     };
     
     // Add to recent campaigns
     addToRecentCampaigns(campaign);
 
     toast({
-      title: "Campanha executada",
+      title: campaignToEdit ? "Campanha atualizada e executada" : "Campanha executada",
       description: `A campanha "${values.name}" foi enviada para ${mockSegments.find(seg => seg.id === values.segment)?.customerCount || 0} clientes do segmento ${segmentName}.`,
     });
     
@@ -391,9 +438,11 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
     }}>
       <DrawerContent className="h-[90%] max-h-[90%]">
         <DrawerHeader className="border-b pb-4">
-          <DrawerTitle className="text-xl">Nova Campanha Personalizada</DrawerTitle>
+          <DrawerTitle className="text-xl">
+            {campaignToEdit ? "Editar Campanha" : "Nova Campanha Personalizada"}
+          </DrawerTitle>
           <DrawerDescription>
-            Crie sua campanha em poucos passos
+            {campaignToEdit ? "Modifique sua campanha existente" : "Crie sua campanha em poucos passos"}
           </DrawerDescription>
         </DrawerHeader>
         

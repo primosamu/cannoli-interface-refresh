@@ -1,12 +1,24 @@
 
 import React, { useState, useEffect } from "react";
-import { MessageSquare, Mail, Phone } from "lucide-react";
+import { MessageSquare, Mail, Phone, Edit, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getRecentCampaigns } from "./CampanhaForm";
 import { Campaign, CampaignStatus } from "@/types/campaign";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import CampanhaForm from "./CampanhaForm";
 
 const RecentCampaignsInfo = () => {
   const [recentCampaigns, setRecentCampaigns] = useState<Campaign[]>([]);
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [openEditForm, setOpenEditForm] = useState(false);
   
   // Listen for updates to recent campaigns
   useEffect(() => {
@@ -72,6 +84,41 @@ const RecentCampaignsInfo = () => {
       return `${diffDays} dias atrás`;
     }
   };
+  
+  // Generate mock message sending stats for the campaign
+  const getMessageStats = (campaign: Campaign) => {
+    // Use deterministic randomness based on campaign id
+    const idSum = campaign.id.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    const seed = idSum / 1000;
+    
+    const totalSent = Math.floor(campaign.segment.customerCount * (0.95 + seed * 0.05));
+    const delivered = Math.floor(totalSent * (0.85 + seed * 0.1));
+    const opened = Math.floor(delivered * (0.4 + seed * 0.3));
+    const engaged = Math.floor(opened * (0.2 + seed * 0.4));
+    
+    return {
+      total: campaign.segment.customerCount,
+      sent: totalSent,
+      delivered: delivered,
+      opened: opened,
+      engaged: engaged,
+      deliveryRate: (delivered / totalSent * 100).toFixed(1),
+      openRate: (opened / delivered * 100).toFixed(1),
+      engagementRate: (engaged / opened * 100).toFixed(1)
+    };
+  };
+  
+  // Handle campaign card click
+  const handleCampaignClick = (campaign: Campaign) => {
+    setSelectedCampaign(campaign);
+    setShowDetails(true);
+  };
+  
+  // Handle edit button click
+  const handleEditCampaign = () => {
+    setShowDetails(false);
+    setOpenEditForm(true);
+  };
 
   return (
     <div className="bg-slate-50 rounded-lg p-4 border">
@@ -84,7 +131,11 @@ const RecentCampaignsInfo = () => {
       ) : (
         <div className="space-y-3 mt-3">
           {recentCampaigns.map(campaign => (
-            <div key={campaign.id} className="bg-white p-3 rounded-md border flex items-center justify-between">
+            <div 
+              key={campaign.id} 
+              className="bg-white p-3 rounded-md border flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors"
+              onClick={() => handleCampaignClick(campaign)}
+            >
               <div className="flex items-center gap-3">
                 <div className="bg-gray-100 p-2 rounded-full">
                   {getChannelIcon(campaign.channel, campaign.whatsappType)}
@@ -121,6 +172,126 @@ const RecentCampaignsInfo = () => {
             </div>
           ))}
         </div>
+      )}
+      
+      {/* Campaign Details Dialog */}
+      <Dialog open={showDetails} onOpenChange={setShowDetails}>
+        <DialogContent className="max-w-md sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Detalhes da Campanha</DialogTitle>
+            <DialogDescription>
+              Informações sobre a campanha e seus resultados
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedCampaign && (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">{selectedCampaign.name}</h3>
+                  {getStatusBadge(selectedCampaign.status)}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Criada em {new Date(selectedCampaign.createdAt).toLocaleDateString('pt-BR')}
+                  {selectedCampaign.scheduledAt && 
+                    ` • Agendada para ${new Date(selectedCampaign.scheduledAt).toLocaleDateString('pt-BR')}`
+                  }
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 p-3 rounded-md">
+                  <h4 className="text-sm font-medium mb-1">Canal</h4>
+                  <div className="flex items-center gap-2">
+                    {getChannelIcon(selectedCampaign.channel)}
+                    <span className="capitalize">
+                      {selectedCampaign.channel} 
+                      {selectedCampaign.channel === "whatsapp" && selectedCampaign.whatsappType && 
+                        ` (${selectedCampaign.whatsappType === "marketing" ? "Marketing" : "Serviço"})`
+                      }
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="bg-slate-50 p-3 rounded-md">
+                  <h4 className="text-sm font-medium mb-1">Segmento</h4>
+                  <div>
+                    <span className="font-medium">{selectedCampaign.segment.name}</span>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {selectedCampaign.segment.customerCount} destinatários
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-3">Resumo de Envios</h4>
+                
+                {(() => {
+                  const stats = getMessageStats(selectedCampaign);
+                  return (
+                    <>
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="bg-slate-50 p-3 rounded-md text-center">
+                          <p className="text-xs text-muted-foreground">Total enviado</p>
+                          <p className="text-xl font-semibold text-primary">{stats.sent}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            de {stats.total} ({(stats.sent/stats.total*100).toFixed(1)}%)
+                          </p>
+                        </div>
+                        
+                        <div className="bg-slate-50 p-3 rounded-md text-center">
+                          <p className="text-xs text-muted-foreground">Entregues</p>
+                          <p className="text-xl font-semibold text-green-500">{stats.delivered}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Taxa de entrega: {stats.deliveryRate}%
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-slate-50 p-3 rounded-md text-center">
+                          <p className="text-xs text-muted-foreground">Abertura</p>
+                          <p className="text-xl font-semibold text-blue-500">{stats.opened}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Taxa de abertura: {stats.openRate}%
+                          </p>
+                        </div>
+                        
+                        <div className="bg-slate-50 p-3 rounded-md text-center">
+                          <p className="text-xs text-muted-foreground">Engajamento</p>
+                          <p className="text-xl font-semibold text-purple-500">{stats.engaged}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Taxa de engajamento: {stats.engagementRate}%
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+              
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setShowDetails(false)}>
+                  Fechar
+                </Button>
+                <Button onClick={handleEditCampaign}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar Campanha
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Campaign Form */}
+      {selectedCampaign && (
+        <CampanhaForm
+          open={openEditForm}
+          onOpenChange={setOpenEditForm}
+          campaignToEdit={selectedCampaign}
+        />
       )}
     </div>
   );

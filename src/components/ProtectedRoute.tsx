@@ -11,7 +11,11 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   // Show loading state while checking authentication
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Carregando...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-white">
+        <div className="text-primary text-lg">Carregando...</div>
+      </div>
+    );
   }
 
   // Redirect to login if not authenticated
