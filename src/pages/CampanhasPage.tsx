@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import CampanhasMensageria from "@/components/campanhas/CampanhasMensageria";
 import CampanhasTrafegoPago from "@/components/campanhas/CampanhasTrafegoPago";
@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const CampanhasPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("mensageria");
 
   useEffect(() => {
@@ -21,11 +22,18 @@ const CampanhasPage = () => {
     }
   }, [location.search]);
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    const params = new URLSearchParams(location.search);
+    params.set("tab", value);
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
   return (
     <div className="space-y-6">
       <Card className="bg-white/50 backdrop-blur-sm">
         <CardContent className="p-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="w-full grid grid-cols-2">
               <TabsTrigger value="mensageria">Mensageria</TabsTrigger>
               <TabsTrigger value="trafego-pago">Tráfego Pago</TabsTrigger>

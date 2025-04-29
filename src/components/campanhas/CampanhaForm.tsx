@@ -133,6 +133,11 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
   const [previewChannel, setPreviewChannel] = useState<CampaignChannel>("whatsapp");
   const [selectedTab, setSelectedTab] = useState("edit");
   const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
+  const [stepValidated, setStepValidated] = useState({
+    step1: false,
+    step2: false,
+    step3: false
+  });
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -161,8 +166,20 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
     if (open) {
       setStep(1);
       setIsSubmitting(false);
+      setStepValidated({
+        step1: false,
+        step2: false,
+        step3: false
+      });
     }
   }, [open]);
+
+  // Debug useEffect to log state changes
+  useEffect(() => {
+    console.log("Current step:", step);
+    console.log("Step validation state:", stepValidated);
+    console.log("Form values:", form.getValues());
+  }, [step, stepValidated, form]);
 
   const selectedChannel = form.watch("channel");
   const selectedIncentiveType = form.watch("incentiveType");
@@ -197,8 +214,8 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
   };
 
   // Fixed nextStep function to properly validate each step before proceeding
-  const nextStep = () => {
-    console.log("Current step:", step);
+  const nextStep = async () => {
+    console.log(`Attempting to move from step ${step} to next step`);
     
     // Step 1 validation: Campaign name
     if (step === 1) {
@@ -210,6 +227,8 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
       
       // Clear any existing errors if validation passes
       form.clearErrors("name");
+      setStepValidated(prev => ({ ...prev, step1: true }));
+      console.log("Step 1 validated, moving to step 2");
       setStep(2);
       return;
     }
@@ -224,6 +243,8 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
       
       // Clear any existing errors if validation passes
       form.clearErrors("segment");
+      setStepValidated(prev => ({ ...prev, step2: true }));
+      console.log("Step 2 validated, moving to step 3");
       setStep(3);
       return;
     }
@@ -256,7 +277,10 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
       
       // Clear any existing errors if validation passes
       form.clearErrors(["channel", "whatsappType", "couponId", "loyaltyPoints"]);
-      console.log("Moving to step 4");
+      setStepValidated(prev => ({ ...prev, step3: true }));
+      console.log("Step 3 validated, moving to step 4");
+      
+      // Ensure we set step to 4 and not accidentally trigger form submission
       setStep(4);
       return;
     }
@@ -396,7 +420,15 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={(e) => {
+              // Prevent form submission on enter key
+              if (step < 4) {
+                e.preventDefault();
+                nextStep();
+              } else {
+                form.handleSubmit(onSubmit)(e);
+              }
+            }} className="space-y-6">
               {step === 1 && (
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium">Informações da Campanha</h3>
@@ -822,16 +854,33 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
                 
                 <div className="space-x-2">
                   {step < 4 ? (
-                    <Button type="button" onClick={nextStep} disabled={isSubmitting}>
+                    <Button 
+                      type="button" 
+                      onClick={(e) => {
+                        e.preventDefault(); // Prevent any form submission
+                        nextStep();
+                      }} 
+                      disabled={isSubmitting}
+                    >
                       {isSubmitting ? "Processando..." : "Continuar"}
                     </Button>
                   ) : (
                     <>
-                      <Button type="submit" variant="outline" disabled={isSubmitting}>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={form.handleSubmit(onSubmit)}
+                        disabled={isSubmitting}
+                      >
                         <Save className="mr-2 h-4 w-4" />
                         {isSubmitting ? "Salvando..." : "Salvar campanha"}
                       </Button>
-                      <Button type="button" variant="default" onClick={handleExecuteCampaign} disabled={isSubmitting}>
+                      <Button 
+                        type="button" 
+                        variant="default" 
+                        onClick={handleExecuteCampaign} 
+                        disabled={isSubmitting}
+                      >
                         <Send className="mr-2 h-4 w-4" />
                         {isSubmitting ? "Executando..." : "Executar campanha"}
                       </Button>
