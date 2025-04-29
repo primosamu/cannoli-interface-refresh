@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -188,16 +187,67 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
     }
   };
 
+  // Fixed nextStep function to properly validate each step before proceeding
   const nextStep = () => {
-    if (step === 1 && !form.getValues("name")) {
-      form.setError("name", { message: "Nome da campanha é obrigatório" });
+    // Step 1 validation: Campaign name
+    if (step === 1) {
+      const nameValue = form.getValues("name");
+      if (!nameValue || nameValue.trim() === "") {
+        form.setError("name", { message: "Nome da campanha é obrigatório" });
+        return;
+      }
+      
+      // Clear any existing errors if validation passes
+      form.clearErrors("name");
+      setStep(2);
       return;
     }
-    if (step === 2 && !form.getValues("segment")) {
-      form.setError("segment", { message: "Segmento é obrigatório" });
+    
+    // Step 2 validation: Segment selection
+    if (step === 2) {
+      const segmentValue = form.getValues("segment");
+      if (!segmentValue) {
+        form.setError("segment", { message: "Segmento é obrigatório" });
+        return;
+      }
+      
+      // Clear any existing errors if validation passes
+      form.clearErrors("segment");
+      setStep(3);
       return;
     }
-    setStep(prev => prev + 1);
+    
+    // Step 3 validation: Channel and incentive type
+    if (step === 3) {
+      const channelValue = form.getValues("channel");
+      if (!channelValue) {
+        form.setError("channel", { message: "Canal é obrigatório" });
+        return;
+      }
+      
+      // WhatsApp type is required when channel is WhatsApp
+      if (channelValue === "whatsapp" && !form.getValues("whatsappType")) {
+        form.setError("whatsappType", { message: "Tipo de mensagem WhatsApp é obrigatório" });
+        return;
+      }
+      
+      // Coupon selection is required when incentive type is coupon
+      if (form.getValues("incentiveType") === "coupon" && !form.getValues("couponId")) {
+        form.setError("couponId", { message: "Seleção de cupom é obrigatória" });
+        return;
+      }
+      
+      // Loyalty points required when incentive type is loyalty
+      if (form.getValues("incentiveType") === "loyalty" && !form.getValues("loyaltyPoints")) {
+        form.setError("loyaltyPoints", { message: "Pontos de fidelidade são obrigatórios" });
+        return;
+      }
+      
+      // Clear any existing errors if validation passes
+      form.clearErrors(["channel", "whatsappType", "couponId", "loyaltyPoints"]);
+      setStep(4);
+      return;
+    }
   };
 
   const prevStep = () => {
