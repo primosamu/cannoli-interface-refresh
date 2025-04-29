@@ -29,6 +29,10 @@ const CampanhaPreview = ({
   loyaltyPoints 
 }: CampanhaPreviewProps) => {
   
+  // Default placeholder image if none provided
+  const placeholderImage = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=600&h=200";
+  const displayImageUrl = imageUrl || placeholderImage;
+  
   const renderIncentive = () => {
     switch (incentiveType) {
       case "coupon":
@@ -76,6 +80,21 @@ const CampanhaPreview = ({
           {/* Message bubble */}
           <div className="bg-white rounded-lg p-2 shadow-sm border-l-4 border-l-green-600">
             <p className="text-sm whitespace-pre-wrap">{content}</p>
+            
+            {/* Image in WhatsApp (if provided) */}
+            {imageUrl && (
+              <div className="mt-2 rounded overflow-hidden">
+                <img 
+                  src={displayImageUrl} 
+                  alt="Imagem da campanha" 
+                  className="w-full h-auto max-h-[150px] object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = placeholderImage;
+                  }}
+                />
+              </div>
+            )}
+            
             {renderIncentive()}
           </div>
           
@@ -164,18 +183,16 @@ const CampanhaPreview = ({
           </div>
           
           {/* Email content */}
-          {imageUrl && (
-            <div className="mb-3">
-              <img 
-                src={imageUrl} 
-                alt="Email banner" 
-                className="w-full h-auto rounded"
-                onError={(e) => {
-                  e.currentTarget.src = "https://placehold.co/600x200/purple/white?text=Imagem+invalida";
-                }}
-              />
-            </div>
-          )}
+          <div className="mb-3">
+            <img 
+              src={displayImageUrl} 
+              alt="Email banner" 
+              className="w-full h-auto rounded"
+              onError={(e) => {
+                e.currentTarget.src = placeholderImage;
+              }}
+            />
+          </div>
           
           <div 
             className="text-sm mb-3"

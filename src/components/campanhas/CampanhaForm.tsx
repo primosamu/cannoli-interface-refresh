@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { MessageSquare, Mail, Phone, Send, Save } from "lucide-react";
+import { MessageSquare, Mail, Phone, Send, Save, ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Drawer,
@@ -30,7 +31,8 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { CampaignChannel, CampaignIncentive, CustomerSegment, Coupon, IncentiveType, WhatsAppMessageType } from "@/types/campaign";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CampaignChannel, CampaignIncentive, CustomerSegment, Coupon, IncentiveType, WhatsAppMessageType, Campaign } from "@/types/campaign";
 import CampanhaPreview from "./CampanhaPreview";
 
 // Validation schema
@@ -98,8 +100,26 @@ const predefinedTemplates = {
     channel: "whatsapp" as CampaignChannel,
     whatsappType: "utility" as WhatsAppMessageType,
     content: "Olá! Muito obrigado pelo seu primeiro pedido conosco. Como forma de agradecimento, adicionamos 50 pontos de fidelidade na sua conta! Continue comprando e ganhe ainda mais benefícios exclusivos.",
-    imageUrl: "",
+    imageUrl: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
   }
+};
+
+// Create a global store for recent campaigns
+let recentCampaigns: Campaign[] = [];
+
+// Function to add a campaign to recent campaigns
+export const addToRecentCampaigns = (campaign: Campaign) => {
+  recentCampaigns = [campaign, ...recentCampaigns.slice(0, 2)]; // Keep only the 3 most recent
+  console.log("Updated recent campaigns:", recentCampaigns);
+  
+  // Dispatch an event to notify components about the update
+  const event = new CustomEvent("recentCampaignsUpdated", { detail: recentCampaigns });
+  window.dispatchEvent(event);
+};
+
+// Exported function to get recent campaigns
+export const getRecentCampaigns = () => {
+  return recentCampaigns;
 };
 
 interface CampanhaFormProps {
@@ -112,6 +132,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
   const { toast } = useToast();
   const [step, setStep] = useState<number>(1);
   const [previewChannel, setPreviewChannel] = useState<CampaignChannel>("whatsapp");
+  const [selectedTab, setSelectedTab] = useState("edit");
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -120,6 +141,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
       segment: "",
       incentiveType: "none",
       content: "",
+      imageUrl: "",
     },
   });
 
@@ -164,11 +186,6 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
 
       form.setValue("content", defaultContent);
     }
-    
-    // Clear imageUrl if switching to a channel that doesn't support images
-    if (channel !== "email" && form.getValues("imageUrl")) {
-      form.setValue("imageUrl", "");
-    }
   };
 
   const nextStep = () => {
@@ -189,7 +206,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     // Create campaign object
-    const campaign = {
+    const campaign: Campaign = {
       id: `camp-${Date.now()}`,
       name: values.name,
       segment: mockSegments.find(seg => seg.id === values.segment) || mockSegments[0],
@@ -199,6 +216,7 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
         loyaltyPoints: values.loyaltyPoints,
       } as CampaignIncentive,
       channel: values.channel,
+      whatsappType: values.whatsappType,
       content: values.content,
       imageUrl: values.imageUrl,
       status: "draft",
@@ -206,6 +224,9 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
     };
 
     console.log("Campaign created:", campaign);
+    
+    // Add to recent campaigns
+    addToRecentCampaigns(campaign);
     
     toast({
       title: "Campanha criada com sucesso",
@@ -223,6 +244,27 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
 
     const values = form.getValues();
     const segmentName = mockSegments.find(seg => seg.id === values.segment)?.name || "Desconhecido";
+    
+    // Create campaign object with "active" status
+    const campaign: Campaign = {
+      id: `camp-${Date.now()}`,
+      name: values.name,
+      segment: mockSegments.find(seg => seg.id === values.segment) || mockSegments[0],
+      incentive: {
+        type: values.incentiveType,
+        couponId: values.couponId,
+        loyaltyPoints: values.loyaltyPoints,
+      } as CampaignIncentive,
+      channel: values.channel,
+      whatsappType: values.whatsappType,
+      content: values.content,
+      imageUrl: values.imageUrl,
+      status: "active",
+      createdAt: new Date().toISOString()
+    };
+    
+    // Add to recent campaigns
+    addToRecentCampaigns(campaign);
 
     toast({
       title: "Campanha executada",
@@ -236,6 +278,19 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
     const segmentId = form.getValues("segment");
     return mockSegments.find(seg => seg.id === segmentId)?.customerCount || 0;
   };
+
+  // Function to handle image URL input
+  const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    form.setValue("imageUrl", e.target.value);
+  };
+
+  // Sample placeholder images
+  const sampleImages = [
+    "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
+    "https://images.unsplash.com/photo-1518770660439-4636190af475",
+    "https://images.unsplash.com/photo-1461749280684-dccba630e2f6",
+    "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
+  ];
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -578,80 +633,112 @@ const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId }: CampanhaForm
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium">Editor de Campanha</h3>
                   
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <FormField
-                        control={form.control}
-                        name="content"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Conteúdo da mensagem</FormLabel>
-                            <FormControl>
-                              {selectedChannel === "email" ? (
-                                <textarea
-                                  className="min-h-[200px] flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                  placeholder="Conteúdo do email (suporta HTML básico)"
-                                  {...field}
-                                />
-                              ) : (
-                                <textarea
-                                  className="min-h-[150px] flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                  placeholder={`Conteúdo da mensagem de ${selectedChannel === "whatsapp" ? "WhatsApp" : "SMS"}`}
-                                  maxLength={selectedChannel === "sms" ? 160 : undefined}
-                                  {...field}
-                                />
-                              )}
-                            </FormControl>
-                            <FormDescription>
-                              {selectedChannel === "email" 
-                                ? "Você pode usar HTML básico para formatar seu email" 
-                                : selectedChannel === "sms" 
-                                  ? "Limite de 160 caracteres para SMS" 
-                                  : selectedChannel === "whatsapp" && selectedWhatsAppType === "marketing"
-                                    ? "Mensagem de marketing (requer opt-in do cliente)"
-                                    : "Escreva sua mensagem de serviço do WhatsApp"}
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {selectedChannel === "email" && (
+                  <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-4">
+                      <TabsTrigger value="edit">Editar</TabsTrigger>
+                      <TabsTrigger value="preview">Visualizar</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="edit" className="space-y-4">
+                      <div className="space-y-4">
                         <FormField
                           control={form.control}
-                          name="imageUrl"
+                          name="content"
                           render={({ field }) => (
-                            <FormItem className="mt-4">
-                              <FormLabel>Imagem do email</FormLabel>
+                            <FormItem>
+                              <FormLabel>Conteúdo da mensagem</FormLabel>
                               <FormControl>
-                                <Input
-                                  placeholder="URL da imagem"
-                                  {...field}
-                                />
+                                {selectedChannel === "email" ? (
+                                  <textarea
+                                    className="min-h-[200px] flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    placeholder="Conteúdo do email (suporta HTML básico)"
+                                    {...field}
+                                  />
+                                ) : (
+                                  <textarea
+                                    className="min-h-[150px] flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    placeholder={`Conteúdo da mensagem de ${selectedChannel === "whatsapp" ? "WhatsApp" : "SMS"}`}
+                                    maxLength={selectedChannel === "sms" ? 160 : undefined}
+                                    {...field}
+                                  />
+                                )}
                               </FormControl>
                               <FormDescription>
-                                Adicione o link de uma imagem para o email (recomendado)
+                                {selectedChannel === "email" 
+                                  ? "Você pode usar HTML básico para formatar seu email" 
+                                  : selectedChannel === "sms" 
+                                    ? "Limite de 160 caracteres para SMS" 
+                                    : selectedChannel === "whatsapp" && selectedWhatsAppType === "marketing"
+                                      ? "Mensagem de marketing (requer opt-in do cliente)"
+                                      : "Escreva sua mensagem de serviço do WhatsApp"}
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                      )}
-                    </div>
 
-                    <div className="border rounded-md p-4">
-                      <h4 className="text-sm font-medium mb-3">Preview</h4>
-                      <CampanhaPreview
-                        channel={previewChannel}
-                        whatsappType={form.watch("whatsappType")}
-                        content={form.watch("content")}
-                        imageUrl={form.watch("imageUrl")}
-                        incentiveType={form.watch("incentiveType") as IncentiveType}
-                        coupon={form.watch("couponId") ? mockCoupons.find(c => c.id === form.watch("couponId")) : undefined}
-                        loyaltyPoints={form.watch("loyaltyPoints")}
-                      />
-                    </div>
-                  </div>
+                        {/* Image URL input for Email and WhatsApp */}
+                        {(selectedChannel === "email" || selectedChannel === "whatsapp") && (
+                          <FormField
+                            control={form.control}
+                            name="imageUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <ImageIcon className="h-4 w-4" /> Imagem
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="URL da imagem"
+                                    value={field.value || ""}
+                                    onChange={(e) => field.onChange(e.target.value)}
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  Adicione o link de uma imagem para sua campanha
+                                </FormDescription>
+                                <FormMessage />
+                                
+                                {/* Sample images for quick selection */}
+                                <div className="mt-2">
+                                  <p className="text-xs text-muted-foreground mb-2">Ou selecione uma imagem</p>
+                                  <div className="grid grid-cols-4 gap-2">
+                                    {sampleImages.map((img, i) => (
+                                      <div 
+                                        key={i} 
+                                        className={`cursor-pointer rounded overflow-hidden border-2 ${field.value === img ? 'border-primary' : 'border-transparent'}`}
+                                        onClick={() => field.onChange(img)}
+                                      >
+                                        <img 
+                                          src={img} 
+                                          alt={`Imagem de amostra ${i+1}`} 
+                                          className="w-full h-16 object-cover"
+                                        />
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                        )}
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="preview">
+                      <div className="flex justify-center py-4">
+                        <CampanhaPreview
+                          channel={previewChannel}
+                          whatsappType={form.watch("whatsappType")}
+                          content={form.watch("content")}
+                          imageUrl={form.watch("imageUrl")}
+                          incentiveType={form.watch("incentiveType") as IncentiveType}
+                          coupon={form.watch("couponId") ? mockCoupons.find(c => c.id === form.watch("couponId")) : undefined}
+                          loyaltyPoints={form.watch("loyaltyPoints")}
+                        />
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </div>
               )}
 
