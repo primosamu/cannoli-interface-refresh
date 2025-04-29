@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageSquare, Target } from "lucide-react";
@@ -7,7 +8,16 @@ import CampanhasMensageria from "@/components/campanhas/CampanhasMensageria";
 import CampanhasTrafegoPago from "@/components/campanhas/CampanhasTrafegoPago";
 
 const CampanhasPage = () => {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("mensageria");
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get("tab");
+    if (tabParam && (tabParam === "mensageria" || tabParam === "trafego-pago")) {
+      setActiveTab(tabParam);
+    }
+  }, [location.search]);
 
   return (
     <div className="space-y-6 p-6">

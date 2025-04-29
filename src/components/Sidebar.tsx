@@ -1,3 +1,4 @@
+
 import { 
   Home,
   BookOpen,
@@ -24,7 +25,9 @@ import {
   Printer,
   Server,
   Key,
-  Target
+  Target,
+  Mail,
+  Phone
 } from "lucide-react";
 
 import { 
@@ -60,7 +63,15 @@ const menuItems = [
   },
   { icon: Users, label: "Clientes", path: "/membros" },
   { icon: Gift, label: "Cupons", path: "/cupons" },
-  { icon: Target, label: "Campanhas", path: "/campanhas" },
+  { 
+    icon: Target, 
+    label: "Campanhas", 
+    submenu: [
+      { icon: MessageSquare, label: "Mensageria", path: "/campanhas?tab=mensageria" },
+      { icon: Target, label: "Tráfego Pago", path: "/campanhas?tab=trafego-pago" },
+    ],
+    path: "/campanhas" 
+  },
   { icon: Award, label: "Fidelidade", path: "/fidelidade" },
   {
     icon: Truck,
