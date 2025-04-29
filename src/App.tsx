@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -32,44 +33,226 @@ import TokensPage from "@/pages/TokensPage";
 import GruposEconomicosPage from "@/pages/GruposEconomicosPage";
 import MarcasPage from "@/pages/MarcasPage";
 import LojasPage from "@/pages/LojasPage";
+import AuthPage from "@/pages/AuthPage";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
-          <Route path="/minha-conta" element={<DashboardLayout><MinhaContaPage /></DashboardLayout>} />
-          <Route path="/membros" element={<DashboardLayout><MembrosPage /></DashboardLayout>} />
-          <Route path="/cupons" element={<DashboardLayout><CuponsPage /></DashboardLayout>} />
-          <Route path="/mercadoria" element={<DashboardLayout><MercadoriaPage /></DashboardLayout>} />
-          <Route path="/catalogo" element={<DashboardLayout><CatalogoPage /></DashboardLayout>} />
-          <Route path="/imagens" element={<DashboardLayout><ImagensPage /></DashboardLayout>} />
-          <Route path="/complementos" element={<DashboardLayout><ComplementosPage /></DashboardLayout>} />
-          <Route path="/perguntas" element={<DashboardLayout><PerguntasPage /></DashboardLayout>} />
-          <Route path="/campanhas" element={<DashboardLayout><CampanhasPage /></DashboardLayout>} />
-          <Route path="/fidelidade" element={<DashboardLayout><FidelidadePage /></DashboardLayout>} />
-          <Route path="/areas-entrega" element={<DashboardLayout><AreasEntregaPage /></DashboardLayout>} />
-          <Route path="/entregadores" element={<DashboardLayout><EntregadoresPage /></DashboardLayout>} />
-          <Route path="/relatorio-entregas" element={<DashboardLayout><RelatorioEntregasPage /></DashboardLayout>} />
-          <Route path="/marketplaces" element={<DashboardLayout><MarketplacesPage /></DashboardLayout>} />
-          <Route path="/whatsapp" element={<DashboardLayout><WhatsappPage /></DashboardLayout>} />
-          <Route path="/pagamentos" element={<DashboardLayout><PagamentosPage /></DashboardLayout>} />
-          <Route path="/usuarios" element={<DashboardLayout><UsuariosPage /></DashboardLayout>} />
-          <Route path="/local-preparo" element={<DashboardLayout><LocalPreparoPage /></DashboardLayout>} />
-          <Route path="/cannoli-server" element={<DashboardLayout><CannaliServerPage /></DashboardLayout>} />
-          <Route path="/tokens" element={<DashboardLayout><TokensPage /></DashboardLayout>} />
-          <Route path="/grupos-economicos" element={<DashboardLayout><GruposEconomicosPage /></DashboardLayout>} />
-          <Route path="/marcas" element={<DashboardLayout><MarcasPage /></DashboardLayout>} />
-          <Route path="/lojas" element={<DashboardLayout><LojasPage /></DashboardLayout>} />
-          <Route path="/configuracoes" element={<DashboardLayout><ConfiguracoesPage /></DashboardLayout>} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/auth" element={<AuthPage />} />
+            <Route 
+              path="/" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><Dashboard /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/minha-conta" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><MinhaContaPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/membros" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><MembrosPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/cupons" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><CuponsPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/mercadoria" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><MercadoriaPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/catalogo" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><CatalogoPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/imagens" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><ImagensPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/complementos" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><ComplementosPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/perguntas" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><PerguntasPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/campanhas" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><CampanhasPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/fidelidade" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><FidelidadePage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/areas-entrega" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><AreasEntregaPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/entregadores" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><EntregadoresPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/relatorio-entregas" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><RelatorioEntregasPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/marketplaces" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><MarketplacesPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/whatsapp" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><WhatsappPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/pagamentos" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><PagamentosPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/usuarios" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><UsuariosPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/local-preparo" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><LocalPreparoPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/cannoli-server" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><CannaliServerPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/tokens" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><TokensPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/grupos-economicos" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><GruposEconomicosPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/marcas" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><MarcasPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/lojas" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><LojasPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/configuracoes" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout><ConfiguracoesPage /></DashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

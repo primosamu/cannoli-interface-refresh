@@ -10,6 +10,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Link } from "react-router-dom";
 
 const getPageTitle = (pathname: string, search: string) => {
   // Special case for Campanhas with tabs
@@ -36,13 +39,34 @@ const getPageTitle = (pathname: string, search: string) => {
     "/grupos-economicos": "Grupos Econômicos",
     "/marcas": "Marcas",
     "/lojas": "Lojas",
+    "/auth": "Autenticação"
   };
   return titles[pathname] || "Dashboard";
 };
 
 const Navbar = () => {
   const location = useLocation();
+  const { user, signOut } = useAuth();
   const pageTitle = getPageTitle(location.pathname, location.search);
+
+  const getUserInitials = () => {
+    if (!user) return "?";
+    
+    // Try to get name from profile metadata
+    const firstName = user.user_metadata?.first_name || '';
+    const lastName = user.user_metadata?.last_name || '';
+    
+    if (firstName && lastName) {
+      return `${firstName[0]}${lastName[0]}`.toUpperCase();
+    }
+    
+    // Fallback to email
+    if (user.email) {
+      return user.email[0].toUpperCase();
+    }
+    
+    return "U";
+  };
 
   return (
     <nav className="border-b bg-white/50 backdrop-blur-sm">
@@ -51,23 +75,37 @@ const Navbar = () => {
           <h2 className="text-lg font-semibold text-gray-800">{pageTitle}</h2>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon">
-            <Bell className="w-5 h-5" />
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          {user ? (
+            <>
               <Button variant="ghost" size="icon">
-                <User className="w-5 h-5" />
+                <Bell className="w-5 h-5" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Perfil</DropdownMenuItem>
-              <DropdownMenuItem>Configurações</DropdownMenuItem>
-              <DropdownMenuItem>Sair</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <Avatar>
+                      <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/minha-conta">Perfil</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/configuracoes">Configurações</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => signOut()}>Sair</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <Button asChild>
+              <Link to="/auth">Entrar</Link>
+            </Button>
+          )}
         </div>
       </div>
     </nav>
