@@ -1,8 +1,5 @@
-
-import { CampaignChannel } from "@/types/campaign";
+import { CampaignChannel, IncentiveType } from "@/types/campaign";
 import { MessageSquare, Mail, Phone } from "lucide-react";
-
-export type IncentiveType = "none" | "coupon" | "loyalty";
 
 interface Coupon {
   id: string;

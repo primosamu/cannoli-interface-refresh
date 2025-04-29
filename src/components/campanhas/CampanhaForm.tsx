@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -32,7 +31,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { CampaignChannel, CampaignIncentive, CustomerSegment, Coupon } from "@/types/campaign";
+import { CampaignChannel, CampaignIncentive, CustomerSegment, Coupon, IncentiveType } from "@/types/campaign";
 import CampanhaPreview from "./CampanhaPreview";
 
 // Validation schema
