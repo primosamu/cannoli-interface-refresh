@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -127,49 +128,47 @@ const CampanhasMensageria = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Campanhas de Mensageria</h3>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Campanha Personalizada
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Criar nova campanha</DialogTitle>
-              <DialogDescription>
-                Escolha o canal para sua nova campanha personalizada
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-3 gap-4">
-                <Button onClick={() => handleCreateCampaign("WhatsApp")} variant="outline" className="flex flex-col h-auto py-4 gap-2">
-                  <MessageSquare className="h-10 w-10 text-green-600" />
-                  <span>WhatsApp</span>
-                </Button>
-                <Button onClick={() => handleCreateCampaign("SMS")} variant="outline" className="flex flex-col h-auto py-4 gap-2">
-                  <Phone className="h-10 w-10 text-blue-600" />
-                  <span>SMS</span>
-                </Button>
-                <Button onClick={() => handleCreateCampaign("Email")} variant="outline" className="flex flex-col h-auto py-4 gap-2">
-                  <Mail className="h-10 w-10 text-purple-600" />
-                  <span>Email</span>
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
       {/* Campanhas Predefinidas - Moved to the top */}
       <Card className="bg-white">
-        <CardHeader>
-          <CardTitle className="text-xl">Campanhas Predefinidas</CardTitle>
-          <CardDescription>
-            Campanhas prontas para você começar a enviar mensagens rapidamente
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-xl">Campanhas Predefinidas</CardTitle>
+            <CardDescription>
+              Campanhas prontas para você começar a enviar mensagens rapidamente
+            </CardDescription>
+          </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Nova Campanha Personalizada
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Criar nova campanha</DialogTitle>
+                <DialogDescription>
+                  Escolha o canal para sua nova campanha personalizada
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <Button onClick={() => handleCreateCampaign("WhatsApp")} variant="outline" className="flex flex-col h-auto py-4 gap-2">
+                    <MessageSquare className="h-10 w-10 text-green-600" />
+                    <span>WhatsApp</span>
+                  </Button>
+                  <Button onClick={() => handleCreateCampaign("SMS")} variant="outline" className="flex flex-col h-auto py-4 gap-2">
+                    <Phone className="h-10 w-10 text-blue-600" />
+                    <span>SMS</span>
+                  </Button>
+                  <Button onClick={() => handleCreateCampaign("Email")} variant="outline" className="flex flex-col h-auto py-4 gap-2">
+                    <Mail className="h-10 w-10 text-purple-600" />
+                    <span>Email</span>
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Recuperação de Clientes */}
@@ -367,3 +366,4 @@ const CampanhasMensageria = () => {
 };
 
 export default CampanhasMensageria;
+
