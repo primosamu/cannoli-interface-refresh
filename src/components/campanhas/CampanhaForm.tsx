@@ -415,6 +415,11 @@ const CampanhaForm = ({
     }
   };
 
+  // Helper function to replace placeholders in message content
+  const replacePlaceholders = (content: string): string => {
+    return content.replace(/{{nome}}/g, "Cliente");
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
@@ -738,7 +743,7 @@ const CampanhaForm = ({
                     "bg-blue-50 border border-blue-100"
                   )}>
                     <p className="whitespace-pre-wrap">
-                      {form.watch("content").replace("{{nome}}", "Cliente")}
+                      {replacePlaceholders(form.watch("content"))}
                     </p>
                     
                     {form.watch("imageUrl") && (previewChannel === "whatsapp" || previewChannel === "email") && (
