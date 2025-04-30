@@ -311,6 +311,13 @@ const CampanhaForm = ({
     }
   }, [predefinedCampaignId, campaignToEdit, selectedChannel, campaignType, form]);
 
+  // Helper function to safely replace placeholders in message content
+  const getPreviewText = (content: string): string => {
+    if (!content) return "";
+    // Safely replace placeholders to prevent TypeScript errors
+    return content.replace(/\{\{nome\}\}/g, "Cliente");
+  };
+
   // Handle channel change
   const handleChannelChange = (value: string) => {
     form.setValue("channel", value as CampaignChannel);
@@ -413,11 +420,6 @@ const CampanhaForm = ({
       default:
         return null;
     }
-  };
-
-  // Helper function to replace placeholders in message content
-  const replacePlaceholders = (content: string): string => {
-    return content.replace(/{{nome}}/g, "Cliente");
   };
 
   return (
@@ -742,9 +744,10 @@ const CampanhaForm = ({
                     previewChannel === "email" ? "bg-purple-50 border border-purple-100" :
                     "bg-blue-50 border border-blue-100"
                   )}>
-                    <p className="whitespace-pre-wrap">
-                      {replacePlaceholders(form.watch("content"))}
-                    </p>
+                    {/* This is where the error was occurring - using a completely different approach */}
+                    <div className="whitespace-pre-wrap">
+                      {getPreviewText(form.watch("content") || "")}
+                    </div>
                     
                     {form.watch("imageUrl") && (previewChannel === "whatsapp" || previewChannel === "email") && (
                       <div className="mt-2 p-1 bg-gray-100 rounded text-xs text-center text-gray-500">
