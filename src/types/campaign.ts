@@ -4,7 +4,7 @@ export type WhatsAppMessageType = "utility" | "marketing";
 export type CampaignStatus = "draft" | "scheduled" | "active" | "completed" | "paused";
 export type IncentiveType = "none" | "coupon" | "loyalty";
 export type AdPlatform = "meta" | "google" | "tiktok";
-export type AdCampaignType = "awareness" | "consideration" | "conversion" | "sales" | "traffic" | "leads" | "app_installs";
+export type AdCampaignType = "local_visitors" | "delivery_orders" | "new_dish" | "special_event" | "brand_awareness";
 
 export interface CustomerSegment {
   id: string;
@@ -53,6 +53,30 @@ export interface AdCreative {
   previewUrl?: string;
 }
 
+export interface FoodServiceAd {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl?: string;
+  videoUrl?: string;
+  dishName?: string;
+  price?: string;
+  discountPercentage?: number;
+  callToAction: string;
+  platform: AdPlatform;
+}
+
+export interface RestaurantInfo {
+  name: string;
+  address: string;
+  phone: string;
+  businessHours: string;
+  website?: string;
+  deliveryOptions: string[];
+  cuisineType: string;
+  logoUrl?: string;
+}
+
 export interface AdCampaign {
   id: string;
   name: string;
@@ -64,6 +88,18 @@ export interface AdCampaign {
   endDate?: string;
   status: CampaignStatus;
   creatives: AdCreative[];
+  restaurantInfo?: RestaurantInfo;
+  targetAudience?: {
+    location: {
+      radiusKm: number;
+      address: string;
+    };
+    interests?: string[];
+    ageRange?: {
+      min: number;
+      max: number;
+    };
+  };
   targetingOptions?: Record<string, any>;
   metrics?: {
     impressions: number;
@@ -82,4 +118,19 @@ export interface AdCampaign {
     conversionRate?: number;
     topPerformingAd?: string;
   };
+}
+
+// Food Service specific campaign templates
+export interface CampaignTemplate {
+  id: string;
+  name: string;
+  type: AdCampaignType;
+  description: string;
+  platforms: AdPlatform[];
+  imageUrl?: string;
+  adTemplates: {
+    headline: string;
+    description: string;
+    callToAction: string;
+  }[];
 }
