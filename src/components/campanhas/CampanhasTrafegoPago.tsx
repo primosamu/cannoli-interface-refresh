@@ -32,20 +32,21 @@ import { GoogleMyBusinessCard } from "./trafego-pago/GoogleMyBusinessCard";
 import { CampaignTemplateCard } from "./trafego-pago/CampaignTemplateCard";
 import { CampaignReportCard } from "./trafego-pago/CampaignReportCard";
 import { ActiveCampaignCard } from "./trafego-pago/ActiveCampaignCard";
+import { AdPlatform, CampaignTemplate, AdCampaignType } from "@/types/campaign";
 
 const CampanhasTrafegoPago = () => {
   const { toast } = useToast();
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [timeFilter, setTimeFilter] = useState("7d");
 
-  // Mock campaign templates for food service
-  const campaignTemplates = [
+  // Mock campaign templates for food service - Fixed to use regular arrays not readonly arrays
+  const campaignTemplates: CampaignTemplate[] = [
     {
       id: "1",
       name: "Atrair mais clientes para o restaurante",
-      type: "local_visitors" as const,
+      type: "local_visitors",
       description: "Aumente o número de visitas ao seu estabelecimento",
-      platforms: ["google", "meta"] as const,
+      platforms: ["google", "meta"],
       imageUrl: "/campaign-templates/local-visitors.jpg",
       adTemplates: [
         {
@@ -58,9 +59,9 @@ const CampanhasTrafegoPago = () => {
     {
       id: "2",
       name: "Aumentar pedidos de delivery",
-      type: "delivery_orders" as const,
+      type: "delivery_orders",
       description: "Impulsione seus pedidos online",
-      platforms: ["meta", "google"] as const,
+      platforms: ["meta", "google"],
       imageUrl: "/campaign-templates/delivery.jpg",
       adTemplates: [
         {
@@ -73,9 +74,9 @@ const CampanhasTrafegoPago = () => {
     {
       id: "3",
       name: "Promover novo prato",
-      type: "new_dish" as const,
+      type: "new_dish",
       description: "Destaque novidades do seu cardápio",
-      platforms: ["tiktok", "meta"] as const,
+      platforms: ["tiktok", "meta"],
       imageUrl: "/campaign-templates/new-dish.jpg",
       adTemplates: [
         {
@@ -88,9 +89,9 @@ const CampanhasTrafegoPago = () => {
     {
       id: "4",
       name: "Divulgar promoção ou evento especial",
-      type: "special_event" as const,
+      type: "special_event",
       description: "Promova eventos e ofertas por tempo limitado",
-      platforms: ["meta", "tiktok", "google"] as const,
+      platforms: ["meta", "tiktok", "google"],
       imageUrl: "/campaign-templates/special-event.jpg",
       adTemplates: [
         {
