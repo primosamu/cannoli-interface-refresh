@@ -50,6 +50,7 @@ export interface AdCreative {
   imageUrl?: string;
   videoUrl?: string;
   callToAction?: string;
+  previewUrl?: string;
 }
 
 export interface AdCampaign {
@@ -72,5 +73,13 @@ export interface AdCampaign {
     conversions: number;
     costPerConversion: number;
     roi: number;
+  };
+  reportData?: {
+    dateRange: string;
+    engagementRate?: number;
+    reachIncrease?: number;
+    audienceOverlap?: number;
+    conversionRate?: number;
+    topPerformingAd?: string;
   };
 }
