@@ -13,7 +13,6 @@ import * as z from "zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { AdCampaignType, AdCreative, AdPlatform } from "@/types/campaign";
-import { BrandTiktok } from "lucide-react";
 
 const CampanhasTrafegoPago = () => {
   const { toast } = useToast();
@@ -659,7 +658,7 @@ const NewCampaignDialog = ({ open, onOpenChange }: NewCampaignDialogProps) => {
                               const platformIcon = 
                                 platform === "meta" ? <Facebook className="h-5 w-5" /> : 
                                 platform === "google" ? <Globe className="h-5 w-5" /> : 
-                                <BrandTiktok className="h-5 w-5" />;
+                                <Target className="h-5 w-5" />;
                               
                               return (
                                 <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
