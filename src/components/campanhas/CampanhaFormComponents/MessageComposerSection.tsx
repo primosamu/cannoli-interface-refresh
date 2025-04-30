@@ -29,7 +29,7 @@ const MessageComposerSection = () => {
             />
           </FormControl>
           <FormDescription>
-            Use {{nome}} para inserir o nome do cliente
+            Use {'{{'} nome {'}}' } para inserir o nome do cliente
           </FormDescription>
           <FormMessage />
         </FormItem>
