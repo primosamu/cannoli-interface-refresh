@@ -20,6 +20,7 @@ import {
 import { MessageSquare, Mail, Phone } from "lucide-react";
 import { FormDescription } from "@/components/ui/form";
 import { CampaignChannel, CustomerSegment } from "@/types/campaign";
+import CouponSelection from "./CouponSelection";
 
 interface BasicInfoSectionProps {
   customerSegments: CustomerSegment[];
@@ -31,6 +32,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   handleChannelChange,
 }) => {
   const form = useFormContext();
+  const incentiveType = form.watch("incentiveType");
   
   return (
     <div className="space-y-6">
@@ -150,7 +152,13 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             <FormLabel>Incentivo</FormLabel>
             <Select 
               value={field.value} 
-              onValueChange={field.onChange}
+              onValueChange={(value) => {
+                field.onChange(value);
+                // Reset couponId when incentive type changes
+                if (value !== "coupon") {
+                  form.setValue("couponId", undefined);
+                }
+              }}
             >
               <FormControl>
                 <SelectTrigger>
@@ -167,6 +175,17 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           </FormItem>
         )}
       />
+      
+      {/* Coupon Selection (only when coupon is selected) */}
+      {incentiveType === "coupon" && (
+        <FormField
+          control={form.control}
+          name="couponId"
+          render={() => (
+            <CouponSelection />
+          )}
+        />
+      )}
     </div>
   );
 };

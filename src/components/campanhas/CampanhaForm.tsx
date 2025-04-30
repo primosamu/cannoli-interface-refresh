@@ -157,6 +157,7 @@ const formSchema = z.object({
     message: "A mensagem deve ter pelo menos 10 caracteres.",
   }),
   incentiveType: z.enum(["none", "coupon", "loyalty"] as const),
+  couponId: z.string().optional(),
   imageUrl: z.string().optional(),
   scheduleDate: z.date().optional(),
   scheduleTime: z.string().optional(),
@@ -196,6 +197,7 @@ const CampanhaForm = ({
       segmentId: "",
       content: "",
       incentiveType: "none",
+      couponId: undefined,
       imageUrl: "",
       saveAsTemplate: false,
     },
@@ -213,6 +215,7 @@ const CampanhaForm = ({
         segmentId: template.segment?.id || "",
         content: template.content || "",
         incentiveType: template.incentive?.type || "none",
+        couponId: template.incentive?.couponId || undefined,
         imageUrl: template.imageUrl || "",
         saveAsTemplate: false,
       });
@@ -226,6 +229,7 @@ const CampanhaForm = ({
         segmentId: campaignToEdit.segment.id,
         content: campaignToEdit.content,
         incentiveType: campaignToEdit.incentive.type,
+        couponId: campaignToEdit.incentive.couponId || undefined,
         imageUrl: campaignToEdit.imageUrl || "",
         saveAsTemplate: false,
       });
@@ -289,6 +293,7 @@ const CampanhaForm = ({
         segmentId: customerSegments[0].id,
         content: defaultContent,
         incentiveType: "none",
+        couponId: undefined,
         imageUrl: "",
         saveAsTemplate: false,
       });
@@ -338,7 +343,7 @@ const CampanhaForm = ({
       segment: selectedSegment,
       incentive: {
         type: data.incentiveType,
-        couponId: data.incentiveType === "coupon" ? `cpn-${Date.now()}` : undefined,
+        couponId: data.incentiveType === "coupon" ? data.couponId || `cpn-${Date.now()}` : undefined,
         loyaltyPoints: data.incentiveType === "loyalty" ? 10 : undefined,
       },
       channel: data.channel,
