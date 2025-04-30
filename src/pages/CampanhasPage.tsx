@@ -25,7 +25,7 @@ const CampanhasPage = () => {
   }, [tabParam]);
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto space-y-6 py-4">
       <Card className="bg-white/50 backdrop-blur-sm p-4">
         <Tabs 
           value={activeTab} 

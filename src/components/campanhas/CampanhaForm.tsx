@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Campaign, CampaignChannel, CustomerSegment, WhatsAppMessageType } from "@/types/campaign";
 import { format } from "date-fns";
@@ -409,8 +410,8 @@ const CampanhaForm = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+        <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle>
             {campaignToEdit ? "Editar Campanha" : predefinedCampaignId ? "Usar Modelo de Campanha" : "Nova Campanha"}
           </DialogTitle>
@@ -421,48 +422,50 @@ const CampanhaForm = ({
           </DialogDescription>
         </DialogHeader>
         
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-6">
-                {/* Basic Information Section */}
-                <BasicInfoSection 
-                  customerSegments={customerSegments}
-                  handleChannelChange={handleChannelChange}
-                />
+        <ScrollArea className="max-h-[calc(90vh-180px)] px-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-6">
+                  {/* Basic Information Section */}
+                  <BasicInfoSection 
+                    customerSegments={customerSegments}
+                    handleChannelChange={handleChannelChange}
+                  />
+                  
+                  {/* Media Section */}
+                  <MediaSection />
+                  
+                  {/* Schedule Section */}
+                  <ScheduleSection 
+                    isScheduled={isScheduled}
+                    setIsScheduled={setIsScheduled}
+                  />
+                  
+                  {/* Save As Template Section */}
+                  <SaveAsTemplateSection />
+                </div>
                 
-                {/* Media Section */}
-                <MediaSection />
-                
-                {/* Schedule Section */}
-                <ScheduleSection 
-                  isScheduled={isScheduled}
-                  setIsScheduled={setIsScheduled}
-                />
-                
-                {/* Save As Template Section */}
-                <SaveAsTemplateSection />
+                <div className="space-y-6">
+                  {/* Message Composer Section */}
+                  <MessageComposerSection />
+                  
+                  {/* Preview Section */}
+                  <PreviewSection previewChannel={previewChannel} />
+                </div>
               </div>
-              
-              <div className="space-y-6">
-                {/* Message Composer Section */}
-                <MessageComposerSection />
-                
-                {/* Preview Section */}
-                <PreviewSection previewChannel={previewChannel} />
-              </div>
-            </div>
-            
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit">
-                {isScheduled ? "Agendar Campanha" : "Criar Campanha"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            </form>
+          </Form>
+        </ScrollArea>
+        
+        <DialogFooter className="px-6 py-4 border-t">
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={form.handleSubmit(onSubmit)}>
+            {isScheduled ? "Agendar Campanha" : "Criar Campanha"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
