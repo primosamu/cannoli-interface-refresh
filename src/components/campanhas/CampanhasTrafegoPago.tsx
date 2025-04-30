@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Target, Facebook, Globe, TrendingUp, Plus, BarChart, Send, Store, BrandTiktok, ChevronRight } from "lucide-react";
+import { Target, Facebook, Globe, TrendingUp, Plus, BarChart, Send, Store, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,6 +13,7 @@ import * as z from "zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { AdCampaignType, AdCreative, AdPlatform } from "@/types/campaign";
+import { BrandTiktok } from "lucide-react";
 
 const CampanhasTrafegoPago = () => {
   const { toast } = useToast();
@@ -73,7 +73,7 @@ const CampanhasTrafegoPago = () => {
 
         <PlatformCard
           title="TikTok Ads"
-          icon={<BrandTiktok className="h-5 w-5 text-black" />}
+          icon={<Target className="h-5 w-5 text-black" />}
           description="Anuncie no TikTok com vídeos engajantes"
           stats={[
             { label: "Engajamento médio", value: "5.7%" },
