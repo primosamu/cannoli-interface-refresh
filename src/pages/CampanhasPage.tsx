@@ -32,7 +32,7 @@ const CampanhasPage = () => {
           onValueChange={handleTabChange}
           className="space-y-4"
         >
-          <TabsList className="grid grid-cols-2 w-[400px]">
+          <TabsList className="grid w-full max-w-md grid-cols-2 mx-auto">
             <TabsTrigger value="mensageria">Campanhas de Mensageria</TabsTrigger>
             <TabsTrigger value="trafego-pago">Tráfego Pago</TabsTrigger>
           </TabsList>

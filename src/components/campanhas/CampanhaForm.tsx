@@ -1,947 +1,787 @@
 import React, { useState, useEffect } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { MessageSquare, Mail, Phone, Send, Save, ImageIcon } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { 
-  Drawer,
-  DrawerContent, 
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
-import { 
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Form,
-  FormControl, 
+  FormControl,
   FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CampaignChannel, CampaignIncentive, CustomerSegment, Coupon, IncentiveType, WhatsAppMessageType, Campaign } from "@/types/campaign";
-import CampanhaPreview from "./CampanhaPreview";
+import { Switch } from "@/components/ui/switch";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { CalendarIcon, MessageSquare, Mail, Phone, Image as ImageIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { Campaign, CampaignChannel, CustomerSegment, WhatsAppMessageType } from "@/types/campaign";
 
-// Validation schema
-const formSchema = z.object({
-  name: z.string().min(3, { message: "Nome deve ter pelo menos 3 caracteres" }),
-  segment: z.string({ required_error: "Por favor selecione um segmento" }),
-  incentiveType: z.enum(["none", "coupon", "loyalty"], { required_error: "Por favor selecione um tipo de incentivo" }),
-  couponId: z.string().optional(),
-  loyaltyPoints: z.number().optional(),
-  channel: z.enum(["sms", "whatsapp", "email"], { required_error: "Por favor selecione um canal" }),
-  whatsappType: z.enum(["utility", "marketing"]).optional(),
-  content: z.string().min(5, { message: "Conteúdo deve ter pelo menos 5 caracteres" }),
-  imageUrl: z.string().optional(),
-});
-
-// Mock data
-const mockSegments: CustomerSegment[] = [
-  { id: "all", name: "Todos os Clientes", description: "Todos os clientes cadastrados", customerCount: 1250 },
-  { id: "first-purchase", name: "1ª Compra", description: "Clientes que fizeram a primeira compra", customerCount: 320 },
-  { id: "inactive-30", name: "Inativos 30 dias", description: "Clientes sem compras nos últimos 30 dias", customerCount: 450 },
-  { id: "inactive-60", name: "Inativos 60+ dias", description: "Clientes sem compras há mais de 60 dias", customerCount: 280 },
-  { id: "high-ticket", name: "Alto Ticket", description: "Clientes com compras acima de R$200", customerCount: 180 },
+// Mock customer segments
+const customerSegments: CustomerSegment[] = [
+  {
+    id: "seg-1",
+    name: "Todos os clientes",
+    description: "Todos os clientes cadastrados",
+    customerCount: 2500
+  },
+  {
+    id: "seg-2",
+    name: "Clientes VIP",
+    description: "Clientes com alto valor de compra",
+    customerCount: 350
+  },
+  {
+    id: "seg-3",
+    name: "Clientes inativos",
+    description: "Clientes sem compras nos últimos 30 dias",
+    customerCount: 1200
+  },
+  {
+    id: "seg-4",
+    name: "Novos clientes",
+    description: "Clientes que fizeram a primeira compra nos últimos 15 dias",
+    customerCount: 180
+  },
+  {
+    id: "seg-5",
+    name: "Aniversariantes do mês",
+    description: "Clientes que fazem aniversário este mês",
+    customerCount: 75
+  }
 ];
 
-const mockCoupons: Coupon[] = [
-  { id: "coup1", code: "VOLTA10", discount: 10, discountType: "percentage", expiresAt: "2025-06-30" },
-  { id: "coup2", code: "FRETE-GRATIS", discount: 0, discountType: "fixed", expiresAt: "2025-07-15" },
-  { id: "coup3", code: "DESCONTO20", discount: 20, discountType: "percentage", expiresAt: "2025-05-25" }
-];
-
-const predefinedTemplates = {
+// Mock predefined campaigns
+const predefinedCampaignTemplates: Record<string, Partial<Campaign>> = {
   "sentimos-sua-falta": {
     name: "Sentimos sua falta",
-    segment: "inactive-30",
-    incentiveType: "coupon" as IncentiveType,
-    couponId: "coup1",
-    channel: "whatsapp" as CampaignChannel,
-    whatsappType: "utility" as WhatsAppMessageType,
-    content: "Olá! Sentimos sua falta! Faz um tempo que não vemos você por aqui. Que tal voltar com esse cupom especial? Use o código VOLTA10 e ganhe 10% de desconto na sua próxima compra!",
-    imageUrl: "",
+    channel: "whatsapp",
+    whatsappType: "marketing",
+    content: "Olá, {{nome}}! Sentimos sua falta no restaurante. Já faz um tempo desde sua última visita e gostaríamos de te ver novamente. Que tal aproveitar um cupom de 15% de desconto na sua próxima refeição? Válido por 7 dias. Esperamos você!",
+    segment: customerSegments[2],
+    incentive: {
+      type: "coupon",
+      couponId: "auto-generated"
+    }
   },
   "volte-para-nos": {
     name: "Volte para nós",
-    segment: "inactive-60",
-    incentiveType: "coupon" as IncentiveType,
-    couponId: "coup3",
-    channel: "email" as CampaignChannel,
-    content: "<h2 style='color: #6200ea; font-size: 20px; margin-bottom: 15px'>Estamos com saudades!</h2><p style='margin-bottom: 10px'>Olá! Sentimos muito sua falta em nossa loja.</p><p style='margin-bottom: 10px'>Para celebrar seu retorno, preparamos um desconto especial de 20% na sua próxima compra.</p><p style='margin-bottom: 15px'>Basta usar o código <strong style='background: #f3e8ff; padding: 2px 6px; border-radius: 4px;'>DESCONTO20</strong> no checkout.</p><p style='margin-bottom: 10px'>Esperamos ver você em breve!</p>",
-    imageUrl: "https://images.unsplash.com/photo-1500673922987-e212871fec22",
+    channel: "whatsapp",
+    whatsappType: "marketing",
+    content: "Olá, {{nome}}! Estamos com saudades! Como incentivo para você voltar a nos visitar, preparamos um cupom especial de 20% de desconto em qualquer prato do cardápio. Válido por 5 dias. Esperamos você em breve!",
+    segment: customerSegments[2],
+    incentive: {
+      type: "coupon",
+      couponId: "auto-generated"
+    }
   },
-  "cliente-vip": {
-    name: "Cliente VIP",
-    segment: "high-ticket",
-    incentiveType: "loyalty" as IncentiveType,
-    loyaltyPoints: 100,
-    channel: "email" as CampaignChannel,
-    content: "<h2 style='color: #6200ea; font-size: 20px; margin-bottom: 15px'>Parabéns! Você é um cliente VIP!</h2><p style='margin-bottom: 10px'>Como reconhecimento pela sua fidelidade e pelo seu histórico de compras, estamos oferecendo 100 pontos extras no nosso programa de fidelidade!</p><p style='margin-bottom: 10px'>Você pode usar esses pontos na sua próxima compra para obter descontos exclusivos.</p><p style='margin-bottom: 10px'>Obrigado por escolher nossa loja!</p>",
-    imageUrl: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f44d",
+  "terca-da-pizza": {
+    name: "Terça da Pizza",
+    channel: "whatsapp",
+    whatsappType: "marketing",
+    content: "Olá, {{nome}}! Hoje é TERÇA DA PIZZA! 🍕 Todas as pizzas com 30% de desconto. Válido apenas hoje para delivery ou retirada. Faça seu pedido pelo WhatsApp ou pelo nosso app. Bom apetite!",
+    segment: customerSegments[0],
+    incentive: {
+      type: "none"
+    }
   },
-  "primeiro-pedido": {
-    name: "Obrigado pelo primeiro pedido",
-    segment: "first-purchase",
-    incentiveType: "loyalty" as IncentiveType,
-    loyaltyPoints: 50,
-    channel: "whatsapp" as CampaignChannel,
-    whatsappType: "utility" as WhatsAppMessageType,
-    content: "Olá! Muito obrigado pelo seu primeiro pedido conosco. Como forma de agradecimento, adicionamos 50 pontos de fidelidade na sua conta! Continue comprando e ganhe ainda mais benefícios exclusivos.",
-    imageUrl: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
+  "quinta-do-hamburguer": {
+    name: "Quinta do Hambúrguer",
+    channel: "whatsapp",
+    whatsappType: "marketing",
+    content: "Olá, {{nome}}! Hoje é QUINTA DO HAMBÚRGUER! 🍔 Todos os hambúrgueres com 25% de desconto. Válido apenas hoje para delivery ou retirada. Faça seu pedido pelo WhatsApp ou pelo nosso app. Bom apetite!",
+    segment: customerSegments[0],
+    incentive: {
+      type: "none"
+    }
   }
 };
 
-// Create a global store for recent campaigns
-let recentCampaigns: Campaign[] = [];
-
-// Function to add a campaign to recent campaigns
-export const addToRecentCampaigns = (campaign: Campaign) => {
-  // Check if campaign already exists in recent campaigns, if so update it
-  const existingIndex = recentCampaigns.findIndex(c => c.id === campaign.id);
-  if (existingIndex >= 0) {
-    recentCampaigns = [
-      ...recentCampaigns.slice(0, existingIndex),
-      campaign,
-      ...recentCampaigns.slice(existingIndex + 1)
-    ];
-  } else {
-    // Add new campaign at the beginning
-    recentCampaigns = [campaign, ...recentCampaigns.slice(0, 2)]; // Keep only the 3 most recent
+// Mock recent campaigns
+const recentCampaignsMock: Campaign[] = [
+  {
+    id: "camp-1",
+    name: "Promoção de Fim de Semana",
+    segment: customerSegments[0],
+    incentive: {
+      type: "coupon",
+      couponId: "cpn-123"
+    },
+    channel: "whatsapp",
+    whatsappType: "marketing",
+    content: "Olá! Aproveite nossa promoção de fim de semana: 20% de desconto em todos os pratos!",
+    status: "completed",
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: "camp-2",
+    name: "Lançamento Novo Cardápio",
+    segment: customerSegments[1],
+    incentive: {
+      type: "none"
+    },
+    channel: "email",
+    content: "Prezado cliente VIP, temos o prazer de apresentar nosso novo cardápio com pratos exclusivos!",
+    imageUrl: "https://example.com/menu.jpg",
+    status: "active",
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
   }
-  
-  console.log("Updated recent campaigns:", recentCampaigns);
-  
-  // Dispatch an event to notify components about the update
-  const event = new CustomEvent("recentCampaignsUpdated", { detail: recentCampaigns });
-  window.dispatchEvent(event);
-};
+];
 
-// Exported function to get recent campaigns
-export const getRecentCampaigns = () => {
-  return recentCampaigns;
-};
+// Keep track of recent campaigns
+let recentCampaigns = [...recentCampaignsMock];
+
+// Function to get recent campaigns (used by other components)
+export const getRecentCampaigns = () => recentCampaigns;
+
+// Form schema
+const formSchema = z.object({
+  name: z.string().min(3, {
+    message: "O nome da campanha deve ter pelo menos 3 caracteres.",
+  }),
+  channel: z.enum(["whatsapp", "email", "sms"] as const),
+  whatsappType: z.enum(["utility", "marketing"] as const).optional(),
+  segmentId: z.string({
+    required_error: "Por favor selecione um segmento de clientes.",
+  }),
+  content: z.string().min(10, {
+    message: "A mensagem deve ter pelo menos 10 caracteres.",
+  }),
+  incentiveType: z.enum(["none", "coupon", "loyalty"] as const),
+  imageUrl: z.string().optional(),
+  scheduleDate: z.date().optional(),
+  scheduleTime: z.string().optional(),
+  saveAsTemplate: z.boolean().default(false),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface CampanhaFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   predefinedCampaignId?: string;
   campaignToEdit?: Campaign;
+  selectedChannel?: string;
+  campaignType?: string;
 }
 
-const CampanhaForm = ({ open, onOpenChange, predefinedCampaignId, campaignToEdit }: CampanhaFormProps) => {
+const CampanhaForm = ({
+  open,
+  onOpenChange,
+  predefinedCampaignId,
+  campaignToEdit,
+  selectedChannel,
+  campaignType
+}: CampanhaFormProps) => {
   const { toast } = useToast();
-  const [step, setStep] = useState<number>(1);
+  const [isScheduled, setIsScheduled] = useState(false);
   const [previewChannel, setPreviewChannel] = useState<CampaignChannel>("whatsapp");
-  const [selectedTab, setSelectedTab] = useState("edit");
-  const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
-  const [stepValidated, setStepValidated] = useState({
-    step1: false,
-    step2: false,
-    step3: false
-  });
-  
-  const form = useForm<z.infer<typeof formSchema>>({
+
+  // Initialize form with default values or values from predefined campaign/edit
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      segment: "",
-      incentiveType: "none",
+      channel: "whatsapp",
+      whatsappType: "marketing",
+      segmentId: "",
       content: "",
+      incentiveType: "none",
       imageUrl: "",
+      saveAsTemplate: false,
     },
   });
 
-  // Apply predefined template or edit existing campaign data
+  // Update form values when predefinedCampaignId, campaignToEdit, selectedChannel, or campaignType changes
   useEffect(() => {
-    if (!open) return;
-    
-    if (campaignToEdit) {
-      // Editing existing campaign
+    if (predefinedCampaignId && predefinedCampaignTemplates[predefinedCampaignId]) {
+      const template = predefinedCampaignTemplates[predefinedCampaignId];
+      
+      form.reset({
+        name: template.name || "",
+        channel: template.channel || "whatsapp",
+        whatsappType: template.whatsappType || "marketing",
+        segmentId: template.segment?.id || "",
+        content: template.content || "",
+        incentiveType: template.incentive?.type || "none",
+        imageUrl: template.imageUrl || "",
+        saveAsTemplate: false,
+      });
+      
+      setPreviewChannel(template.channel || "whatsapp");
+    } else if (campaignToEdit) {
       form.reset({
         name: campaignToEdit.name,
-        segment: campaignToEdit.segment.id,
-        incentiveType: campaignToEdit.incentive.type,
-        couponId: campaignToEdit.incentive.couponId,
-        loyaltyPoints: campaignToEdit.incentive.loyaltyPoints,
         channel: campaignToEdit.channel,
-        whatsappType: campaignToEdit.whatsappType,
+        whatsappType: campaignToEdit.whatsappType || "marketing",
+        segmentId: campaignToEdit.segment.id,
         content: campaignToEdit.content,
+        incentiveType: campaignToEdit.incentive.type,
         imageUrl: campaignToEdit.imageUrl || "",
+        saveAsTemplate: false,
       });
+      
       setPreviewChannel(campaignToEdit.channel);
-      setStepValidated({
-        step1: true,
-        step2: true,
-        step3: true
-      });
-      setStep(4); // Go directly to content editing for existing campaigns
-    } else if (predefinedCampaignId) {
-      // Using predefined template
-      const template = predefinedTemplates[predefinedCampaignId as keyof typeof predefinedTemplates];
-      if (template) {
-        form.reset(template);
-        setPreviewChannel(template.channel);
+      
+      if (campaignToEdit.scheduledAt) {
+        setIsScheduled(true);
+        const scheduledDate = new Date(campaignToEdit.scheduledAt);
+        form.setValue("scheduleDate", scheduledDate);
+        form.setValue("scheduleTime", format(scheduledDate, "HH:mm"));
       }
-    } else {
-      // Reset form for new campaigns
-      form.reset({
-        name: "",
-        segment: "",
-        incentiveType: "none",
-        content: "",
-        imageUrl: "",
-      });
-    }
-  }, [predefinedCampaignId, campaignToEdit, form, open]);
-
-  // Reset state when drawer opens/closes
-  useEffect(() => {
-    if (open) {
-      if (!campaignToEdit) {
-        setStep(1);
-        setStepValidated({
-          step1: false,
-          step2: false,
-          step3: false
-        });
-      }
-      setIsSubmitting(false);
-    }
-  }, [open, campaignToEdit]);
-
-  // Debug useEffect to log state changes
-  useEffect(() => {
-    console.log("Current step:", step);
-    console.log("Step validation state:", stepValidated);
-    console.log("Form values:", form.getValues());
-  }, [step, stepValidated, form]);
-
-  const selectedChannel = form.watch("channel");
-  const selectedIncentiveType = form.watch("incentiveType");
-  const selectedWhatsAppType = form.watch("whatsappType");
-
-  // Update preview channel when channel selection changes
-  const onChannelChange = (channel: CampaignChannel) => {
-    setPreviewChannel(channel);
-    
-    // If WhatsApp is selected, set a default whatsapp type if not already set
-    if (channel === "whatsapp" && !form.getValues("whatsappType")) {
-      form.setValue("whatsappType", "utility");
-    }
-    
-    // Set default content based on channel if no predefined content
-    if (!form.getValues("content")) {
+    } else if (selectedChannel) {
+      // Set form values based on selected channel and campaign type
       let defaultContent = "";
-      switch (channel) {
-        case "whatsapp":
-          defaultContent = "Olá! Temos uma oferta especial para você. Aproveite!";
-          break;
-        case "sms":
-          defaultContent = "Oferta especial! Aproveite nossos produtos com desconto.";
-          break;
-        case "email":
-          defaultContent = "<h2 style='color: #6200ea; font-size: 20px; margin-bottom: 15px'>Oferta Especial</h2><p style='margin-bottom: 10px'>Olá! Temos promoções exclusivas para você.</p>";
-          break;
+      let defaultName = "";
+      
+      if (campaignType) {
+        switch (campaignType) {
+          case "promotion":
+            defaultName = "Promoção Especial";
+            defaultContent = "Olá! Temos uma promoção especial para você: [DETALHE DA PROMOÇÃO]. Válido até [DATA]. Aproveite!";
+            break;
+          case "news":
+            defaultName = "Novidade no Cardápio";
+            defaultContent = "Olá! Temos novidades no cardápio! Conheça nosso novo prato: [NOME DO PRATO]. Venha experimentar!";
+            break;
+          case "reminder":
+            defaultName = "Lembrete de Reserva";
+            defaultContent = "Olá! Apenas confirmando sua reserva para [DATA/HORA]. Estamos ansiosos para recebê-lo!";
+            break;
+          case "newsletter":
+            defaultName = "Newsletter Semanal";
+            defaultContent = "Olá! Confira as novidades da semana em nosso restaurante:\n\n- [NOVIDADE 1]\n- [NOVIDADE 2]\n- [NOVIDADE 3]\n\nEsperamos você!";
+            break;
+          case "event":
+            defaultName = "Evento Especial";
+            defaultContent = "Olá! Convidamos você para nosso evento especial: [NOME DO EVENTO] no dia [DATA/HORA]. Não perca!";
+            break;
+          case "loyalty":
+            defaultName = "Programa de Fidelidade";
+            defaultContent = "Olá! Você já conhece nosso programa de fidelidade? A cada [X] pedidos, você ganha [BENEFÍCIO]. Participe!";
+            break;
+          case "urgent":
+            defaultName = "Promoção Relâmpago";
+            defaultContent = "HOJE! [NOME DA PROMOÇÃO] com [DESCONTO]% de desconto. Válido apenas hoje! Aproveite!";
+            break;
+          case "confirmation":
+            defaultName = "Confirmação de Pedido";
+            defaultContent = "Seu pedido #[NÚMERO] foi confirmado! Previsão de entrega: [TEMPO]. Obrigado pela preferência!";
+            break;
+          default:
+            break;
+        }
       }
+      
+      form.reset({
+        name: defaultName,
+        channel: selectedChannel as CampaignChannel,
+        whatsappType: selectedChannel === "whatsapp" ? "marketing" : undefined,
+        segmentId: customerSegments[0].id,
+        content: defaultContent,
+        incentiveType: "none",
+        imageUrl: "",
+        saveAsTemplate: false,
+      });
+      
+      setPreviewChannel(selectedChannel as CampaignChannel);
+    }
+  }, [predefinedCampaignId, campaignToEdit, selectedChannel, campaignType, form]);
 
-      form.setValue("content", defaultContent);
+  // Handle channel change
+  const handleChannelChange = (value: string) => {
+    form.setValue("channel", value as CampaignChannel);
+    setPreviewChannel(value as CampaignChannel);
+    
+    // Reset WhatsApp type if channel is not WhatsApp
+    if (value !== "whatsapp") {
+      form.setValue("whatsappType", undefined);
+    } else {
+      form.setValue("whatsappType", "marketing");
     }
   };
 
-  // Fixed nextStep function to properly validate each step before proceeding
-  const nextStep = async () => {
-    console.log(`Attempting to move from step ${step} to next step`);
+  // Handle form submission
+  const onSubmit = (data: FormValues) => {
+    // Find selected segment
+    const selectedSegment = customerSegments.find(seg => seg.id === data.segmentId);
     
-    // Step 1 validation: Campaign name
-    if (step === 1) {
-      const nameValue = form.getValues("name");
-      if (!nameValue || nameValue.trim() === "") {
-        form.setError("name", { message: "Nome da campanha é obrigatório" });
-        return;
-      }
-      
-      // Clear any existing errors if validation passes
-      form.clearErrors("name");
-      setStepValidated(prev => ({ ...prev, step1: true }));
-      console.log("Step 1 validated, moving to step 2");
-      setStep(2);
+    if (!selectedSegment) {
+      toast({
+        title: "Erro",
+        description: "Segmento de clientes não encontrado.",
+        variant: "destructive",
+      });
       return;
     }
-    
-    // Step 2 validation: Segment selection
-    if (step === 2) {
-      const segmentValue = form.getValues("segment");
-      if (!segmentValue) {
-        form.setError("segment", { message: "Segmento é obrigatório" });
-        return;
-      }
-      
-      // Clear any existing errors if validation passes
-      form.clearErrors("segment");
-      setStepValidated(prev => ({ ...prev, step2: true }));
-      console.log("Step 2 validated, moving to step 3");
-      setStep(3);
-      return;
-    }
-    
-    // Step 3 validation: Channel and incentive type
-    if (step === 3) {
-      const channelValue = form.getValues("channel");
-      if (!channelValue) {
-        form.setError("channel", { message: "Canal é obrigatório" });
-        return;
-      }
-      
-      // WhatsApp type is required when channel is WhatsApp
-      if (channelValue === "whatsapp" && !form.getValues("whatsappType")) {
-        form.setError("whatsappType", { message: "Tipo de mensagem WhatsApp é obrigatório" });
-        return;
-      }
-      
-      // Coupon selection is required when incentive type is coupon
-      if (form.getValues("incentiveType") === "coupon" && !form.getValues("couponId")) {
-        form.setError("couponId", { message: "Seleção de cupom é obrigatória" });
-        return;
-      }
-      
-      // Loyalty points required when incentive type is loyalty
-      if (form.getValues("incentiveType") === "loyalty" && !form.getValues("loyaltyPoints")) {
-        form.setError("loyaltyPoints", { message: "Pontos de fidelidade são obrigatórios" });
-        return;
-      }
-      
-      // Clear any existing errors if validation passes
-      form.clearErrors(["channel", "whatsappType", "couponId", "loyaltyPoints"]);
-      setStepValidated(prev => ({ ...prev, step3: true }));
-      console.log("Step 3 validated, moving to step 4");
-      
-      // Ensure we set step to 4 and not accidentally trigger form submission
-      setStep(4);
-      return;
-    }
-  };
-
-  const prevStep = () => {
-    setStep(prev => prev - 1);
-  };
-
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    setIsSubmitting(true);
     
     // Create campaign object
-    const campaign: Campaign = {
-      id: campaignToEdit ? campaignToEdit.id : `camp-${Date.now()}`,
-      name: values.name,
-      segment: mockSegments.find(seg => seg.id === values.segment) || mockSegments[0],
+    const newCampaign: Campaign = {
+      id: campaignToEdit?.id || `camp-${Date.now()}`,
+      name: data.name,
+      segment: selectedSegment,
       incentive: {
-        type: values.incentiveType,
-        couponId: values.couponId,
-        loyaltyPoints: values.loyaltyPoints,
-      } as CampaignIncentive,
-      channel: values.channel,
-      whatsappType: values.whatsappType,
-      content: values.content,
-      imageUrl: values.imageUrl,
-      status: campaignToEdit ? campaignToEdit.status : "draft",
-      createdAt: campaignToEdit ? campaignToEdit.createdAt : new Date().toISOString()
+        type: data.incentiveType,
+        couponId: data.incentiveType === "coupon" ? `cpn-${Date.now()}` : undefined,
+        loyaltyPoints: data.incentiveType === "loyalty" ? 10 : undefined,
+      },
+      channel: data.channel,
+      whatsappType: data.channel === "whatsapp" ? data.whatsappType : undefined,
+      content: data.content,
+      imageUrl: data.imageUrl,
+      status: isScheduled ? "scheduled" : "active",
+      createdAt: campaignToEdit?.createdAt || new Date().toISOString(),
+      scheduledAt: isScheduled && data.scheduleDate ? 
+        (() => {
+          const date = new Date(data.scheduleDate);
+          if (data.scheduleTime) {
+            const [hours, minutes] = data.scheduleTime.split(':').map(Number);
+            date.setHours(hours, minutes);
+          }
+          return date.toISOString();
+        })() : undefined,
     };
-
-    console.log(campaignToEdit ? "Campaign updated:" : "Campaign created:", campaign);
     
-    // Add to recent campaigns
-    addToRecentCampaigns(campaign);
-    
-    toast({
-      title: campaignToEdit ? "Campanha atualizada com sucesso" : "Campanha criada com sucesso",
-      description: `A campanha "${values.name}" foi salva como ${campaign.status === "draft" ? "rascunho" : campaign.status}.`,
-    });
-    
-    setIsSubmitting(false);
-    onOpenChange(false);
-  };
-
-  const handleExecuteCampaign = () => {
-    if (!form.formState.isValid) {
-      form.trigger();
-      return;
+    // Save campaign
+    if (campaignToEdit) {
+      // Update existing campaign
+      recentCampaigns = recentCampaigns.map(camp => 
+        camp.id === campaignToEdit.id ? newCampaign : camp
+      );
+    } else {
+      // Add new campaign to recent campaigns
+      recentCampaigns = [newCampaign, ...recentCampaigns];
     }
-
-    setIsSubmitting(true);
-    const values = form.getValues();
-    const segmentName = mockSegments.find(seg => seg.id === values.segment)?.name || "Desconhecido";
     
-    // Create campaign object with "active" status
-    const campaign: Campaign = {
-      id: campaignToEdit ? campaignToEdit.id : `camp-${Date.now()}`,
-      name: values.name,
-      segment: mockSegments.find(seg => seg.id === values.segment) || mockSegments[0],
-      incentive: {
-        type: values.incentiveType,
-        couponId: values.couponId,
-        loyaltyPoints: values.loyaltyPoints,
-      } as CampaignIncentive,
-      channel: values.channel,
-      whatsappType: values.whatsappType,
-      content: values.content,
-      imageUrl: values.imageUrl,
-      status: "active",
-      createdAt: campaignToEdit ? campaignToEdit.createdAt : new Date().toISOString()
-    };
+    // Dispatch event to notify other components
+    window.dispatchEvent(
+      new CustomEvent("recentCampaignsUpdated", { detail: recentCampaigns })
+    );
     
-    // Add to recent campaigns
-    addToRecentCampaigns(campaign);
-
+    // Show success toast
     toast({
-      title: campaignToEdit ? "Campanha atualizada e executada" : "Campanha executada",
-      description: `A campanha "${values.name}" foi enviada para ${mockSegments.find(seg => seg.id === values.segment)?.customerCount || 0} clientes do segmento ${segmentName}.`,
+      title: campaignToEdit ? "Campanha atualizada" : "Campanha criada",
+      description: isScheduled 
+        ? `A campanha foi ${campaignToEdit ? 'atualizada' : 'criada'} e será enviada na data agendada.` 
+        : `A campanha foi ${campaignToEdit ? 'atualizada' : 'criada'} e está pronta para envio.`,
     });
     
-    setIsSubmitting(false);
+    // Save as template if selected
+    if (data.saveAsTemplate) {
+      toast({
+        title: "Modelo salvo",
+        description: "A campanha foi salva como modelo para uso futuro.",
+      });
+    }
+    
+    // Close dialog
     onOpenChange(false);
   };
 
-  const getSelectedSegmentCount = () => {
-    const segmentId = form.getValues("segment");
-    return mockSegments.find(seg => seg.id === segmentId)?.customerCount || 0;
+  // Get channel icon
+  const getChannelIcon = (channel: CampaignChannel) => {
+    switch (channel) {
+      case "whatsapp":
+        return <MessageSquare className="h-4 w-4" />;
+      case "email":
+        return <Mail className="h-4 w-4" />;
+      case "sms":
+        return <Phone className="h-4 w-4" />;
+      default:
+        return null;
+    }
   };
-
-  // Function to handle image URL input
-  const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    form.setValue("imageUrl", e.target.value);
-  };
-
-  // Sample placeholder images
-  const sampleImages = [
-    "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
-    "https://images.unsplash.com/photo-1518770660439-4636190af475",
-    "https://images.unsplash.com/photo-1461749280684-dccba630e2f6",
-    "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
-  ];
 
   return (
-    <Drawer open={open} onOpenChange={(state) => {
-      // Prevent closing while submitting
-      if (isSubmitting) return;
-      onOpenChange(state);
-    }}>
-      <DrawerContent className="h-[90%] max-h-[90%]">
-        <DrawerHeader className="border-b pb-4">
-          <DrawerTitle className="text-xl">
-            {campaignToEdit ? "Editar Campanha" : "Nova Campanha Personalizada"}
-          </DrawerTitle>
-          <DrawerDescription>
-            {campaignToEdit ? "Modifique sua campanha existente" : "Crie sua campanha em poucos passos"}
-          </DrawerDescription>
-        </DrawerHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>
+            {campaignToEdit ? "Editar Campanha" : predefinedCampaignId ? "Usar Modelo de Campanha" : "Nova Campanha"}
+          </DialogTitle>
+          <DialogDescription>
+            {campaignToEdit 
+              ? "Edite os detalhes da sua campanha de mensageria."
+              : "Crie uma nova campanha para enviar mensagens aos seus clientes."}
+          </DialogDescription>
+        </DialogHeader>
         
-        <div className="p-6 overflow-y-auto h-[calc(100%-60px)]">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                1
-              </div>
-              <div className="h-[2px] w-12 bg-muted" />
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                2
-              </div>
-              <div className="h-[2px] w-12 bg-muted" />
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 3 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                3
-              </div>
-              <div className="h-[2px] w-12 bg-muted" />
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 4 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                4
-              </div>
-            </div>
-            <span className="text-sm text-muted-foreground">Passo {step} de 4</span>
-          </div>
-
-          <Form {...form}>
-            <form onSubmit={(e) => {
-              // Prevent form submission on enter key
-              if (step < 4) {
-                e.preventDefault();
-                nextStep();
-              } else {
-                form.handleSubmit(onSubmit)(e);
-              }
-            }} className="space-y-6">
-              {step === 1 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Informações da Campanha</h3>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-6">
+                {/* Campaign Name */}
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome da Campanha</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: Promoção de Fim de Semana" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Channel Selection */}
+                <FormField
+                  control={form.control}
+                  name="channel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Canal de Envio</FormLabel>
+                      <FormControl>
+                        <Tabs 
+                          value={field.value} 
+                          onValueChange={handleChannelChange}
+                          className="w-full"
+                        >
+                          <TabsList className="grid grid-cols-3 w-full">
+                            <TabsTrigger value="whatsapp" className="flex items-center gap-1">
+                              <MessageSquare className="h-4 w-4" /> WhatsApp
+                            </TabsTrigger>
+                            <TabsTrigger value="email" className="flex items-center gap-1">
+                              <Mail className="h-4 w-4" /> E-mail
+                            </TabsTrigger>
+                            <TabsTrigger value="sms" className="flex items-center gap-1">
+                              <Phone className="h-4 w-4" /> SMS
+                            </TabsTrigger>
+                          </TabsList>
+                        </Tabs>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* WhatsApp Type (only if WhatsApp is selected) */}
+                {form.watch("channel") === "whatsapp" && (
                   <FormField
                     control={form.control}
-                    name="name"
+                    name="whatsappType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nome da Campanha</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Ex: Recuperação de Clientes Inativos" {...field} />
-                        </FormControl>
+                        <FormLabel>Tipo de Mensagem WhatsApp</FormLabel>
+                        <Select 
+                          value={field.value} 
+                          onValueChange={field.onChange}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione o tipo de mensagem" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="utility">Serviço/Utilidade</SelectItem>
+                            <SelectItem value="marketing">Marketing</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormDescription>
-                          Este nome é usado internamente para identificar sua campanha
+                          Mensagens de serviço são para informações úteis como confirmações e lembretes.
+                          Mensagens de marketing são para promoções e divulgações.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </div>
-              )}
-
-              {step === 2 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Segmentação de Público</h3>
-                  <FormField
-                    control={form.control}
-                    name="segment"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Selecione o segmento</FormLabel>
-                        <FormControl>
-                          <div className="border rounded-md divide-y">
-                            {mockSegments.map((segment) => (
-                              <div 
-                                key={segment.id} 
-                                className={`flex items-center space-x-3 p-3 hover:bg-muted/50 cursor-pointer ${field.value === segment.id ? 'bg-muted' : ''}`}
-                                onClick={() => field.onChange(segment.id)}
-                              >
-                                <div className="flex-1">
-                                  <div className="font-medium">{segment.name}</div>
-                                  <div className="text-sm text-muted-foreground">{segment.description}</div>
-                                </div>
-                                <div className="text-blue-600 text-sm font-medium">
-                                  {segment.customerCount} clientes
-                                </div>
-                                <div className="flex items-center">
-                                  <input
-                                    type="radio"
-                                    className="h-4 w-4 text-primary border-gray-300 focus:ring-primary"
-                                    checked={field.value === segment.id}
-                                    onChange={() => field.onChange(segment.id)}
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </FormControl>
-                        <FormDescription>
-                          {field.value && (
-                            <span>
-                              Selecionado: {getSelectedSegmentCount()} clientes
-                            </span>
-                          )}
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
-
-              {step === 3 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Incentivos</h3>
-                  <FormField
-                    control={form.control}
-                    name="incentiveType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tipo de Incentivo</FormLabel>
-                        <FormControl>
-                          <RadioGroup 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                            className="grid grid-cols-1 gap-4 md:grid-cols-3"
-                          >
-                            <div className="flex items-start space-x-2">
-                              <RadioGroupItem value="none" id="incentive-none" />
-                              <div className="grid gap-1.5 leading-none">
-                                <label
-                                  htmlFor="incentive-none"
-                                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                >
-                                  Sem incentivo
-                                </label>
-                                <p className="text-sm text-muted-foreground">
-                                  Apenas enviar mensagem
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-start space-x-2">
-                              <RadioGroupItem value="coupon" id="incentive-coupon" />
-                              <div className="grid gap-1.5 leading-none">
-                                <label
-                                  htmlFor="incentive-coupon"
-                                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                >
-                                  Adicionar cupom
-                                </label>
-                                <p className="text-sm text-muted-foreground">
-                                  Incluir um cupom de desconto
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-start space-x-2">
-                              <RadioGroupItem value="loyalty" id="incentive-loyalty" />
-                              <div className="grid gap-1.5 leading-none">
-                                <label
-                                  htmlFor="incentive-loyalty"
-                                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                >
-                                  Adicionar pontos
-                                </label>
-                                <p className="text-sm text-muted-foreground">
-                                  Conceder pontos de fidelidade
-                                </p>
-                              </div>
-                            </div>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {selectedIncentiveType === "coupon" && (
-                    <FormField
-                      control={form.control}
-                      name="couponId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Selecione o cupom</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecionar cupom" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {mockCoupons.map((coupon) => (
-                                <SelectItem key={coupon.id} value={coupon.id}>
-                                  {coupon.code} - {coupon.discount}{coupon.discountType === "percentage" ? "%" : " (Fixo)"}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            Selecione o cupom que será enviado aos clientes
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-
-                  {selectedIncentiveType === "loyalty" && (
-                    <FormField
-                      control={form.control}
-                      name="loyaltyPoints"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Quantidade de pontos</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number" 
-                              placeholder="Ex: 100" 
-                              onChange={e => field.onChange(parseInt(e.target.value))}
-                              value={field.value || ""}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Quantos pontos de fidelidade serão concedidos
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-
-                  <FormField
-                    control={form.control}
-                    name="channel"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Canal</FormLabel>
-                        <FormControl>
-                          <RadioGroup 
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                              onChannelChange(value as CampaignChannel);
-                            }} 
-                            defaultValue={field.value}
-                            value={field.value || undefined}
-                            className="grid grid-cols-1 gap-4 md:grid-cols-3"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="whatsapp" id="channel-whatsapp" />
-                              <label
-                                htmlFor="channel-whatsapp"
-                                className="text-sm font-medium flex items-center gap-2"
-                              >
-                                <MessageSquare className="h-4 w-4 text-green-600" />
-                                WhatsApp
-                              </label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="sms" id="channel-sms" />
-                              <label
-                                htmlFor="channel-sms"
-                                className="text-sm font-medium flex items-center gap-2"
-                              >
-                                <Phone className="h-4 w-4 text-blue-600" />
-                                SMS
-                              </label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="email" id="channel-email" />
-                              <label
-                                htmlFor="channel-email"
-                                className="text-sm font-medium flex items-center gap-2"
-                              >
-                                <Mail className="h-4 w-4 text-purple-600" />
-                                Email
-                              </label>
-                            </div>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Add WhatsApp message type selection when WhatsApp is selected */}
-                  {selectedChannel === "whatsapp" && (
-                    <FormField
-                      control={form.control}
-                      name="whatsappType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Tipo de mensagem WhatsApp</FormLabel>
-                          <FormControl>
-                            <RadioGroup 
-                              onValueChange={field.onChange} 
-                              defaultValue={field.value || "utility"}
-                              value={field.value || "utility"}
-                              className="grid grid-cols-1 gap-4 md:grid-cols-2"
-                            >
-                              <div className="flex items-start space-x-2">
-                                <RadioGroupItem value="utility" id="whatsapp-utility" />
-                                <div className="grid gap-1.5 leading-none">
-                                  <label
-                                    htmlFor="whatsapp-utility"
-                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                  >
-                                    Mensagem de Serviço
-                                  </label>
-                                  <p className="text-sm text-muted-foreground">
-                                    Confirmações, atualizações de pedidos, etc.
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-start space-x-2">
-                                <RadioGroupItem value="marketing" id="whatsapp-marketing" />
-                                <div className="grid gap-1.5 leading-none">
-                                  <label
-                                    htmlFor="whatsapp-marketing"
-                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                  >
-                                    Mensagem de Marketing
-                                  </label>
-                                  <p className="text-sm text-muted-foreground">
-                                    Promoções, campanhas (requer opt-in)
-                                  </p>
-                                </div>
-                              </div>
-                            </RadioGroup>
-                          </FormControl>
-                          <FormDescription>
-                            Mensagens de marketing exigem opt-in explícito dos clientes.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                </div>
-              )}
-
-              {step === 4 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Editor de Campanha</h3>
-                  
-                  <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-4">
-                      <TabsTrigger value="edit">Editar</TabsTrigger>
-                      <TabsTrigger value="preview">Visualizar</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="edit" className="space-y-4">
-                      <div className="space-y-4">
-                        <FormField
-                          control={form.control}
-                          name="content"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Conteúdo da mensagem</FormLabel>
-                              <FormControl>
-                                {selectedChannel === "email" ? (
-                                  <textarea
-                                    className="min-h-[200px] flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    placeholder="Conteúdo do email (suporta HTML básico)"
-                                    {...field}
-                                  />
-                                ) : (
-                                  <textarea
-                                    className="min-h-[150px] flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    placeholder={`Conteúdo da mensagem de ${selectedChannel === "whatsapp" ? "WhatsApp" : "SMS"}`}
-                                    maxLength={selectedChannel === "sms" ? 160 : undefined}
-                                    {...field}
-                                  />
-                                )}
-                              </FormControl>
-                              <FormDescription>
-                                {selectedChannel === "email" 
-                                  ? "Você pode usar HTML básico para formatar seu email" 
-                                  : selectedChannel === "sms" 
-                                    ? "Limite de 160 caracteres para SMS" 
-                                    : selectedChannel === "whatsapp" && selectedWhatsAppType === "marketing"
-                                      ? "Mensagem de marketing (requer opt-in do cliente)"
-                                      : "Escreva sua mensagem de serviço do WhatsApp"}
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        {/* Image URL input for Email and WhatsApp */}
-                        {(selectedChannel === "email" || selectedChannel === "whatsapp") && (
-                          <FormField
-                            control={form.control}
-                            name="imageUrl"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="flex items-center gap-2">
-                                  <ImageIcon className="h-4 w-4" /> Imagem
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    placeholder="URL da imagem"
-                                    value={field.value || ""}
-                                    onChange={(e) => field.onChange(e.target.value)}
-                                  />
-                                </FormControl>
-                                <FormDescription>
-                                  Adicione o link de uma imagem para sua campanha
-                                </FormDescription>
-                                <FormMessage />
-                                
-                                {/* Sample images for quick selection */}
-                                <div className="mt-2">
-                                  <p className="text-xs text-muted-foreground mb-2">Ou selecione uma imagem</p>
-                                  <div className="grid grid-cols-4 gap-2">
-                                    {sampleImages.map((img, i) => (
-                                      <div 
-                                        key={i} 
-                                        className={`cursor-pointer rounded overflow-hidden border-2 ${field.value === img ? 'border-primary' : 'border-transparent'}`}
-                                        onClick={() => field.onChange(img)}
-                                      >
-                                        <img 
-                                          src={img} 
-                                          alt={`Imagem de amostra ${i+1}`} 
-                                          className="w-full h-16 object-cover"
-                                        />
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              </FormItem>
-                            )}
-                          />
-                        )}
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="preview">
-                      <div className="flex justify-center py-4">
-                        <CampanhaPreview
-                          channel={previewChannel}
-                          whatsappType={form.watch("whatsappType")}
-                          content={form.watch("content")}
-                          imageUrl={form.watch("imageUrl")}
-                          incentiveType={form.watch("incentiveType") as IncentiveType}
-                          coupon={form.watch("couponId") ? mockCoupons.find(c => c.id === form.watch("couponId")) : undefined}
-                          loyaltyPoints={form.watch("loyaltyPoints")}
-                        />
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </div>
-              )}
-
-              <div className="flex justify-between pt-6 border-t mt-6">
-                {step > 1 ? (
-                  <Button type="button" variant="outline" onClick={prevStep} disabled={isSubmitting}>Voltar</Button>
-                ) : (
-                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancelar</Button>
                 )}
                 
-                <div className="space-x-2">
-                  {step < 4 ? (
-                    <Button 
-                      type="button" 
-                      onClick={(e) => {
-                        e.preventDefault(); // Prevent any form submission
-                        nextStep();
-                      }} 
-                      disabled={isSubmitting}
+                {/* Customer Segment */}
+                <FormField
+                  control={form.control}
+                  name="segmentId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Segmento de Clientes</FormLabel>
+                      <Select 
+                        value={field.value} 
+                        onValueChange={field.onChange}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione um segmento" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {customerSegments.map(segment => (
+                            <SelectItem key={segment.id} value={segment.id}>
+                              {segment.name} ({segment.customerCount} clientes)
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Incentive Type */}
+                <FormField
+                  control={form.control}
+                  name="incentiveType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Incentivo</FormLabel>
+                      <Select 
+                        value={field.value} 
+                        onValueChange={field.onChange}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione um tipo de incentivo" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">Sem incentivo</SelectItem>
+                          <SelectItem value="coupon">Cupom de desconto</SelectItem>
+                          <SelectItem value="loyalty">Pontos de fidelidade</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Image URL (optional) */}
+                <FormField
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Imagem (opcional)</FormLabel>
+                      <FormControl>
+                        <div className="flex gap-2">
+                          <Input placeholder="URL da imagem" {...field} />
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => {
+                              // In a real app, this would open a media library
+                              toast({
+                                title: "Biblioteca de mídia",
+                                description: "A biblioteca de mídia seria aberta aqui.",
+                              });
+                            }}
+                          >
+                            <ImageIcon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormDescription>
+                        Adicione uma imagem para sua campanha (apenas WhatsApp e E-mail)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Schedule */}
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="schedule"
+                      checked={isScheduled}
+                      onCheckedChange={setIsScheduled}
+                    />
+                    <label
+                      htmlFor="schedule"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                      {isSubmitting ? "Processando..." : "Continuar"}
-                    </Button>
-                  ) : (
-                    <>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={form.handleSubmit(onSubmit)}
-                        disabled={isSubmitting}
-                      >
-                        <Save className="mr-2 h-4 w-4" />
-                        {isSubmitting ? "Salvando..." : "Salvar campanha"}
-                      </Button>
-                      <Button 
-                        type="button" 
-                        variant="default" 
-                        onClick={handleExecuteCampaign} 
-                        disabled={isSubmitting}
-                      >
-                        <Send className="mr-2 h-4 w-4" />
-                        {isSubmitting ? "Executando..." : "Executar campanha"}
-                      </Button>
-                    </>
+                      Agendar envio
+                    </label>
+                  </div>
+                  
+                  {isScheduled && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="scheduleDate"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>Data</FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      "pl-3 text-left font-normal",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    {field.value ? (
+                                      format(field.value, "PPP", { locale: ptBR })
+                                    ) : (
+                                      <span>Selecione uma data</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  disabled={(date) =>
+                                    date < new Date(new Date().setHours(0, 0, 0, 0))
+                                  }
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="scheduleTime"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Hora</FormLabel>
+                            <FormControl>
+                              <Input type="time" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
+                </div>
+                
+                {/* Save as Template */}
+                <FormField
+                  control={form.control}
+                  name="saveAsTemplate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>Salvar como modelo</FormLabel>
+                        <FormDescription>
+                          Salve esta campanha como modelo para uso futuro
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <div className="space-y-6">
+                {/* Message Content */}
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Conteúdo da Mensagem</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Digite sua mensagem aqui..." 
+                          className="min-h-[200px]" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Use {{nome}} para inserir o nome do cliente
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Message Preview */}
+                <div className="border rounded-md p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    {getChannelIcon(previewChannel)}
+                    <h4 className="text-sm font-medium">Pré-visualização</h4>
+                  </div>
+                  
+                  <div className={cn(
+                    "p-3 rounded-lg max-w-[300px] text-sm",
+                    previewChannel === "whatsapp" ? "bg-green-50 border border-green-100" :
+                    previewChannel === "email" ? "bg-purple-50 border border-purple-100" :
+                    "bg-blue-50 border border-blue-100"
+                  )}>
+                    <p className="whitespace-pre-wrap">
+                      {form.watch("content").replace("{{nome}}", "Cliente")}
+                    </p>
+                    
+                    {form.watch("imageUrl") && (previewChannel === "whatsapp" || previewChannel === "email") && (
+                      <div className="mt-2 p-1 bg-gray-100 rounded text-xs text-center text-gray-500">
+                        [Imagem: {form.watch("imageUrl")}]
+                      </div>
+                    )}
+                    
+                    {form.watch("incentiveType") === "coupon" && (
+                      <div className="mt-2 p-1 bg-green-100 rounded text-xs text-center text-green-700">
+                        [Cupom de desconto será gerado automaticamente]
+                      </div>
+                    )}
+                    
+                    {form.watch("incentiveType") === "loyalty" && (
+                      <div className="mt-2 p-1 bg-purple-100 rounded text-xs text-center text-purple-700">
+                        [10 pontos de fidelidade serão adicionados]
+                      </div>
+                    )}
+                  </div>
+                  
+                  {previewChannel === "sms" && form.watch("content").length > 160 && (
+                    <p className="text-xs text-red-500">
+                      Atenção: Sua mensagem tem {form.watch("content").length} caracteres. 
+                      Mensagens SMS com mais de 160 caracteres podem ser divididas em múltiplas partes.
+                    </p>
                   )}
                 </div>
               </div>
-            </form>
-          </Form>
-        </div>
-      </DrawerContent>
-    </Drawer>
+            </div>
+            
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit">
+                {isScheduled ? "Agendar Campanha" : "Criar Campanha"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 };
 
