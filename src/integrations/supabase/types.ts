@@ -9,6 +9,123 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      campaign_templates: {
+        Row: {
+          campaign_type: string | null
+          channel: string
+          content: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          incentive_type: string | null
+          name: string
+          platform: string | null
+          type: string
+          user_id: string
+          whatsapp_type: string | null
+        }
+        Insert: {
+          campaign_type?: string | null
+          channel: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          incentive_type?: string | null
+          name: string
+          platform?: string | null
+          type: string
+          user_id: string
+          whatsapp_type?: string | null
+        }
+        Update: {
+          campaign_type?: string | null
+          channel?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          incentive_type?: string | null
+          name?: string
+          platform?: string | null
+          type?: string
+          user_id?: string
+          whatsapp_type?: string | null
+        }
+        Relationships: []
+      }
+      campaigns: {
+        Row: {
+          budget: number | null
+          campaign_type: string | null
+          channel: string
+          content: string | null
+          coupon_id: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          incentive_type: string | null
+          loyalty_points: number | null
+          metrics: Json | null
+          name: string
+          platform: string | null
+          scheduled_at: string | null
+          segment_id: string | null
+          status: string
+          target_audience: Json | null
+          type: string
+          updated_at: string
+          user_id: string
+          whatsapp_type: string | null
+        }
+        Insert: {
+          budget?: number | null
+          campaign_type?: string | null
+          channel: string
+          content?: string | null
+          coupon_id?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          incentive_type?: string | null
+          loyalty_points?: number | null
+          metrics?: Json | null
+          name: string
+          platform?: string | null
+          scheduled_at?: string | null
+          segment_id?: string | null
+          status?: string
+          target_audience?: Json | null
+          type: string
+          updated_at?: string
+          user_id: string
+          whatsapp_type?: string | null
+        }
+        Update: {
+          budget?: number | null
+          campaign_type?: string | null
+          channel?: string
+          content?: string | null
+          coupon_id?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          incentive_type?: string | null
+          loyalty_points?: number | null
+          metrics?: Json | null
+          name?: string
+          platform?: string | null
+          scheduled_at?: string | null
+          segment_id?: string | null
+          status?: string
+          target_audience?: Json | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+          whatsapp_type?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -33,6 +150,36 @@ export type Database = {
           id?: string
           last_name?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      segments: {
+        Row: {
+          created_at: string
+          customer_count: number | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_count?: number | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_count?: number | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
