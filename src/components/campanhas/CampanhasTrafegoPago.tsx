@@ -994,7 +994,7 @@ const AdPreviewDialog = ({ open, onOpenChange, platform, previewType, setPreview
                   {(previewType === "stories" || previewType === "reels") && (
                     <div className="bg-gradient-to-b from-slate-200 to-slate-300 aspect-[9/16] w-64 mx-auto rounded-lg flex flex-col">
                       <div className="flex-1 flex items-center justify-center">
-                        <span className="text-sm text-slate-500">Conteúdo do {previewType === "Story" ? "Story" : "Reel"}</span>
+                        <span className="text-sm text-slate-500">Conteúdo do {previewType === "stories" ? "Story" : "Reel"}</span>
                       </div>
                       <div className="bg-white bg-opacity-80 p-3 rounded-b-lg">
                         <div className="text-sm font-medium mb-1">Título do anúncio</div>
