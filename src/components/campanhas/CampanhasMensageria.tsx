@@ -15,6 +15,7 @@ import PredefinedCampaignSection from "./PredefinedCampaignSection";
 import { predefinedCampaigns } from "./predefinedCampaignsData";
 import AudienceSegmentationInfo from "./AudienceSegmentationInfo";
 import RecentCampaignsInfo from "./RecentCampaignsInfo";
+import SavedCampaignsList from "./SavedCampaignsList";
 import MessageSendingReport from "./MessageSendingReport";
 
 const CampanhasMensageria = () => {
@@ -89,6 +90,7 @@ const CampanhasMensageria = () => {
 
       <AudienceSegmentationInfo />
       <RecentCampaignsInfo />
+      <SavedCampaignsList />
       <MessageSendingReport />
 
       {/* Campaign Form */}

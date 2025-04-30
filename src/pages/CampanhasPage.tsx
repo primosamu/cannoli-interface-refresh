@@ -1,8 +1,8 @@
 
-import { useLocation } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import CampanhasMensageria from "@/components/campanhas/CampanhasMensageria";
 import CampanhasTrafegoPago from "@/components/campanhas/CampanhasTrafegoPago";
+import { useLocation } from "react-router-dom";
 
 const CampanhasPage = () => {
   const location = useLocation();
