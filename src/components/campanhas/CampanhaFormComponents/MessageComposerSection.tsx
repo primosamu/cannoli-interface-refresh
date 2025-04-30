@@ -24,11 +24,11 @@ const MessageComposerSection = () => {
           <FormControl>
             <Textarea 
               placeholder="Digite sua mensagem aqui..." 
-              className="min-h-[200px]" 
+              className="min-h-[150px]" 
               {...field} 
             />
           </FormControl>
-          <FormDescription>
+          <FormDescription className="text-xs">
             Use {'{{'} nome {'}}' } para inserir o nome do cliente
           </FormDescription>
           <FormMessage />
