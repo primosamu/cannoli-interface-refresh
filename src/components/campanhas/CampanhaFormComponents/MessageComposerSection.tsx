@@ -126,9 +126,9 @@ const MessageComposerSection = () => {
         <div className="mt-4 text-xs text-muted-foreground">
           <p className="font-medium mb-1">Exemplos de uso:</p>
           <div className="space-y-1">
-            <p>• "Olá <Badge variant="outline" className="text-xs">{{nome}}</Badge>, temos uma oferta especial para você!"</p>
-            <p>• "Sua reserva está confirmada para <Badge variant="outline" className="text-xs">{{data}}</Badge>."</p>
-            <p>• "Use o cupom <Badge variant="outline" className="text-xs">{{cupom}}</Badge> e ganhe 15% de desconto."</p>
+            <p>• "Olá <Badge variant="outline" className="text-xs">{"{{nome}}"}</Badge>, temos uma oferta especial para você!"</p>
+            <p>• "Sua reserva está confirmada para <Badge variant="outline" className="text-xs">{"{{data}}"}</Badge>."</p>
+            <p>• "Use o cupom <Badge variant="outline" className="text-xs">{"{{cupom}}"}</Badge> e ganhe 15% de desconto."</p>
           </div>
         </div>
       </div>
