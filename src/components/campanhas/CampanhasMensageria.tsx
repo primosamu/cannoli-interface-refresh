@@ -18,7 +18,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import CampanhaForm from "./CampanhaForm";
 import PredefinedCampaignSection from "./PredefinedCampaignSection";
-import { restaurantCampaigns } from "./restaurantCampaignsData";
+import { predefinedCampaigns } from "./predefinedCampaignsData";
 import AudienceSegmentationInfo from "./AudienceSegmentationInfo";
 import RecentCampaignsInfo from "./RecentCampaignsInfo";
 import SavedCampaignsList from "./SavedCampaignsList";
@@ -151,13 +151,13 @@ const CampanhasMensageria = () => {
         </CardContent>
       </Card>
 
-      {/* Campanhas Pré-definidas para Restaurantes */}
+      {/* Campanhas Pré-definidas */}
       <Card className="bg-white">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-xl">Campanhas para Restaurantes</CardTitle>
+            <CardTitle className="text-xl">Campanhas Pré-definidas</CardTitle>
             <CardDescription>
-              Modelos prontos específicos para o seu negócio de food service
+              Modelos prontos para recuperação, fidelização e crescimento
             </CardDescription>
           </div>
           <Button onClick={handleOpenCustomCampaign}>
@@ -166,39 +166,39 @@ const CampanhasMensageria = () => {
           </Button>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Promoções Semanais */}
+          {/* Campanhas de Recuperação */}
           <PredefinedCampaignSection
-            title="Promoções Semanais Automáticas"
-            icon={<Calendar className="h-5 w-5 text-orange-500" />}
-            campaigns={restaurantCampaigns.promocoesSemanais}
-            colorClass="bg-orange-50"
-            onSelectCampaign={handleOpenPredefinedCampaign}
-          />
-
-          {/* Campanhas para Delivery */}
-          <PredefinedCampaignSection
-            title="Campanhas de Delivery"
-            icon={<Send className="h-5 w-5 text-purple-500" />}
-            campaigns={restaurantCampaigns.delivery}
-            colorClass="bg-purple-50"
-            onSelectCampaign={handleOpenPredefinedCampaign}
-          />
-
-          {/* Novidades do Cardápio */}
-          <PredefinedCampaignSection
-            title="Novidades do Cardápio"
-            icon={<Bell className="h-5 w-5 text-blue-500" />}
-            campaigns={restaurantCampaigns.cardapio}
+            title="Campanhas de Recuperação"
+            icon={<TrendingUp className="h-5 w-5 text-blue-500" />}
+            campaigns={predefinedCampaigns.recuperacao}
             colorClass="bg-blue-50"
             onSelectCampaign={handleOpenPredefinedCampaign}
           />
 
-          {/* Eventos e Ocasiões Especiais */}
+          {/* Campanhas de Fidelização */}
           <PredefinedCampaignSection
-            title="Eventos e Ocasiões Especiais"
+            title="Campanhas de Fidelização"
             icon={<Star className="h-5 w-5 text-green-500" />}
-            campaigns={restaurantCampaigns.eventos}
+            campaigns={predefinedCampaigns.fidelizacao}
             colorClass="bg-green-50"
+            onSelectCampaign={handleOpenPredefinedCampaign}
+          />
+
+          {/* Campanhas por Padrões de Consumo */}
+          <PredefinedCampaignSection
+            title="Campanhas por Padrões de Consumo"
+            icon={<Clock className="h-5 w-5 text-purple-500" />}
+            campaigns={predefinedCampaigns.padroesConsumo}
+            colorClass="bg-purple-50"
+            onSelectCampaign={handleOpenPredefinedCampaign}
+          />
+
+          {/* Campanhas de Migração de Canal */}
+          <PredefinedCampaignSection
+            title="Campanhas de Migração de Canal"
+            icon={<Send className="h-5 w-5 text-orange-500" />}
+            campaigns={predefinedCampaigns.migracaoCanal}
+            colorClass="bg-orange-50"
             onSelectCampaign={handleOpenPredefinedCampaign}
           />
         </CardContent>
