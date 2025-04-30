@@ -180,66 +180,68 @@ const SavedCampaignsList = () => {
           </DialogHeader>
           
           {selectedCampaign && (
-            <ScrollArea className="max-h-[calc(90vh-180px)]">
-              <div className="space-y-6 py-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium">{selectedCampaign.name}</h3>
-                    <Badge variant="outline" className="bg-slate-100 text-slate-600">Modelo</Badge>
+            <>
+              <ScrollArea className="max-h-[calc(90vh-180px)]">
+                <div className="space-y-6 py-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-medium">{selectedCampaign.name}</h3>
+                      <Badge variant="outline" className="bg-slate-100 text-slate-600">Modelo</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Criada em {new Date(selectedCampaign.createdAt).toLocaleDateString('pt-BR')}
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Criada em {new Date(selectedCampaign.createdAt).toLocaleDateString('pt-BR')}
-                  </p>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-slate-50 p-3 rounded-md">
-                    <h4 className="text-sm font-medium mb-1">Canal</h4>
-                    <div className="flex items-center gap-2">
-                      {getChannelIcon(selectedCampaign.channel)}
-                      <span className="capitalize">
-                        {selectedCampaign.channel} 
-                        {selectedCampaign.channel === "whatsapp" && selectedCampaign.whatsappType && 
-                          ` (${selectedCampaign.whatsappType === "marketing" ? "Marketing" : "Serviço"})`
-                        }
-                      </span>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-slate-50 p-3 rounded-md">
+                      <h4 className="text-sm font-medium mb-1">Canal</h4>
+                      <div className="flex items-center gap-2">
+                        {getChannelIcon(selectedCampaign.channel)}
+                        <span className="capitalize">
+                          {selectedCampaign.channel} 
+                          {selectedCampaign.channel === "whatsapp" && selectedCampaign.whatsappType && 
+                            ` (${selectedCampaign.whatsappType === "marketing" ? "Marketing" : "Serviço"})`
+                          }
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-slate-50 p-3 rounded-md">
+                      <h4 className="text-sm font-medium mb-1">Segmento Alvo</h4>
+                      <div>
+                        <span className="font-medium">{selectedCampaign.segment.name}</span>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {selectedCampaign.segment.description}
+                        </p>
+                      </div>
                     </div>
                   </div>
                   
                   <div className="bg-slate-50 p-3 rounded-md">
-                    <h4 className="text-sm font-medium mb-1">Segmento Alvo</h4>
-                    <div>
-                      <span className="font-medium">{selectedCampaign.segment.name}</span>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {selectedCampaign.segment.description}
-                      </p>
-                    </div>
+                    <h4 className="text-sm font-medium mb-1">Conteúdo da mensagem</h4>
+                    <p className="text-sm whitespace-pre-wrap">
+                      {selectedCampaign.content}
+                    </p>
+                    {selectedCampaign.incentive?.type === "coupon" && (
+                      <div className="mt-2 px-3 py-1 bg-green-50 border border-green-100 text-green-700 text-sm rounded">
+                        Inclui cupom de desconto
+                      </div>
+                    )}
                   </div>
                 </div>
-                
-                <div className="bg-slate-50 p-3 rounded-md">
-                  <h4 className="text-sm font-medium mb-1">Conteúdo da mensagem</h4>
-                  <p className="text-sm whitespace-pre-wrap">
-                    {selectedCampaign.content}
-                  </p>
-                  {selectedCampaign.incentive?.type === "coupon" && (
-                    <div className="mt-2 px-3 py-1 bg-green-50 border border-green-100 text-green-700 text-sm rounded">
-                      Inclui cupom de desconto
-                    </div>
-                  )}
-                </div>
-              </div>
-            </ScrollArea>
+              </ScrollArea>
             
-            <DialogFooter className="pt-4 mt-2">
-              <Button variant="outline" onClick={() => setShowDetails(false)}>
-                Fechar
-              </Button>
-              <Button onClick={handleEditCampaign}>
-                <Eye className="h-4 w-4 mr-2" />
-                Usar Modelo
-              </Button>
-            </DialogFooter>
+              <DialogFooter className="pt-4 mt-2">
+                <Button variant="outline" onClick={() => setShowDetails(false)}>
+                  Fechar
+                </Button>
+                <Button onClick={handleEditCampaign}>
+                  <Eye className="h-4 w-4 mr-2" />
+                  Usar Modelo
+                </Button>
+              </DialogFooter>
+            </>
           )}
         </DialogContent>
       </Dialog>
