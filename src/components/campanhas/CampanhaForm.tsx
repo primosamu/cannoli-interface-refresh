@@ -23,7 +23,8 @@ import {
   ScheduleSection,
   SaveAsTemplateSection,
   MessageComposerSection,
-  PreviewSection
+  PreviewSection,
+  ContactSelection
 } from "./CampanhaFormComponents";
 
 // Mock customer segments
@@ -143,7 +144,7 @@ let recentCampaigns = [...recentCampaignsMock];
 // Function to get recent campaigns (used by other components)
 export const getRecentCampaigns = () => recentCampaigns;
 
-// Form schema
+// Updated form schema
 const formSchema = z.object({
   name: z.string().min(3, {
     message: "O nome da campanha deve ter pelo menos 3 caracteres.",
@@ -158,10 +159,14 @@ const formSchema = z.object({
   }),
   incentiveType: z.enum(["none", "coupon", "loyalty"] as const),
   couponId: z.string().optional(),
+  couponCode: z.string().optional(),
   imageUrl: z.string().optional(),
   scheduleDate: z.date().optional(),
   scheduleTime: z.string().optional(),
   saveAsTemplate: z.boolean().default(false),
+  contactSource: z.enum(["segment", "file", "manual"]).default("segment"),
+  contactFile: z.string().optional(),
+  manualContacts: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -198,8 +203,10 @@ const CampanhaForm = ({
       content: "",
       incentiveType: "none",
       couponId: undefined,
+      couponCode: "",
       imageUrl: "",
       saveAsTemplate: false,
+      contactSource: "segment",
     },
   });
 
@@ -216,6 +223,7 @@ const CampanhaForm = ({
         content: template.content || "",
         incentiveType: template.incentive?.type || "none",
         couponId: template.incentive?.couponId || undefined,
+        couponCode: "",
         imageUrl: template.imageUrl || "",
         saveAsTemplate: false,
       });
@@ -230,6 +238,7 @@ const CampanhaForm = ({
         content: campaignToEdit.content,
         incentiveType: campaignToEdit.incentive.type,
         couponId: campaignToEdit.incentive.couponId || undefined,
+        couponCode: "",
         imageUrl: campaignToEdit.imageUrl || "",
         saveAsTemplate: false,
       });
@@ -294,6 +303,7 @@ const CampanhaForm = ({
         content: defaultContent,
         incentiveType: "none",
         couponId: undefined,
+        couponCode: "",
         imageUrl: "",
         saveAsTemplate: false,
       });
@@ -362,6 +372,18 @@ const CampanhaForm = ({
           return date.toISOString();
         })() : undefined,
     };
+    
+    // If custom coupon code was provided
+    if (data.incentiveType === "coupon" && data.couponCode) {
+      (newCampaign as any).couponCode = data.couponCode;
+    }
+    
+    // Contact information
+    if (data.contactSource === "file" && data.contactFile) {
+      (newCampaign as any).contactFile = data.contactFile;
+    } else if (data.contactSource === "manual" && data.manualContacts) {
+      (newCampaign as any).manualContacts = data.manualContacts;
+    }
     
     // Save campaign
     if (campaignToEdit) {
@@ -437,6 +459,9 @@ const CampanhaForm = ({
                     customerSegments={customerSegments}
                     handleChannelChange={handleChannelChange}
                   />
+                  
+                  {/* Contact Selection Section */}
+                  <ContactSelection />
                   
                   {/* Media Section */}
                   <MediaSection />

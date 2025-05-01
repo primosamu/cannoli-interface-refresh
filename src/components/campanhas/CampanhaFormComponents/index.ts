@@ -9,6 +9,8 @@ import IncentiveDisplay from "./IncentiveDisplay";
 import WhatsAppPreview from "./WhatsAppPreview";
 import SmsPreview from "./SmsPreview";
 import EmailPreview from "./EmailPreview";
+import CouponSelection from "./CouponSelection";
+import ContactSelection from "./ContactSelection";
 
 export {
   BasicInfoSection,
@@ -20,5 +22,7 @@ export {
   IncentiveDisplay,
   WhatsAppPreview,
   SmsPreview,
-  EmailPreview
+  EmailPreview,
+  CouponSelection,
+  ContactSelection
 };
