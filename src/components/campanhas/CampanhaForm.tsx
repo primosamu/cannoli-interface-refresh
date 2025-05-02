@@ -1,61 +1,26 @@
+
 import React, { useState, useEffect } from "react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useToast } from "@/hooks/use-toast";
-import { Campaign, CampaignChannel, CustomerSegment, WhatsAppMessageType, IncentiveType } from "@/types/campaign";
-import { format } from "date-fns";
-import { MessageSquare, Mail, Phone, Loader2 } from "lucide-react";
-import {
-  BasicInfoSection,
-  MediaSection,
-  ScheduleSection,
-  SaveAsTemplateSection,
-  MessageComposerSection,
-  PreviewSection,
-  ContactSelection
-} from "./CampanhaFormComponents";
+import { Campaign, CampaignChannel } from "@/types/campaign";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
 
-// Form schema
-const formSchema = z.object({
-  name: z.string().min(3, {
-    message: "O nome da campanha deve ter pelo menos 3 caracteres.",
-  }),
-  channel: z.enum(["whatsapp", "email", "sms"] as const),
-  whatsappType: z.enum(["utility", "marketing"] as const).optional(),
-  segmentId: z.string({
-    required_error: "Por favor selecione um segmento de clientes.",
-  }),
-  content: z.string().min(10, {
-    message: "A mensagem deve ter pelo menos 10 caracteres.",
-  }),
-  incentiveType: z.enum(["none", "coupon", "loyalty"] as const),
-  couponId: z.string().optional(),
-  couponCode: z.string().optional(),
-  imageUrl: z.string().optional(),
-  scheduleDate: z.date().optional(),
-  scheduleTime: z.string().optional(),
-  saveAsTemplate: z.boolean().default(false),
-  contactSource: z.enum(["segment", "file", "manual"]).default("segment"),
-  contactFile: z.string().optional(),
-  manualContacts: z.string().optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import {
+  CustomersSegmentsLoader,
+  PredefinedCampaignsLoader,
+  CampanhaFormActions,
+  CampanhaFormContent,
+  CampanhaFormHeader,
+  CampanhaFormProvider,
+} from "./CampanhaFormSections";
+import { FormValues } from "./CampanhaFormSections/CampanhaFormProvider";
 
 interface CampanhaFormProps {
   open: boolean;
@@ -79,175 +44,53 @@ const CampanhaForm = ({
   const [isScheduled, setIsScheduled] = useState(false);
   const [previewChannel, setPreviewChannel] = useState<CampaignChannel>("whatsapp");
   const [isSaving, setIsSaving] = useState(false);
-
-  // Fetch customer segments from Supabase
-  const { data: customerSegments = [], isLoading: loadingSegments } = useQuery({
-    queryKey: ['customer_segments'],
-    queryFn: async () => {
-      // Try to fetch from Supabase
-      const { data: segmentsData, error } = await supabase
-        .from('segments')
-        .select('*');
-        
-      if (error) {
-        console.error("Error loading segments:", error);
-        return [];
-      }
-      
-      if (!segmentsData || segmentsData.length === 0) {
-        // Return mock data if no segments found
-        return [
-          {
-            id: "seg-1",
-            name: "Todos os clientes",
-            description: "Todos os clientes cadastrados",
-            customerCount: 2500
-          },
-          {
-            id: "seg-2",
-            name: "Clientes VIP",
-            description: "Clientes com alto valor de compra",
-            customerCount: 350
-          },
-          {
-            id: "seg-3",
-            name: "Clientes inativos",
-            description: "Clientes sem compras nos últimos 30 dias",
-            customerCount: 1200
-          },
-          {
-            id: "seg-4",
-            name: "Novos clientes",
-            description: "Clientes que fizeram a primeira compra nos últimos 15 dias",
-            customerCount: 180
-          },
-          {
-            id: "seg-5",
-            name: "Aniversariantes do mês",
-            description: "Clientes que fazem aniversário este mês",
-            customerCount: 75
-          }
-        ];
-      }
-      
-      // Convert Supabase data to our CustomerSegment type
-      return segmentsData.map(seg => ({
-        id: seg.id,
-        name: seg.name,
-        description: seg.description || "",
-        customerCount: seg.customer_count || 0
-      }));
-    },
-    initialData: []
-  });
-
-  // Fetch predefined campaign templates from Supabase
-  const { data: predefinedCampaigns = {} } = useQuery({
-    queryKey: ['predefined_campaigns'],
-    queryFn: async () => {
-      // Try to fetch from Supabase
-      const { data: templatesData, error } = await supabase
-        .from('campaign_templates')
-        .select('*')
-        .eq('type', 'predefined');
-        
-      if (error || !templatesData || templatesData.length === 0) {
-        // Return mock data if no templates found
-        return {
-          "sentimos-sua-falta": {
-            name: "Sentimos sua falta",
-            channel: "whatsapp",
-            whatsappType: "marketing",
-            content: "Olá, {{nome}}! Sentimos sua falta no restaurante. Já faz um tempo desde sua última visita e gostaríamos de te ver novamente. Que tal aproveitar um cupom de 15% de desconto na sua próxima refeição? Válido por 7 dias. Esperamos você!",
-            segment: customerSegments[2],
-            incentive: {
-              type: "coupon" as IncentiveType,
-              couponId: "auto-generated"
-            }
-          },
-          "volte-para-nos": {
-            name: "Volte para nós",
-            channel: "whatsapp",
-            whatsappType: "marketing",
-            content: "Olá, {{nome}}! Estamos com saudades! Como incentivo para você voltar a nos visitar, preparamos um cupom especial de 20% de desconto em qualquer prato do cardápio. Válido por 5 dias. Esperamos você em breve!",
-            segment: customerSegments[2],
-            incentive: {
-              type: "coupon" as IncentiveType,
-              couponId: "auto-generated"
-            }
-          },
-          "terca-da-pizza": {
-            name: "Terça da Pizza",
-            channel: "whatsapp",
-            whatsappType: "marketing",
-            content: "Olá, {{nome}}! Hoje é TERÇA DA PIZZA! 🍕 Todas as pizzas com 30% de desconto. Válido apenas hoje para delivery ou retirada. Faça seu pedido pelo WhatsApp ou pelo nosso app. Bom apetite!",
-            segment: customerSegments[0],
-            incentive: {
-              type: "none"
-            }
-          },
-          "quinta-do-hamburguer": {
-            name: "Quinta do Hambúrguer",
-            channel: "whatsapp",
-            whatsappType: "marketing",
-            content: "Olá, {{nome}}! Hoje é QUINTA DO HAMBÚRGUER! 🍔 Todos os hambúrgueres com 25% de desconto. Válido apenas hoje para delivery ou retirada. Faça seu pedido pelo WhatsApp ou pelo nosso app. Bom apetite!",
-            segment: customerSegments[0],
-            incentive: {
-              type: "none"
-            }
-          }
-        };
-      }
-      
-      // Convert Supabase data to our format - Fix type conversion issues
-      const templateMap: Record<string, Partial<Campaign>> = {};
-      templatesData.forEach(template => {
-        const segmentId = template.segment_id || "";
-        const segment = customerSegments.find(seg => seg.id === segmentId) || customerSegments[0];
-        
-        const key = template.id.toString();
-        templateMap[key] = {
-          name: template.name,
-          channel: template.channel as CampaignChannel,
-          whatsappType: template.whatsapp_type as WhatsAppMessageType,
-          content: template.content || "",
-          segment: segment,
-          incentive: {
-            type: (template.incentive_type || "none") as IncentiveType,
-          },
-          imageUrl: template.image_url
-        };
-      });
-      
-      return templateMap;
-    },
-    enabled: customerSegments?.length > 0
-  });
-
-  // Initialize form with default values or values from predefined campaign/edit
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      channel: "whatsapp",
-      whatsappType: "marketing",
-      segmentId: "",
-      content: "",
-      incentiveType: "none",
-      couponId: undefined,
-      couponCode: "",
-      imageUrl: "",
-      saveAsTemplate: false,
-      contactSource: "segment",
-    },
-  });
-
-  // Update form values when predefinedCampaignId, campaignToEdit, selectedChannel, or campaignType changes
+  
+  // Update preview channel when selectedChannel changes or when campaignToEdit is loaded
   useEffect(() => {
+    if (selectedChannel) {
+      setPreviewChannel(selectedChannel as CampaignChannel);
+    } else if (campaignToEdit) {
+      setPreviewChannel(campaignToEdit.channel);
+    }
+  }, [selectedChannel, campaignToEdit]);
+  
+  // Handle channel change
+  const handleChannelChange = (value: string) => {
+    setPreviewChannel(value as CampaignChannel);
+  };
+
+  // Prepare default values based on params
+  const getDefaultValues = (
+    segments: any[],
+    predefinedCampaigns: any
+  ): Partial<FormValues> => {
+    if (campaignToEdit) {
+      const defaultValues: Partial<FormValues> = {
+        name: campaignToEdit.name,
+        channel: campaignToEdit.channel,
+        whatsappType: campaignToEdit.whatsappType,
+        segmentId: campaignToEdit.segment.id,
+        content: campaignToEdit.content,
+        incentiveType: campaignToEdit.incentive.type,
+        couponId: campaignToEdit.incentive.couponId,
+        imageUrl: campaignToEdit.imageUrl,
+        saveAsTemplate: false,
+        contactSource: "segment",
+      };
+      
+      if (campaignToEdit.scheduledAt) {
+        setIsScheduled(true);
+        const scheduledDate = new Date(campaignToEdit.scheduledAt);
+        defaultValues.scheduleDate = scheduledDate;
+        defaultValues.scheduleTime = format(scheduledDate, "HH:mm");
+      }
+      
+      return defaultValues;
+    }
+    
     if (predefinedCampaignId && predefinedCampaigns[predefinedCampaignId]) {
       const template = predefinedCampaigns[predefinedCampaignId];
-      
-      form.reset({
+      return {
         name: template.name || "",
         channel: template.channel || "whatsapp",
         whatsappType: template.whatsappType || "marketing",
@@ -255,36 +98,12 @@ const CampanhaForm = ({
         content: template.content || "",
         incentiveType: template.incentive?.type || "none",
         couponId: template.incentive?.couponId || undefined,
-        couponCode: "",
         imageUrl: template.imageUrl || "",
         saveAsTemplate: false,
-      });
-      
-      setPreviewChannel(template.channel || "whatsapp");
-    } else if (campaignToEdit) {
-      form.reset({
-        name: campaignToEdit.name,
-        channel: campaignToEdit.channel,
-        whatsappType: campaignToEdit.whatsappType || "marketing",
-        segmentId: campaignToEdit.segment.id,
-        content: campaignToEdit.content,
-        incentiveType: campaignToEdit.incentive.type,
-        couponId: campaignToEdit.incentive.couponId || undefined,
-        couponCode: "",
-        imageUrl: campaignToEdit.imageUrl || "",
-        saveAsTemplate: false,
-      });
-      
-      setPreviewChannel(campaignToEdit.channel);
-      
-      if (campaignToEdit.scheduledAt) {
-        setIsScheduled(true);
-        const scheduledDate = new Date(campaignToEdit.scheduledAt);
-        form.setValue("scheduleDate", scheduledDate);
-        form.setValue("scheduleTime", format(scheduledDate, "HH:mm"));
-      }
-    } else if (selectedChannel) {
-      // Set form values based on selected channel and campaign type
+      };
+    }
+    
+    if (selectedChannel) {
       let defaultContent = "";
       let defaultName = "";
       
@@ -327,41 +146,18 @@ const CampanhaForm = ({
         }
       }
       
-      form.reset({
+      return {
         name: defaultName,
         channel: selectedChannel as CampaignChannel,
         whatsappType: selectedChannel === "whatsapp" ? "marketing" : undefined,
-        segmentId: customerSegments[0]?.id || "",
+        segmentId: segments.length > 0 ? segments[0].id : "",
         content: defaultContent,
         incentiveType: "none",
-        couponId: undefined,
-        couponCode: "",
-        imageUrl: "",
         saveAsTemplate: false,
-      });
-      
-      setPreviewChannel(selectedChannel as CampaignChannel);
+      };
     }
-  }, [predefinedCampaignId, campaignToEdit, selectedChannel, campaignType, form, customerSegments, predefinedCampaigns]);
-
-  // Helper function to safely replace placeholders in message content
-  const getPreviewText = (content: string): string => {
-    if (!content) return "";
-    // Safely replace placeholders to prevent TypeScript errors
-    return content.replace(/\{\{nome\}\}/g, "Cliente");
-  };
-
-  // Handle channel change
-  const handleChannelChange = (value: string) => {
-    form.setValue("channel", value as CampaignChannel);
-    setPreviewChannel(value as CampaignChannel);
     
-    // Reset WhatsApp type if channel is not WhatsApp
-    if (value !== "whatsapp") {
-      form.setValue("whatsappType", undefined);
-    } else {
-      form.setValue("whatsappType", "marketing");
-    }
+    return {};
   };
 
   // Handle form submission
@@ -370,7 +166,9 @@ const CampanhaForm = ({
     
     try {
       // Find selected segment
-      const selectedSegment = customerSegments.find(seg => seg.id === data.segmentId);
+      const queryClient = useQueryClient();
+      const segments = queryClient.getQueryData<any[]>(['customer_segments']) || [];
+      const selectedSegment = segments.find(seg => seg.id === data.segmentId);
       
       if (!selectedSegment) {
         toast({
@@ -386,10 +184,10 @@ const CampanhaForm = ({
         name: data.name,
         segment_id: data.segmentId,
         incentive_type: data.incentiveType,
-        coupon_id: data.incentiveType === "coupon" ? data.couponId || `cpn-${Date.now()}` : undefined,
-        loyalty_points: data.incentiveType === "loyalty" ? 10 : undefined,
+        coupon_id: data.incentiveType === "coupon" ? data.couponId || `cpn-${Date.now()}` : null,
+        loyalty_points: data.incentiveType === "loyalty" ? 10 : null,
         channel: data.channel,
-        whatsapp_type: data.channel === "whatsapp" ? data.whatsappType : undefined,
+        whatsapp_type: data.channel === "whatsapp" ? data.whatsappType : null,
         content: data.content,
         image_url: data.imageUrl,
         status: isScheduled ? "scheduled" : "active",
@@ -401,7 +199,7 @@ const CampanhaForm = ({
               date.setHours(hours, minutes);
             }
             return date.toISOString();
-          })() : undefined,
+          })() : null,
         type: "campaign", // Regular campaign, not template
         user_id: "system", // This will be replaced with the actual user ID when auth is implemented
       };
@@ -431,7 +229,7 @@ const CampanhaForm = ({
         const templateData = {
           name: data.name,
           channel: data.channel,
-          whatsapp_type: data.channel === "whatsapp" ? data.whatsappType : undefined,
+          whatsapp_type: data.channel === "whatsapp" ? data.whatsappType : null,
           content: data.content,
           image_url: data.imageUrl,
           incentive_type: data.incentiveType,
@@ -480,107 +278,65 @@ const CampanhaForm = ({
     }
   };
 
-  // Get channel icon
-  const getChannelIcon = (channel: CampaignChannel) => {
-    switch (channel) {
-      case "whatsapp":
-        return <MessageSquare className="h-4 w-4" />;
-      case "email":
-        return <Mail className="h-4 w-4" />;
-      case "sms":
-        return <Phone className="h-4 w-4" />;
-      default:
-        return null;
-    }
-  };
-
-  // Show loading state while fetching segments
-  if (loadingSegments) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md">
-          <div className="flex flex-col items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-            <p>Carregando segmentos de clientes...</p>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-        <DialogHeader className="px-6 pt-6 pb-2">
-          <DialogTitle>
-            {campaignToEdit ? "Editar Campanha" : predefinedCampaignId ? "Usar Modelo de Campanha" : "Nova Campanha"}
-          </DialogTitle>
-          <DialogDescription>
-            {campaignToEdit 
-              ? "Edite os detalhes da sua campanha de mensageria."
-              : "Crie uma nova campanha para enviar mensagens aos seus clientes."}
-          </DialogDescription>
-        </DialogHeader>
+    <CustomersSegmentsLoader>
+      {(customerSegments, loadingSegments) => {
+        if (loadingSegments) {
+          return (
+            <Dialog open={open} onOpenChange={onOpenChange}>
+              <DialogContent className="max-w-md">
+                <div className="flex flex-col items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                  <p>Carregando segmentos de clientes...</p>
+                </div>
+              </DialogContent>
+            </Dialog>
+          );
+        }
         
-        <ScrollArea className="max-h-[calc(90vh-180px)] px-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="space-y-6">
-                  {/* Basic Information Section */}
-                  <BasicInfoSection 
-                    customerSegments={customerSegments}
-                    handleChannelChange={handleChannelChange}
+        return (
+          <PredefinedCampaignsLoader customerSegments={customerSegments}>
+            {(predefinedCampaigns) => (
+              <Dialog open={open} onOpenChange={onOpenChange}>
+                <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+                  <CampanhaFormHeader 
+                    isEditing={!!campaignToEdit}
+                    isPredefined={!!predefinedCampaignId}
                   />
                   
-                  {/* Contact Selection Section */}
-                  <ContactSelection />
+                  <ScrollArea className="max-h-[calc(90vh-180px)] px-6">
+                    <CampanhaFormProvider 
+                      defaultValues={getDefaultValues(customerSegments, predefinedCampaigns)}
+                      onSubmit={onSubmit}
+                    >
+                      <CampanhaFormContent 
+                        isScheduled={isScheduled}
+                        setIsScheduled={setIsScheduled}
+                        previewChannel={previewChannel}
+                        handleChannelChange={handleChannelChange}
+                        customerSegments={customerSegments}
+                      />
+                    </CampanhaFormProvider>
+                  </ScrollArea>
                   
-                  {/* Media Section */}
-                  <MediaSection />
-                  
-                  {/* Schedule Section */}
-                  <ScheduleSection 
+                  <CampanhaFormActions 
+                    isSaving={isSaving}
                     isScheduled={isScheduled}
-                    setIsScheduled={setIsScheduled}
+                    onCancel={() => onOpenChange(false)}
+                    onSubmit={() => {
+                      const submitter = document.querySelector("form");
+                      if (submitter) {
+                        submitter.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                      }
+                    }}
                   />
-                  
-                  {/* Save As Template Section */}
-                  <SaveAsTemplateSection />
-                </div>
-                
-                <div className="space-y-6">
-                  {/* Message Composer Section */}
-                  <MessageComposerSection />
-                  
-                  {/* Preview Section */}
-                  <PreviewSection previewChannel={previewChannel} />
-                </div>
-              </div>
-            </form>
-          </Form>
-        </ScrollArea>
-        
-        <DialogFooter className="px-6 py-4 border-t">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
-          </Button>
-          <Button 
-            onClick={form.handleSubmit(onSubmit)} 
-            disabled={isSaving}
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Salvando...
-              </>
-            ) : (
-              isScheduled ? "Agendar Campanha" : "Criar Campanha"
+                </DialogContent>
+              </Dialog>
             )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </PredefinedCampaignsLoader>
+        );
+      }}
+    </CustomersSegmentsLoader>
   );
 };
 

@@ -1,4 +1,3 @@
-
 import { Campaign, CampaignChannel, WhatsAppMessageType, CampaignStatus, IncentiveType } from "@/types/campaign";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageSquare, Mail, Phone } from "lucide-react";
@@ -130,7 +129,7 @@ export const convertTemplateToCampaign = (template: any): Partial<Campaign> => {
   
   // Create a default segment since segment_id might not exist
   const defaultSegment = {
-    id: "default",
+    id: template.segment_id || "default",
     name: "Default Segment",
     description: "Default segment description",
     customerCount: 0
