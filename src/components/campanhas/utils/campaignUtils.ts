@@ -20,7 +20,7 @@ export const getRecentCampaigns = async (): Promise<Campaign[]> => {
   }
   
   if (!data || data.length === 0) {
-    return [];
+    return getMockCampaigns(); // Return mock data if no campaigns found
   }
   
   return data.map(campaign => ({
@@ -51,11 +51,11 @@ export const getRecentCampaigns = async (): Promise<Campaign[]> => {
 export const getChannelIcon = (channel: string, whatsappType?: string) => {
   switch (channel) {
     case "whatsapp":
-      return <MessageSquare className="h-4 w-4 text-green-600" />;
+      return React.createElement(MessageSquare, { className: "h-4 w-4 text-green-600" });
     case "email":
-      return <Mail className="h-4 w-4 text-purple-600" />;
+      return React.createElement(Mail, { className: "h-4 w-4 text-purple-600" });
     case "sms":
-      return <Phone className="h-4 w-4 text-blue-600" />;
+      return React.createElement(Phone, { className: "h-4 w-4 text-blue-600" });
     default:
       return null;
   }
@@ -65,16 +65,16 @@ export const getChannelIcon = (channel: string, whatsappType?: string) => {
 export const getStatusBadge = (status: CampaignStatus) => {
   switch (status) {
     case "active":
-      return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Ativo</Badge>;
+      return React.createElement(Badge, { className: "bg-green-100 text-green-800 hover:bg-green-200" }, "Ativo");
     case "scheduled":
-      return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Agendado</Badge>;
+      return React.createElement(Badge, { className: "bg-blue-100 text-blue-800 hover:bg-blue-200" }, "Agendado");
     case "completed":
-      return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">Concluído</Badge>;
+      return React.createElement(Badge, { className: "bg-gray-100 text-gray-800 hover:bg-gray-200" }, "Concluído");
     case "paused":
-      return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">Pausado</Badge>;
+      return React.createElement(Badge, { className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200" }, "Pausado");
     case "draft":
     default:
-      return <Badge variant="outline">Rascunho</Badge>;
+      return React.createElement(Badge, { variant: "outline" }, "Rascunho");
   }
 };
 
@@ -134,7 +134,7 @@ export const convertTemplateToCampaign = (template: any): Partial<Campaign> => {
       customerCount: 0
     },
     incentive: {
-      type: template.incentive_type as IncentiveType || "none"
+      type: (template.incentive_type as IncentiveType) || "none"
     },
     channel: template.channel as CampaignChannel,
     whatsappType: template.whatsapp_type as WhatsAppMessageType,
