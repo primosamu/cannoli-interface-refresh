@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { MessageSquare, Mail, Phone, Eye, Bookmark } from "lucide-react";
+import { MessageSquare, Mail, Phone, Eye, Bookmark, Loader2 } from "lucide-react";
 import { 
   Dialog,
   DialogContent,
@@ -14,71 +14,48 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import CampanhaForm from "./CampanhaForm";
 import { Campaign, CampaignStatus } from "@/types/campaign";
-
-// Mock saved campaigns data - in a real app, this would come from a database
-const mockSavedCampaigns: Campaign[] = [
-  {
-    id: "saved-1",
-    name: "Promoção fidelidade semanal",
-    segment: {
-      id: "seg-1",
-      name: "Clientes Premium",
-      description: "Clientes com alto volume de compras",
-      customerCount: 1250
-    },
-    incentive: {
-      type: "coupon",
-      couponId: "cpn-123",
-      loyaltyPoints: 0
-    },
-    channel: "whatsapp",
-    whatsappType: "marketing",
-    content: "Olá, temos uma promoção exclusiva para você como cliente premium!",
-    status: "draft",
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: "saved-2",
-    name: "Modelo Agradecimento Cliente Novo",
-    segment: {
-      id: "seg-2",
-      name: "Novos Clientes",
-      description: "Clientes que fizeram a primeira compra",
-      customerCount: 380
-    },
-    incentive: {
-      type: "none"
-    },
-    channel: "email",
-    content: "Agradecemos pela sua primeira compra! Esperamos que tenha tido uma ótima experiência.",
-    status: "draft",
-    createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: "saved-3",
-    name: "Lembrete de carrinho abandonado",
-    segment: {
-      id: "seg-3",
-      name: "Carrinho abandonado",
-      description: "Clientes que abandonaram o carrinho",
-      customerCount: 675
-    },
-    incentive: {
-      type: "coupon",
-      couponId: "cpn-456"
-    },
-    channel: "sms",
-    content: "Você esqueceu itens no seu carrinho! Use o cupom VOLTA10 para 10% de desconto na finalização.",
-    status: "draft",
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-  }
-];
+import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const SavedCampaignsList = () => {
-  const [savedCampaigns] = useState<Campaign[]>(mockSavedCampaigns);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [openEditForm, setOpenEditForm] = useState(false);
+  const { toast } = useToast();
+  
+  // Fetch saved templates from Supabase
+  const { data: savedCampaigns, isLoading, error } = useQuery({
+    queryKey: ['campaign_templates'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('campaign_templates')
+        .select('*');
+        
+      if (error) throw error;
+      
+      // Convert Supabase data to our Campaign type
+      return data.map(template => ({
+        id: template.id,
+        name: template.name,
+        segment: {
+          id: "default",
+          name: "Default Segment",
+          description: "Default segment description",
+          customerCount: 0
+        },
+        incentive: {
+          type: template.incentive_type || "none"
+        },
+        channel: template.channel as any,
+        whatsappType: template.whatsapp_type as any,
+        content: template.content || "",
+        status: "draft" as CampaignStatus,
+        createdAt: template.created_at,
+        imageUrl: template.image_url
+      }));
+    }
+  });
   
   const getChannelIcon = (channel: string) => {
     switch (channel) {
@@ -128,7 +105,15 @@ const SavedCampaignsList = () => {
         <Bookmark className="h-4 w-4 text-slate-400" />
       </div>
       
-      {savedCampaigns.length === 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-6">
+          <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+        </div>
+      ) : error ? (
+        <div className="text-sm text-red-500 py-3">
+          Erro ao carregar campanhas salvas. Tente novamente mais tarde.
+        </div>
+      ) : (!savedCampaigns || savedCampaigns.length === 0) ? (
         <p className="text-sm text-muted-foreground">
           Você ainda não tem campanhas salvas. Salve um modelo para usar novamente.
         </p>
