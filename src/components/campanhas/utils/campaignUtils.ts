@@ -124,21 +124,29 @@ export const getMockCampaigns = (): Campaign[] => {
 
 // Helper to convert Supabase campaign template to our Campaign type
 export const convertTemplateToCampaign = (template: any): Partial<Campaign> => {
-  // Add default properties or safely access properties that might not exist
+  if (!template) {
+    return {};
+  }
+  
+  // Create a default segment since segment_id might not exist
+  const defaultSegment = {
+    id: "default",
+    name: "Default Segment",
+    description: "Default segment description",
+    customerCount: 0
+  };
+
   return {
     id: template.id,
     name: template.name,
-    segment: {
-      id: "default",
-      name: "Default Segment",
-      description: "Default segment description",
-      customerCount: 0
-    },
+    segment: defaultSegment,
     incentive: {
-      type: (template.incentive_type as IncentiveType) || "none"
+      type: ((template.incentive_type as IncentiveType) || "none"),
+      couponId: template.coupon_id,
+      loyaltyPoints: template.loyalty_points
     },
-    channel: template.channel as CampaignChannel,
-    whatsappType: template.whatsapp_type as WhatsAppMessageType,
+    channel: (template.channel as CampaignChannel) || "whatsapp",
+    whatsappType: (template.whatsapp_type as WhatsAppMessageType) || "marketing",
     content: template.content || "",
     status: "draft" as CampaignStatus,
     createdAt: template.created_at,
