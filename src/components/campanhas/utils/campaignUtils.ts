@@ -124,6 +124,7 @@ export const getMockCampaigns = (): Campaign[] => {
 
 // Helper to convert Supabase campaign template to our Campaign type
 export const convertTemplateToCampaign = (template: any): Partial<Campaign> => {
+  // Add default properties or safely access properties that might not exist
   return {
     id: template.id,
     name: template.name,
