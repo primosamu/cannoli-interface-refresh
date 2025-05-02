@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { MessageSquare, Mail, Phone, Eye, Bookmark, Loader2 } from "lucide-react";
 import { 
@@ -12,10 +13,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import CampanhaForm from "./CampanhaForm";
+import { getChannelIcon } from "./utils/campaignUtils";
 import { Campaign, CampaignStatus, CampaignChannel, IncentiveType, WhatsAppMessageType } from "@/types/campaign";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { convertTemplateToCampaign } from "./utils/campaignUtils";
 
 const SavedCampaignsList = () => {
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
@@ -45,8 +48,8 @@ const SavedCampaignsList = () => {
         },
         incentive: {
           type: template.incentive_type as IncentiveType || "none",
-          couponId: template.coupon_id,
-          loyaltyPoints: template.loyalty_points
+          couponId: undefined,  // Changed from template.coupon_id
+          loyaltyPoints: undefined // Changed from template.loyalty_points
         },
         channel: template.channel as CampaignChannel,
         whatsappType: template.whatsapp_type as WhatsAppMessageType,
@@ -57,19 +60,6 @@ const SavedCampaignsList = () => {
       }));
     }
   });
-  
-  const getChannelIcon = (channel: string) => {
-    switch (channel) {
-      case "whatsapp":
-        return <MessageSquare className="h-4 w-4 text-green-600" />;
-      case "email":
-        return <Mail className="h-4 w-4 text-purple-600" />;
-      case "sms":
-        return <Phone className="h-4 w-4 text-blue-600" />;
-      default:
-        return null;
-    }
-  };
   
   // Format date relative to now
   const formatDate = (dateString: string) => {

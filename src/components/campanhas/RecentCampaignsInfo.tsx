@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { MessageSquare, Mail, Phone, Edit, Eye } from "lucide-react";
+
+import React, { useState } from "react";
+import { MessageSquare, Mail, Phone, Edit, Eye, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { getMockCampaigns } from "./utils/campaignUtils";
+import { getMockCampaigns, getChannelIcon, getStatusBadge } from "./utils/campaignUtils";
 import { Campaign, CampaignStatus } from "@/types/campaign";
 import { 
   Dialog,
@@ -9,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import CampanhaForm from "./CampanhaForm";

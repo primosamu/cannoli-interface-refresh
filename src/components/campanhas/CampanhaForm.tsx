@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -15,7 +14,7 @@ import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Campaign, CampaignChannel, CustomerSegment, WhatsAppMessageType } from "@/types/campaign";
+import { Campaign, CampaignChannel, CustomerSegment, WhatsAppMessageType, IncentiveType } from "@/types/campaign";
 import { format } from "date-fns";
 import { MessageSquare, Mail, Phone, Loader2 } from "lucide-react";
 import {
@@ -162,7 +161,7 @@ const CampanhaForm = ({
             content: "Olá, {{nome}}! Sentimos sua falta no restaurante. Já faz um tempo desde sua última visita e gostaríamos de te ver novamente. Que tal aproveitar um cupom de 15% de desconto na sua próxima refeição? Válido por 7 dias. Esperamos você!",
             segment: customerSegments[2],
             incentive: {
-              type: "coupon",
+              type: "coupon" as IncentiveType,
               couponId: "auto-generated"
             }
           },
@@ -173,7 +172,7 @@ const CampanhaForm = ({
             content: "Olá, {{nome}}! Estamos com saudades! Como incentivo para você voltar a nos visitar, preparamos um cupom especial de 20% de desconto em qualquer prato do cardápio. Válido por 5 dias. Esperamos você em breve!",
             segment: customerSegments[2],
             incentive: {
-              type: "coupon",
+              type: "coupon" as IncentiveType,
               couponId: "auto-generated"
             }
           },
@@ -200,19 +199,21 @@ const CampanhaForm = ({
         };
       }
       
-      // Convert Supabase data to our format
+      // Convert Supabase data to our format - Fix type conversion issues
       const templateMap: Record<string, Partial<Campaign>> = {};
       templatesData.forEach(template => {
+        const segmentId = template.segment_id || "";
+        const segment = customerSegments.find(seg => seg.id === segmentId) || customerSegments[0];
+        
         const key = template.id.toString();
         templateMap[key] = {
           name: template.name,
           channel: template.channel as CampaignChannel,
           whatsappType: template.whatsapp_type as WhatsAppMessageType,
           content: template.content || "",
-          segment: customerSegments.find(seg => seg.id === template.segment_id) || customerSegments[0],
+          segment: segment,
           incentive: {
-            type: template.incentive_type || "none",
-            couponId: template.coupon_id
+            type: (template.incentive_type || "none") as IncentiveType,
           },
           imageUrl: template.image_url
         };
@@ -220,7 +221,7 @@ const CampanhaForm = ({
       
       return templateMap;
     },
-    enabled: customerSegments.length > 0
+    enabled: customerSegments?.length > 0
   });
 
   // Initialize form with default values or values from predefined campaign/edit

@@ -1,6 +1,9 @@
 
 import { Campaign, CampaignChannel, WhatsAppMessageType, CampaignStatus, IncentiveType } from "@/types/campaign";
 import { supabase } from "@/integrations/supabase/client";
+import { MessageSquare, Mail, Phone } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import React from "react";
 
 // Function to get recent campaigns from Supabase
 export const getRecentCampaigns = async (): Promise<Campaign[]> => {
@@ -42,6 +45,37 @@ export const getRecentCampaigns = async (): Promise<Campaign[]> => {
     createdAt: campaign.created_at,
     scheduledAt: campaign.scheduled_at
   }));
+};
+
+// Get channel icon based on channel type
+export const getChannelIcon = (channel: string, whatsappType?: string) => {
+  switch (channel) {
+    case "whatsapp":
+      return <MessageSquare className="h-4 w-4 text-green-600" />;
+    case "email":
+      return <Mail className="h-4 w-4 text-purple-600" />;
+    case "sms":
+      return <Phone className="h-4 w-4 text-blue-600" />;
+    default:
+      return null;
+  }
+};
+
+// Get status badge for campaigns
+export const getStatusBadge = (status: CampaignStatus) => {
+  switch (status) {
+    case "active":
+      return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Ativo</Badge>;
+    case "scheduled":
+      return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Agendado</Badge>;
+    case "completed":
+      return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">Concluído</Badge>;
+    case "paused":
+      return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">Pausado</Badge>;
+    case "draft":
+    default:
+      return <Badge variant="outline">Rascunho</Badge>;
+  }
 };
 
 // Mock campaigns for development when Supabase data is not available
@@ -86,4 +120,27 @@ export const getMockCampaigns = (): Campaign[] => {
       createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
     }
   ];
+};
+
+// Helper to convert Supabase campaign template to our Campaign type
+export const convertTemplateToCampaign = (template: any): Partial<Campaign> => {
+  return {
+    id: template.id,
+    name: template.name,
+    segment: {
+      id: "default",
+      name: "Default Segment",
+      description: "Default segment description",
+      customerCount: 0
+    },
+    incentive: {
+      type: template.incentive_type as IncentiveType || "none"
+    },
+    channel: template.channel as CampaignChannel,
+    whatsappType: template.whatsapp_type as WhatsAppMessageType,
+    content: template.content || "",
+    status: "draft" as CampaignStatus,
+    createdAt: template.created_at,
+    imageUrl: template.image_url
+  };
 };

@@ -10,7 +10,7 @@ import CommunicationChannelCard from "./CommunicationChannelCard";
 import RecentCampaignsInfo from "./RecentCampaignsInfo";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Campaign, CampaignChannel } from "@/types/campaign";
+import { Campaign, CampaignChannel, WhatsAppMessageType } from "@/types/campaign";
 
 const CampanhasMensageria: React.FC = () => {
   const [showNewCampaignForm, setShowNewCampaignForm] = useState(false);
@@ -38,7 +38,7 @@ const CampanhasMensageria: React.FC = () => {
         name: campaign.name,
         segment: {
           id: campaign.segment_id || "default",
-          name: "Customer Segment", // We would need to fetch actual segment info
+          name: "Customer Segment",
           description: "Description",
           customerCount: 0
         },
@@ -48,13 +48,13 @@ const CampanhasMensageria: React.FC = () => {
           loyaltyPoints: campaign.loyalty_points
         },
         channel: campaign.channel as CampaignChannel,
-        whatsappType: campaign.whatsapp_type,
+        whatsappType: campaign.whatsapp_type as WhatsAppMessageType,
         content: campaign.content || "",
         imageUrl: campaign.image_url,
         status: campaign.status,
         createdAt: campaign.created_at,
         scheduledAt: campaign.scheduled_at
-      }));
+      })) as Campaign[];
     }
   });
 
@@ -136,7 +136,7 @@ const CampanhasMensageria: React.FC = () => {
         
         {/* Middle Column */}
         <div className="space-y-6">
-          {/* Recent Campaigns Section */}
+          {/* Recent Campaigns Card */}
           <Card className="overflow-hidden">
             <div className="bg-white p-4">
               <div className="flex justify-between items-center">
