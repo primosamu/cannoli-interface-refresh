@@ -10,7 +10,7 @@ import CommunicationChannelCard from "./CommunicationChannelCard";
 import RecentCampaignsInfo from "./RecentCampaignsInfo";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CampaignChannel } from "@/types/campaign";
+import { Campaign, CampaignChannel } from "@/types/campaign";
 
 const CampanhasMensageria: React.FC = () => {
   const [showNewCampaignForm, setShowNewCampaignForm] = useState(false);
@@ -43,7 +43,7 @@ const CampanhasMensageria: React.FC = () => {
           customerCount: 0
         },
         incentive: {
-          type: campaign.incentive_type || "none",
+          type: campaign.incentive_type as "none" | "coupon" | "loyalty",
           couponId: campaign.coupon_id,
           loyaltyPoints: campaign.loyalty_points
         },
@@ -81,7 +81,7 @@ const CampanhasMensageria: React.FC = () => {
           icon="whatsapp"
           title="WhatsApp"
           description="Mensagens diretas para WhatsApp"
-          onClick={() => handleNewCampaign("whatsapp")}
+          onChannelSelect={() => handleNewCampaign("whatsapp")}
           quickActionLinks={[
             { label: "Promoção", onClick: () => handleNewCampaign("whatsapp", "promotion") },
             { label: "Novidades", onClick: () => handleNewCampaign("whatsapp", "news") },
@@ -93,7 +93,7 @@ const CampanhasMensageria: React.FC = () => {
           icon="email"
           title="Email"
           description="Campanhas por email"
-          onClick={() => handleNewCampaign("email")}
+          onChannelSelect={() => handleNewCampaign("email")}
           quickActionLinks={[
             { label: "Newsletter", onClick: () => handleNewCampaign("email", "newsletter") },
             { label: "Evento", onClick: () => handleNewCampaign("email", "event") },
@@ -105,7 +105,7 @@ const CampanhasMensageria: React.FC = () => {
           icon="sms"
           title="SMS"
           description="Mensagens SMS diretas"
-          onClick={() => handleNewCampaign("sms")}
+          onChannelSelect={() => handleNewCampaign("sms")}
           quickActionLinks={[
             { label: "Urgente", onClick: () => handleNewCampaign("sms", "urgent") },
             { label: "Confirmação", onClick: () => handleNewCampaign("sms", "confirmation") },
@@ -175,11 +175,36 @@ const CampanhasMensageria: React.FC = () => {
         {/* Right Column */}
         <div className="space-y-6">
           {/* Predefined Campaigns Section */}
-          <PredefinedCampaignSection onSelectTemplate={(id) => {
-            setShowNewCampaignForm(true);
-            // Pass the template ID to the form
-            return id;
-          }} />
+          <PredefinedCampaignSection 
+            title="Campanhas Predefinidas"
+            icon={<PlusCircle className="h-4 w-4 text-primary" />}
+            campaigns={[
+              {
+                id: "sentimos-sua-falta",
+                title: "Sentimos sua falta",
+                description: "Para clientes inativos",
+                badge: "WhatsApp"
+              },
+              {
+                id: "volte-para-nos",
+                title: "Volte para nós",
+                description: "Com cupom de desconto",
+                badge: "WhatsApp"
+              },
+              {
+                id: "terca-da-pizza",
+                title: "Terça da Pizza",
+                description: "Promoção especial",
+                badge: "WhatsApp"
+              }
+            ]}
+            colorClass="bg-purple-50"
+            onSelectCampaign={(id) => {
+              setShowNewCampaignForm(true);
+              // Return the ID for other logic if needed
+              return id;
+            }}
+          />
         </div>
       </div>
       

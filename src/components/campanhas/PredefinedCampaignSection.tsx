@@ -11,7 +11,7 @@ interface CampaignItem {
   badge: string;
 }
 
-interface PredefinedCampaignSectionProps {
+export interface PredefinedCampaignSectionProps {
   title: string;
   icon: React.ReactNode;
   campaigns: CampaignItem[];

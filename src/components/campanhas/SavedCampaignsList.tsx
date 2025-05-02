@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { MessageSquare, Mail, Phone, Eye, Bookmark, Loader2 } from "lucide-react";
 import { 
@@ -13,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import CampanhaForm from "./CampanhaForm";
-import { Campaign, CampaignStatus } from "@/types/campaign";
+import { Campaign, CampaignStatus, CampaignChannel, IncentiveType, WhatsAppMessageType } from "@/types/campaign";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,10 +44,12 @@ const SavedCampaignsList = () => {
           customerCount: 0
         },
         incentive: {
-          type: template.incentive_type || "none"
+          type: template.incentive_type as IncentiveType || "none",
+          couponId: template.coupon_id,
+          loyaltyPoints: template.loyalty_points
         },
-        channel: template.channel as any,
-        whatsappType: template.whatsapp_type as any,
+        channel: template.channel as CampaignChannel,
+        whatsappType: template.whatsapp_type as WhatsAppMessageType,
         content: template.content || "",
         status: "draft" as CampaignStatus,
         createdAt: template.created_at,

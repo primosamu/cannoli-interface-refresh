@@ -1,46 +1,87 @@
 
 import React from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ChevronRight } from "lucide-react";
+import { MessageSquare, Mail, Phone } from "lucide-react";
 
-interface CommunicationChannelCardProps {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  openRate: number;
-  conversionRate: number;
-  onCreateCampaign: (type: string) => void;
+export interface QuickActionLink {
+  label: string;
+  onClick: () => void;
 }
 
-const CommunicationChannelCard = ({
+export interface CommunicationChannelCardProps {
+  icon: string;
+  title: string;
+  description: string;
+  onChannelSelect: () => void;
+  quickActionLinks: QuickActionLink[];
+}
+
+const CommunicationChannelCard: React.FC<CommunicationChannelCardProps> = ({
+  icon,
   title,
   description,
-  icon,
-  openRate,
-  conversionRate,
-  onCreateCampaign,
-}: CommunicationChannelCardProps) => {
+  onChannelSelect,
+  quickActionLinks
+}) => {
+  const renderIcon = () => {
+    switch (icon) {
+      case "whatsapp":
+        return <MessageSquare className="h-5 w-5 text-green-600" />;
+      case "email":
+        return <Mail className="h-5 w-5 text-purple-600" />;
+      case "sms":
+        return <Phone className="h-5 w-5 text-blue-600" />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <Card className="bg-white">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg flex items-center gap-2">
-          {icon}
-          {title}
-        </CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          <div className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{openRate}%</span> de taxa de abertura
+    <Card>
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          {/* Header with icon and title */}
+          <div 
+            className="flex items-center justify-between cursor-pointer"
+            onClick={onChannelSelect}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`rounded-full p-2 ${
+                icon === 'whatsapp' ? 'bg-green-100' :
+                icon === 'email' ? 'bg-purple-100' : 'bg-blue-100'
+              }`}>
+                {renderIcon()}
+              </div>
+              <div>
+                <h3 className="font-medium">{title}</h3>
+                <p className="text-sm text-muted-foreground">{description}</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
           </div>
-          <div className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{conversionRate}%</span> de taxa de conversão
-          </div>
+          
+          {/* Quick action links */}
+          {quickActionLinks && quickActionLinks.length > 0 && (
+            <div className="border-t pt-3 mt-3">
+              <p className="text-xs text-muted-foreground mb-2">Ações rápidas</p>
+              <div className="space-y-1">
+                {quickActionLinks.map((link, index) => (
+                  <Button 
+                    key={index} 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full justify-start text-sm px-2"
+                    onClick={link.onClick}
+                  >
+                    {link.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-        <Button variant="outline" className="w-full mt-4" onClick={() => onCreateCampaign(title)}>
-          Criar Campanha
-        </Button>
       </CardContent>
     </Card>
   );
