@@ -28,18 +28,31 @@ const CommunicationChannelCard: React.FC<CommunicationChannelCardProps> = ({
   const renderIcon = () => {
     switch (icon) {
       case "whatsapp":
-        return <MessageSquare className="h-5 w-5 text-green-600" />;
+        return <MessageSquare className="h-6 w-6 text-green-600" />;
       case "email":
-        return <Mail className="h-5 w-5 text-purple-600" />;
+        return <Mail className="h-6 w-6 text-purple-600" />;
       case "sms":
-        return <Phone className="h-5 w-5 text-blue-600" />;
+        return <Phone className="h-6 w-6 text-blue-600" />;
       default:
         return null;
     }
   };
 
+  const getGradientClass = () => {
+    switch (icon) {
+      case "whatsapp":
+        return 'bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100';
+      case "email":
+        return 'bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100';
+      case "sms":
+        return 'bg-gradient-to-r from-blue-50 to-sky-50 hover:from-blue-100 hover:to-sky-100';
+      default:
+        return 'bg-gradient-to-r from-gray-50 to-slate-50 hover:from-gray-100 hover:to-slate-100';
+    }
+  };
+
   return (
-    <Card>
+    <Card className={`border-none shadow-sm ${getGradientClass()} transition-all`}>
       <CardContent className="p-6">
         <div className="space-y-4">
           {/* Header with icon and title */}
@@ -55,11 +68,13 @@ const CommunicationChannelCard: React.FC<CommunicationChannelCardProps> = ({
                 {renderIcon()}
               </div>
               <div>
-                <h3 className="font-medium">{title}</h3>
+                <h3 className="font-medium text-lg">{title}</h3>
                 <p className="text-sm text-muted-foreground">{description}</p>
               </div>
             </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </Button>
           </div>
           
           {/* Quick action links */}
@@ -72,7 +87,7 @@ const CommunicationChannelCard: React.FC<CommunicationChannelCardProps> = ({
                     key={index} 
                     variant="ghost" 
                     size="sm" 
-                    className="w-full justify-start text-sm px-2"
+                    className="w-full justify-start text-sm px-2 hover:bg-white/50"
                     onClick={link.onClick}
                   >
                     {link.label}

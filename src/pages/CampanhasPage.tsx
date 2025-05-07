@@ -25,23 +25,27 @@ const CampanhasPage = () => {
   }, [tabParam]);
 
   return (
-    <div className="container mx-auto space-y-6 py-4">
-      <Card className="bg-white/50 backdrop-blur-sm p-4">
+    <div className="container mx-auto py-6 max-w-7xl">
+      <Card className="bg-white p-6 shadow-sm">
         <Tabs 
           value={activeTab} 
           onValueChange={handleTabChange}
-          className="space-y-4"
+          className="space-y-6"
         >
-          <TabsList className="grid w-full max-w-md grid-cols-2 mx-auto">
-            <TabsTrigger value="mensageria">Campanhas de Mensageria</TabsTrigger>
-            <TabsTrigger value="trafego-pago">Tráfego Pago</TabsTrigger>
+          <TabsList className="grid w-full max-w-md grid-cols-2 mx-auto bg-slate-100">
+            <TabsTrigger value="mensageria" className="data-[state=active]:bg-white">
+              Campanhas de Mensageria
+            </TabsTrigger>
+            <TabsTrigger value="trafego-pago" className="data-[state=active]:bg-white">
+              Tráfego Pago
+            </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="mensageria" className="space-y-4">
+          <TabsContent value="mensageria" className="space-y-4 mt-6">
             <CampanhasMensageria />
           </TabsContent>
           
-          <TabsContent value="trafego-pago" className="space-y-4">
+          <TabsContent value="trafego-pago" className="space-y-4 mt-6">
             <CampanhasTrafegoPago />
           </TabsContent>
         </Tabs>

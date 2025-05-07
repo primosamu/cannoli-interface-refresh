@@ -2,15 +2,16 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { PlusCircle, ChevronRight, Loader2 } from "lucide-react";
+import { PlusCircle, Loader2 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Campaign, CampaignChannel, WhatsAppMessageType } from "@/types/campaign";
+
 import SavedCampaignsList from "./SavedCampaignsList";
 import CampanhaForm from "./CampanhaForm";
 import PredefinedCampaignSection from "./PredefinedCampaignSection";
 import CommunicationChannelCard from "./CommunicationChannelCard";
 import RecentCampaignsInfo from "./RecentCampaignsInfo";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Campaign, CampaignChannel, WhatsAppMessageType } from "@/types/campaign";
 
 const CampanhasMensageria: React.FC = () => {
   const [showNewCampaignForm, setShowNewCampaignForm] = useState(false);
@@ -74,8 +75,15 @@ const CampanhasMensageria: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Quick Action Cards */}
+    <div className="space-y-6 pb-10">
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold mb-2">Gerenciamento de Campanhas</h2>
+        <p className="text-muted-foreground">
+          Crie e gerencie campanhas de mensageria para seus clientes
+        </p>
+      </div>
+      
+      {/* Communication Channel Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <CommunicationChannelCard 
           icon="whatsapp"
@@ -115,13 +123,13 @@ const CampanhasMensageria: React.FC = () => {
       </div>
       
       {/* Create Campaign Button */}
-      <div className="flex justify-center">
+      <div className="flex justify-center my-8">
         <Button 
-          variant="outline" 
-          className="flex items-center gap-2"
+          size="lg"
+          className="flex items-center gap-2 px-8 shadow-md"
           onClick={() => setShowNewCampaignForm(true)}
         >
-          <PlusCircle className="h-4 w-4" />
+          <PlusCircle className="h-5 w-5" />
           Criar Nova Campanha
         </Button>
       </div>
@@ -138,15 +146,8 @@ const CampanhasMensageria: React.FC = () => {
         <div className="space-y-6">
           {/* Recent Campaigns Card */}
           <Card className="overflow-hidden">
-            <div className="bg-white p-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-medium">Campanhas Recentes</h3>
-                <Button variant="link" className="p-0 h-auto text-sm" asChild>
-                  <span className="flex items-center">
-                    Ver todas <ChevronRight className="h-4 w-4 ml-1" />
-                  </span>
-                </Button>
-              </div>
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4">
+              <h3 className="font-medium text-lg">Campanhas Recentes</h3>
             </div>
             
             {isLoading ? (
@@ -176,7 +177,7 @@ const CampanhasMensageria: React.FC = () => {
         <div className="space-y-6">
           {/* Predefined Campaigns Section */}
           <PredefinedCampaignSection 
-            title="Campanhas Predefinidas"
+            title="Modelos Prontos"
             icon={<PlusCircle className="h-4 w-4 text-primary" />}
             campaigns={[
               {
@@ -196,12 +197,17 @@ const CampanhasMensageria: React.FC = () => {
                 title: "Terça da Pizza",
                 description: "Promoção especial",
                 badge: "WhatsApp"
+              },
+              {
+                id: "quinta-do-hamburguer",
+                title: "Quinta do Hambúrguer",
+                description: "Promoção especial",
+                badge: "WhatsApp"
               }
             ]}
             colorClass="bg-purple-50"
             onSelectCampaign={(id) => {
               setShowNewCampaignForm(true);
-              // Return the ID for other logic if needed
               return id;
             }}
           />
