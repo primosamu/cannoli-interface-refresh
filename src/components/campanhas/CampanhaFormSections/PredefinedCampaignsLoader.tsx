@@ -75,8 +75,7 @@ const PredefinedCampaignsLoader: React.FC<PredefinedCampaignsLoaderProps> = ({
       // Convert Supabase data to our format - Fix type conversion issues
       const templateMap: Record<string, any> = {};
       templatesData.forEach(template => {
-        // Fix: Use a default segment since the segment_id property doesn't exist in the type
-        // Instead, we'll try to match segments by type or just use the first one as default
+        // We'll use the first segment as default since segment_id doesn't exist in the type
         const defaultSegment = customerSegments[0] || {
           id: "default",
           name: "Default Segment",
@@ -90,7 +89,7 @@ const PredefinedCampaignsLoader: React.FC<PredefinedCampaignsLoaderProps> = ({
           channel: template.channel as CampaignChannel,
           whatsappType: template.whatsapp_type as WhatsAppMessageType,
           content: template.content || "",
-          segment: defaultSegment, // Use default segment instead of trying to find by segment_id
+          segment: defaultSegment,
           incentive: {
             type: (template.incentive_type || "none") as IncentiveType,
           },
