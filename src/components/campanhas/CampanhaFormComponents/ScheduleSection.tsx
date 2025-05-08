@@ -14,11 +14,12 @@ import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, RepeatIcon } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { CampaignExecutionType } from "@/types/campaign";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface ScheduleSectionProps {
   isScheduled: boolean;
@@ -35,7 +36,45 @@ const ScheduleSection: React.FC<ScheduleSectionProps> = ({
   
   return (
     <div className="space-y-4">
-      {executionType === "one-time" && (
+      {/* Tipo de execução da campanha */}
+      <FormField
+        control={form.control}
+        name="executionType"
+        render={({ field }) => (
+          <FormItem className="space-y-3">
+            <FormLabel>Tipo de execução</FormLabel>
+            <FormControl>
+              <RadioGroup
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                className="flex flex-col space-y-1"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="one-time" id="one-time" />
+                  <label htmlFor="one-time" className="text-sm font-medium leading-none cursor-pointer">
+                    Envio único
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="recurring" id="recurring" />
+                  <label htmlFor="recurring" className="text-sm font-medium leading-none cursor-pointer">
+                    Recorrente (automação)
+                  </label>
+                </div>
+              </RadioGroup>
+            </FormControl>
+            <FormDescription>
+              {field.value === "recurring" ? 
+                "Campanhas recorrentes serão disparadas automaticamente quando os clientes atenderem aos critérios definidos no segmento." : 
+                "Campanhas de envio único são disparadas manualmente ou em uma data específica."
+              }
+            </FormDescription>
+          </FormItem>
+        )}
+      />
+      
+      {/* Configuração de agendamento para campanhas de envio único */}
+      {form.watch("executionType") === "one-time" && (
         <div className="flex items-center space-x-2">
           <Switch
             id="schedule"
@@ -51,13 +90,31 @@ const ScheduleSection: React.FC<ScheduleSectionProps> = ({
         </div>
       )}
       
-      {executionType === "recurring" && (
-        <FormDescription className="text-sm text-muted-foreground">
-          Campanhas recorrentes serão disparadas automaticamente conforme as condições configuradas.
-        </FormDescription>
+      {/* Configuração para campanhas recorrentes */}
+      {form.watch("executionType") === "recurring" && (
+        <FormField
+          control={form.control}
+          name="isActive"
+          render={({ field }) => (
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="isActive"
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+              <label
+                htmlFor="isActive"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Ativar automação imediatamente
+              </label>
+            </div>
+          )}
+        />
       )}
       
-      {isScheduled && executionType === "one-time" && (
+      {/* Campos de data e hora para campanhas agendadas */}
+      {isScheduled && form.watch("executionType") === "one-time" && (
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}

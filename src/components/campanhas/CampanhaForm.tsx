@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -203,7 +202,6 @@ interface CampanhaFormProps {
   campaignToEdit?: Campaign;
   selectedChannel?: string;
   campaignType?: string;
-  executionType?: CampaignExecutionType;
 }
 
 const CampanhaForm = ({
@@ -213,7 +211,6 @@ const CampanhaForm = ({
   campaignToEdit,
   selectedChannel,
   campaignType,
-  executionType = "one-time"
 }: CampanhaFormProps) => {
   const { toast } = useToast();
   const [isScheduled, setIsScheduled] = useState(false);
@@ -235,13 +232,13 @@ const CampanhaForm = ({
       imageUrl: "",
       saveAsTemplate: false,
       contactSource: "segment",
-      executionType: executionType,
-      triggerType: "manual",
+      executionType: "one-time",
+      triggerType: "client_inactivity",
       isActive: false
     },
   });
 
-  // Update form values when predefinedCampaignId, campaignToEdit, selectedChannel, executionType, or campaignType changes
+  // Update form values when predefinedCampaignId, campaignToEdit, selectedChannel changes
   useEffect(() => {
     if (predefinedCampaignId && predefinedCampaignTemplates[predefinedCampaignId]) {
       const template = predefinedCampaignTemplates[predefinedCampaignId];
@@ -257,7 +254,7 @@ const CampanhaForm = ({
         couponCode: "",
         imageUrl: template.imageUrl || "",
         saveAsTemplate: false,
-        executionType: executionType || "one-time",
+        executionType: "one-time",
         triggerType: "client_inactivity",
         isActive: false
       });
@@ -277,7 +274,7 @@ const CampanhaForm = ({
         imageUrl: campaignToEdit.imageUrl || "",
         saveAsTemplate: false,
         executionType: campaignToEdit.executionType || "one-time",
-        triggerType: campaignToEdit.trigger?.type,
+        triggerType: campaignToEdit.trigger?.type || "client_inactivity",
         inactivityDays: campaignToEdit.trigger?.inactivityDays,
         purchaseCount: campaignToEdit.trigger?.purchaseCount,
         weekday: campaignToEdit.trigger?.weekday,
@@ -296,10 +293,9 @@ const CampanhaForm = ({
         form.setValue("scheduleTime", format(scheduledDate, "HH:mm"));
       }
     } else if (selectedChannel) {
-      // Set form values based on selected channel, campaign type, and execution type
+      // Set form values based on selected channel and campaign type
       let defaultContent = "";
       let defaultName = "";
-      let defaultTriggerType: CampaignTriggerType = "manual";
       
       if (campaignType) {
         switch (campaignType) {
@@ -332,28 +328,42 @@ const CampanhaForm = ({
         couponCode: "",
         imageUrl: "",
         saveAsTemplate: false,
-        executionType: executionType,
-        triggerType: executionType === "recurring" ? defaultTriggerType : undefined,
+        executionType: "one-time",
+        triggerType: "client_inactivity",
         isActive: false
       });
       
       setPreviewChannel(selectedChannel as CampaignChannel);
-      setCurrentTriggerType(executionType === "recurring" ? defaultTriggerType : undefined);
     } else {
       // Default new form values
-      form.setValue("executionType", executionType);
-      if (executionType === "recurring") {
-        setCurrentTriggerType("manual");
-        form.setValue("triggerType", "manual");
-      }
+      form.reset({
+        name: "",
+        channel: "whatsapp",
+        whatsappType: "marketing",
+        segmentId: customerSegments[0].id,
+        content: "",
+        incentiveType: "none",
+        couponId: undefined,
+        couponCode: "",
+        imageUrl: "",
+        saveAsTemplate: false,
+        executionType: "one-time",
+        triggerType: "client_inactivity",
+        isActive: false
+      });
     }
-  }, [predefinedCampaignId, campaignToEdit, selectedChannel, campaignType, executionType, form]);
+  }, [predefinedCampaignId, campaignToEdit, selectedChannel, campaignType, form]);
   
   // Update current trigger type when form value changes
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (name === "triggerType" && value.triggerType) {
         setCurrentTriggerType(value.triggerType as CampaignTriggerType);
+      }
+      
+      if (name === "executionType" && value.executionType === "recurring") {
+        form.setValue("triggerType", "client_inactivity");
+        setCurrentTriggerType("client_inactivity");
       }
     });
     
@@ -512,14 +522,10 @@ const CampanhaForm = ({
     }
     
     if (predefinedCampaignId) {
-      return form.getValues("executionType") === "recurring" 
-        ? "Configurar Automação" 
-        : "Usar Modelo de Campanha";
+      return "Usar Modelo de Campanha";
     }
     
-    return form.getValues("executionType") === "recurring" 
-      ? "Nova Automação" 
-      : "Nova Campanha";
+    return "Nova Campanha";
   };
 
   // Get form action button text
@@ -547,9 +553,7 @@ const CampanhaForm = ({
         <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle>{getDialogTitle()}</DialogTitle>
           <DialogDescription>
-            {form.getValues("executionType") === "recurring"
-              ? "Configure uma campanha que será executada automaticamente com base em gatilhos."
-              : "Crie uma campanha para enviar mensagens aos seus clientes."}
+            Configure sua campanha para enviar mensagens aos seus clientes.
           </DialogDescription>
         </DialogHeader>
         
@@ -564,40 +568,21 @@ const CampanhaForm = ({
                     handleChannelChange={handleChannelChange}
                   />
                   
-                  {/* Schedule or Trigger Section */}
-                  {form.getValues("executionType") === "recurring" ? (
+                  {/* Schedule Section - Now handles both one-time and recurring */}
+                  <ScheduleSection 
+                    isScheduled={isScheduled}
+                    setIsScheduled={setIsScheduled}
+                    executionType={form.watch("executionType")}
+                  />
+                  
+                  {/* Additional trigger configurations for recurring campaigns */}
+                  {form.watch("executionType") === "recurring" && (
                     <div className="space-y-4">
-                      <h3 className="text-base font-medium">Configurar Gatilho</h3>
-                      <RecurringCampaignTriggerConfig triggerType={currentTriggerType || "manual"} />
-                      
-                      <FormField
-                        control={form.control}
-                        name="isActive"
-                        render={({ field }) => (
-                          <div className="flex items-center space-x-2 mt-4">
-                            <input
-                              type="checkbox"
-                              id="isActive"
-                              checked={field.value}
-                              onChange={field.onChange}
-                              className="h-4 w-4"
-                            />
-                            <label
-                              htmlFor="isActive"
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                            >
-                              Ativar automação imediatamente
-                            </label>
-                          </div>
-                        )}
-                      />
+                      <h3 className="text-base font-medium">Configuração de Gatilho</h3>
+                      <FormDescription>
+                        Esta campanha será disparada automaticamente quando os clientes atenderem aos critérios definidos pelo segmento selecionado.
+                      </FormDescription>
                     </div>
-                  ) : (
-                    <ScheduleSection 
-                      isScheduled={isScheduled}
-                      setIsScheduled={setIsScheduled}
-                      executionType={form.getValues("executionType")}
-                    />
                   )}
                   
                   {/* Contact Selection Section */}

@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Power } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
 interface CampaignItem {
@@ -60,7 +60,7 @@ const PredefinedCampaignSection = ({
                 {isRecurring ? "Configurar" : "Usar modelo"} <ArrowRight className="h-4 w-4" />
               </Button>
               
-              {isRecurring && onToggleCampaign && (
+              {onToggleCampaign && (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">
                     {campaign.isActive ? "Ativa" : "Inativa"}
