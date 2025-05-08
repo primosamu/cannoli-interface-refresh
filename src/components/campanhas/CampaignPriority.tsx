@@ -29,6 +29,7 @@ import {
   ToggleGroup,
   ToggleGroupItem
 } from "@/components/ui/toggle-group";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Define campaign types for priority matrix
 const campaignTypes = [
@@ -44,6 +45,7 @@ type PeriodType = "day" | "week" | "month";
 
 const CampaignPriority = () => {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [maxCampaignsPerCustomer, setMaxCampaignsPerCustomer] = useState<number>(2);
   const [periodType, setPeriodType] = useState<PeriodType>("day");
   const [priorityOrder, setPriorityOrder] = useState<string[]>(
@@ -90,8 +92,8 @@ const CampaignPriority = () => {
       <div className="space-y-2">
         <Label>Limite de campanhas por cliente</Label>
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
+          <div className={`flex ${isMobile ? "flex-col w-full" : "flex-row"} items-start ${isMobile ? "gap-2" : "gap-4"}`}>
+            <div className={`flex items-center ${isMobile ? "w-full" : ""} gap-2`}>
               <Label htmlFor="maxCampaigns" className="whitespace-nowrap">Máximo de</Label>
               <Input
                 id="maxCampaigns"
@@ -100,22 +102,22 @@ const CampaignPriority = () => {
                 max={10}
                 value={maxCampaignsPerCustomer}
                 onChange={(e) => setMaxCampaignsPerCustomer(Number(e.target.value))}
-                className="max-w-[80px]"
+                className={isMobile ? "w-full" : "max-w-[80px]"}
               />
             </div>
-            <div className="flex items-center gap-2">
-              <Label htmlFor="periodType" className="whitespace-nowrap">campanhas</Label>
+            <div className={`flex ${isMobile ? "flex-col w-full" : "flex-row items-center"} gap-2`}>
+              <Label htmlFor="periodType" className={`${isMobile ? "" : "whitespace-nowrap"}`}>campanhas</Label>
               <ToggleGroup 
                 type="single" 
                 value={periodType} 
                 onValueChange={(value) => {
                   if (value) setPeriodType(value as PeriodType);
                 }}
-                className="border rounded-md"
+                className={`border rounded-md ${isMobile ? "w-full" : ""}`}
               >
-                <ToggleGroupItem value="day">Dia</ToggleGroupItem>
-                <ToggleGroupItem value="week">Semana</ToggleGroupItem>
-                <ToggleGroupItem value="month">Mês</ToggleGroupItem>
+                <ToggleGroupItem value="day" className={isMobile ? "flex-1" : ""}>Dia</ToggleGroupItem>
+                <ToggleGroupItem value="week" className={isMobile ? "flex-1" : ""}>Semana</ToggleGroupItem>
+                <ToggleGroupItem value="month" className={isMobile ? "flex-1" : ""}>Mês</ToggleGroupItem>
               </ToggleGroup>
             </div>
           </div>
@@ -133,7 +135,7 @@ const CampaignPriority = () => {
           A primeira campanha na lista terá a maior prioridade.
         </p>
         
-        <Card className="p-4">
+        <Card className="p-4 overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>

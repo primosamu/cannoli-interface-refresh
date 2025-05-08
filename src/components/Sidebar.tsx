@@ -1,4 +1,3 @@
-
 import { 
   Home,
   BookOpen,
@@ -67,8 +66,9 @@ const menuItems = [
     icon: Target, 
     label: "Campanhas", 
     submenu: [
-      { icon: MessageSquare, label: "Mensageria", path: "/campanhas?tab=mensageria" },
+      { icon: MessageSquare, label: "Mensageria", path: "/campanhas" },
       { icon: Target, label: "Tráfego Pago", path: "/campanhas?tab=trafego-pago" },
+      { icon: Settings, label: "Configurações", path: "/campanhas?tab=configuracoes" },
     ],
     path: "/campanhas" 
   },
