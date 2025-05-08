@@ -5,12 +5,13 @@ import ScheduleSection from "./ScheduleSection";
 import SaveAsTemplateSection from "./SaveAsTemplateSection";
 import MessageComposerSection from "./MessageComposerSection";
 import PreviewSection from "./PreviewSection";
-import IncentiveDisplay from "./IncentiveDisplay";
-import WhatsAppPreview from "./WhatsAppPreview";
-import SmsPreview from "./SmsPreview";
-import EmailPreview from "./EmailPreview";
-import CouponSelection from "./CouponSelection";
 import ContactSelection from "./ContactSelection";
+import IncentiveDisplay from "./IncentiveDisplay";
+import CouponSelection from "./CouponSelection";
+import WhatsAppPreview from "./WhatsAppPreview";
+import EmailPreview from "./EmailPreview";
+import SmsPreview from "./SmsPreview";
+import RecurringCampaignTriggerConfig from "./RecurringCampaignTriggerConfig";
 
 export {
   BasicInfoSection,
@@ -19,10 +20,11 @@ export {
   SaveAsTemplateSection,
   MessageComposerSection,
   PreviewSection,
+  ContactSelection,
   IncentiveDisplay,
-  WhatsAppPreview,
-  SmsPreview,
-  EmailPreview,
   CouponSelection,
-  ContactSelection
+  WhatsAppPreview,
+  EmailPreview,
+  SmsPreview,
+  RecurringCampaignTriggerConfig
 };

@@ -2,6 +2,7 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface CommunicationChannelCardProps {
   title: string;
@@ -9,7 +10,7 @@ interface CommunicationChannelCardProps {
   icon: React.ReactNode;
   openRate: number;
   conversionRate: number;
-  onCreateCampaign: (type: string) => void;
+  onCreateCampaign: (type: string, executionType: "one-time" | "recurring") => void;
 }
 
 const CommunicationChannelCard = ({
@@ -38,9 +39,23 @@ const CommunicationChannelCard = ({
             <span className="font-medium text-foreground">{conversionRate}%</span> de taxa de conversão
           </div>
         </div>
-        <Button variant="outline" className="w-full mt-4" onClick={() => onCreateCampaign(title)}>
-          Criar Campanha
-        </Button>
+        
+        <Tabs defaultValue="one-time" className="w-full mt-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="one-time">Pontual</TabsTrigger>
+            <TabsTrigger value="recurring">Recorrente</TabsTrigger>
+          </TabsList>
+          <TabsContent value="one-time" className="pt-2">
+            <Button variant="outline" className="w-full" onClick={() => onCreateCampaign(title, "one-time")}>
+              Criar Campanha
+            </Button>
+          </TabsContent>
+          <TabsContent value="recurring" className="pt-2">
+            <Button variant="outline" className="w-full" onClick={() => onCreateCampaign(title, "recurring")}>
+              Configurar Automação
+            </Button>
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );

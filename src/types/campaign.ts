@@ -1,10 +1,11 @@
-
 export type CampaignChannel = "sms" | "whatsapp" | "email";
 export type WhatsAppMessageType = "utility" | "marketing";
 export type CampaignStatus = "draft" | "scheduled" | "active" | "completed" | "paused";
 export type IncentiveType = "none" | "coupon" | "loyalty";
 export type AdPlatform = "meta" | "google" | "tiktok";
 export type AdCampaignType = "local_visitors" | "delivery_orders" | "new_dish" | "special_event" | "brand_awareness";
+export type CampaignExecutionType = "one-time" | "recurring";
+export type CampaignTriggerType = "client_inactivity" | "first_purchase" | "repeat_purchase" | "birthday" | "time_based" | "manual";
 
 export interface CustomerSegment {
   id: string;
@@ -27,6 +28,15 @@ export interface CampaignIncentive {
   loyaltyPoints?: number;
 }
 
+export interface CampaignTrigger {
+  type: CampaignTriggerType;
+  inactivityDays?: number;
+  purchaseCount?: number;
+  weekday?: number;
+  monthDay?: number;
+  time?: string;
+}
+
 export interface Campaign {
   id: string;
   name: string;
@@ -39,6 +49,9 @@ export interface Campaign {
   status: CampaignStatus;
   createdAt: string;
   scheduledAt?: string;
+  executionType: CampaignExecutionType;
+  trigger?: CampaignTrigger;
+  isActive?: boolean;
 }
 
 export interface AdCreative {

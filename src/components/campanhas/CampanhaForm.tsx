@@ -14,7 +14,7 @@ import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Campaign, CampaignChannel, CustomerSegment, WhatsAppMessageType } from "@/types/campaign";
+import { Campaign, CampaignChannel, CampaignExecutionType, CampaignTriggerType, CustomerSegment, WhatsAppMessageType } from "@/types/campaign";
 import { format } from "date-fns";
 import { MessageSquare, Mail, Phone } from "lucide-react";
 import {
@@ -24,7 +24,8 @@ import {
   SaveAsTemplateSection,
   MessageComposerSection,
   PreviewSection,
-  ContactSelection
+  ContactSelection,
+  RecurringCampaignTriggerConfig
 } from "./CampanhaFormComponents";
 
 // Mock customer segments
@@ -72,7 +73,8 @@ const predefinedCampaignTemplates: Record<string, Partial<Campaign>> = {
     incentive: {
       type: "coupon",
       couponId: "auto-generated"
-    }
+    },
+    executionType: "one-time"
   },
   "volte-para-nos": {
     name: "Volte para nós",
@@ -83,7 +85,8 @@ const predefinedCampaignTemplates: Record<string, Partial<Campaign>> = {
     incentive: {
       type: "coupon",
       couponId: "auto-generated"
-    }
+    },
+    executionType: "one-time"
   },
   "terca-da-pizza": {
     name: "Terça da Pizza",
@@ -93,7 +96,8 @@ const predefinedCampaignTemplates: Record<string, Partial<Campaign>> = {
     segment: customerSegments[0],
     incentive: {
       type: "none"
-    }
+    },
+    executionType: "one-time"
   },
   "quinta-do-hamburguer": {
     name: "Quinta do Hambúrguer",
@@ -103,7 +107,8 @@ const predefinedCampaignTemplates: Record<string, Partial<Campaign>> = {
     segment: customerSegments[0],
     incentive: {
       type: "none"
-    }
+    },
+    executionType: "one-time"
   }
 };
 
@@ -121,7 +126,8 @@ const recentCampaignsMock: Campaign[] = [
     whatsappType: "marketing",
     content: "Olá! Aproveite nossa promoção de fim de semana: 20% de desconto em todos os pratos!",
     status: "completed",
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    executionType: "one-time"
   },
   {
     id: "camp-2",
@@ -134,7 +140,8 @@ const recentCampaignsMock: Campaign[] = [
     content: "Prezado cliente VIP, temos o prazer de apresentar nosso novo cardápio com pratos exclusivos!",
     imageUrl: "https://example.com/menu.jpg",
     status: "active",
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    executionType: "one-time"
   }
 ];
 
@@ -167,6 +174,15 @@ const formSchema = z.object({
   contactSource: z.enum(["segment", "file", "manual"]).default("segment"),
   contactFile: z.string().optional(),
   manualContacts: z.string().optional(),
+  executionType: z.enum(["one-time", "recurring"] as const).default("one-time"),
+  triggerType: z.enum(["client_inactivity", "first_purchase", "repeat_purchase", "birthday", "time_based", "manual"] as const).optional(),
+  inactivityDays: z.number().optional(),
+  purchaseCount: z.number().optional(),
+  weekday: z.number().optional(),
+  monthDay: z.number().optional(),
+  triggerTime: z.string().optional(),
+  daysBeforeBirthday: z.number().optional(),
+  isActive: z.boolean().default(false)
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -178,6 +194,7 @@ interface CampanhaFormProps {
   campaignToEdit?: Campaign;
   selectedChannel?: string;
   campaignType?: string;
+  executionType?: CampaignExecutionType;
 }
 
 const CampanhaForm = ({
@@ -186,11 +203,13 @@ const CampanhaForm = ({
   predefinedCampaignId,
   campaignToEdit,
   selectedChannel,
-  campaignType
+  campaignType,
+  executionType = "one-time"
 }: CampanhaFormProps) => {
   const { toast } = useToast();
   const [isScheduled, setIsScheduled] = useState(false);
   const [previewChannel, setPreviewChannel] = useState<CampaignChannel>("whatsapp");
+  const [currentTriggerType, setCurrentTriggerType] = useState<CampaignTriggerType | undefined>(undefined);
 
   // Initialize form with default values or values from predefined campaign/edit
   const form = useForm<FormValues>({
@@ -207,10 +226,13 @@ const CampanhaForm = ({
       imageUrl: "",
       saveAsTemplate: false,
       contactSource: "segment",
+      executionType: executionType,
+      triggerType: "manual",
+      isActive: false
     },
   });
 
-  // Update form values when predefinedCampaignId, campaignToEdit, selectedChannel, or campaignType changes
+  // Update form values when predefinedCampaignId, campaignToEdit, selectedChannel, executionType, or campaignType changes
   useEffect(() => {
     if (predefinedCampaignId && predefinedCampaignTemplates[predefinedCampaignId]) {
       const template = predefinedCampaignTemplates[predefinedCampaignId];
@@ -226,9 +248,13 @@ const CampanhaForm = ({
         couponCode: "",
         imageUrl: template.imageUrl || "",
         saveAsTemplate: false,
+        executionType: executionType || "one-time",
+        triggerType: "client_inactivity",
+        isActive: false
       });
       
       setPreviewChannel(template.channel || "whatsapp");
+      setCurrentTriggerType("client_inactivity");
     } else if (campaignToEdit) {
       form.reset({
         name: campaignToEdit.name,
@@ -241,9 +267,18 @@ const CampanhaForm = ({
         couponCode: "",
         imageUrl: campaignToEdit.imageUrl || "",
         saveAsTemplate: false,
+        executionType: campaignToEdit.executionType || "one-time",
+        triggerType: campaignToEdit.trigger?.type,
+        inactivityDays: campaignToEdit.trigger?.inactivityDays,
+        purchaseCount: campaignToEdit.trigger?.purchaseCount,
+        weekday: campaignToEdit.trigger?.weekday,
+        monthDay: campaignToEdit.trigger?.monthDay,
+        triggerTime: campaignToEdit.trigger?.time,
+        isActive: campaignToEdit.isActive || false
       });
       
       setPreviewChannel(campaignToEdit.channel);
+      setCurrentTriggerType(campaignToEdit.trigger?.type);
       
       if (campaignToEdit.scheduledAt) {
         setIsScheduled(true);
@@ -252,9 +287,10 @@ const CampanhaForm = ({
         form.setValue("scheduleTime", format(scheduledDate, "HH:mm"));
       }
     } else if (selectedChannel) {
-      // Set form values based on selected channel and campaign type
+      // Set form values based on selected channel, campaign type, and execution type
       let defaultContent = "";
       let defaultName = "";
+      let defaultTriggerType: CampaignTriggerType = "manual";
       
       if (campaignType) {
         switch (campaignType) {
@@ -270,26 +306,7 @@ const CampanhaForm = ({
             defaultName = "Lembrete de Reserva";
             defaultContent = "Olá! Apenas confirmando sua reserva para [DATA/HORA]. Estamos ansiosos para recebê-lo!";
             break;
-          case "newsletter":
-            defaultName = "Newsletter Semanal";
-            defaultContent = "Olá! Confira as novidades da semana em nosso restaurante:\n\n- [NOVIDADE 1]\n- [NOVIDADE 2]\n- [NOVIDADE 3]\n\nEsperamos você!";
-            break;
-          case "event":
-            defaultName = "Evento Especial";
-            defaultContent = "Olá! Convidamos você para nosso evento especial: [NOME DO EVENTO] no dia [DATA/HORA]. Não perca!";
-            break;
-          case "loyalty":
-            defaultName = "Programa de Fidelidade";
-            defaultContent = "Olá! Você já conhece nosso programa de fidelidade? A cada [X] pedidos, você ganha [BENEFÍCIO]. Participe!";
-            break;
-          case "urgent":
-            defaultName = "Promoção Relâmpago";
-            defaultContent = "HOJE! [NOME DA PROMOÇÃO] com [DESCONTO]% de desconto. Válido apenas hoje! Aproveite!";
-            break;
-          case "confirmation":
-            defaultName = "Confirmação de Pedido";
-            defaultContent = "Seu pedido #[NÚMERO] foi confirmado! Previsão de entrega: [TEMPO]. Obrigado pela preferência!";
-            break;
+          // ... keep existing code (other case statements)
           default:
             break;
         }
@@ -306,11 +323,33 @@ const CampanhaForm = ({
         couponCode: "",
         imageUrl: "",
         saveAsTemplate: false,
+        executionType: executionType,
+        triggerType: executionType === "recurring" ? defaultTriggerType : undefined,
+        isActive: false
       });
       
       setPreviewChannel(selectedChannel as CampaignChannel);
+      setCurrentTriggerType(executionType === "recurring" ? defaultTriggerType : undefined);
+    } else {
+      // Default new form values
+      form.setValue("executionType", executionType);
+      if (executionType === "recurring") {
+        setCurrentTriggerType("manual");
+        form.setValue("triggerType", "manual");
+      }
     }
-  }, [predefinedCampaignId, campaignToEdit, selectedChannel, campaignType, form]);
+  }, [predefinedCampaignId, campaignToEdit, selectedChannel, campaignType, executionType, form]);
+  
+  // Update current trigger type when form value changes
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === "triggerType" && value.triggerType) {
+        setCurrentTriggerType(value.triggerType as CampaignTriggerType);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
 
   // Helper function to safely replace placeholders in message content
   const getPreviewText = (content: string): string => {
@@ -346,6 +385,16 @@ const CampanhaForm = ({
       return;
     }
     
+    // Build campaign trigger if it's a recurring campaign
+    const trigger = data.executionType === "recurring" && data.triggerType ? {
+      type: data.triggerType,
+      inactivityDays: data.inactivityDays,
+      purchaseCount: data.purchaseCount,
+      weekday: data.weekday,
+      monthDay: data.monthDay,
+      time: data.triggerTime
+    } : undefined;
+    
     // Create campaign object
     const newCampaign: Campaign = {
       id: campaignToEdit?.id || `camp-${Date.now()}`,
@@ -360,9 +409,12 @@ const CampanhaForm = ({
       whatsappType: data.channel === "whatsapp" ? data.whatsappType : undefined,
       content: data.content,
       imageUrl: data.imageUrl,
-      status: isScheduled ? "scheduled" : "active",
+      status: data.executionType === "recurring" ? (data.isActive ? "active" : "paused") : (isScheduled ? "scheduled" : "active"),
       createdAt: campaignToEdit?.createdAt || new Date().toISOString(),
-      scheduledAt: isScheduled && data.scheduleDate ? 
+      executionType: data.executionType,
+      trigger: trigger,
+      isActive: data.isActive,
+      scheduledAt: data.executionType === "one-time" && isScheduled && data.scheduleDate ? 
         (() => {
           const date = new Date(data.scheduleDate);
           if (data.scheduleTime) {
@@ -402,12 +454,21 @@ const CampanhaForm = ({
     );
     
     // Show success toast
-    toast({
-      title: campaignToEdit ? "Campanha atualizada" : "Campanha criada",
-      description: isScheduled 
-        ? `A campanha foi ${campaignToEdit ? 'atualizada' : 'criada'} e será enviada na data agendada.` 
-        : `A campanha foi ${campaignToEdit ? 'atualizada' : 'criada'} e está pronta para envio.`,
-    });
+    if (data.executionType === "recurring") {
+      toast({
+        title: campaignToEdit ? "Automação atualizada" : "Automação criada",
+        description: data.isActive 
+          ? `A automação foi ${campaignToEdit ? 'atualizada' : 'criada'} e está ativada.` 
+          : `A automação foi ${campaignToEdit ? 'atualizada' : 'criada'} mas está desativada.`,
+      });
+    } else {
+      toast({
+        title: campaignToEdit ? "Campanha atualizada" : "Campanha criada",
+        description: isScheduled 
+          ? `A campanha foi ${campaignToEdit ? 'atualizada' : 'criada'} e será enviada na data agendada.` 
+          : `A campanha foi ${campaignToEdit ? 'atualizada' : 'criada'} e está pronta para envio.`,
+      });
+    }
     
     // Save as template if selected
     if (data.saveAsTemplate) {
@@ -435,17 +496,51 @@ const CampanhaForm = ({
     }
   };
 
+  // Get dialog title based on form type
+  const getDialogTitle = () => {
+    if (campaignToEdit) {
+      return "Editar Campanha";
+    }
+    
+    if (predefinedCampaignId) {
+      return form.getValues("executionType") === "recurring" 
+        ? "Configurar Automação" 
+        : "Usar Modelo de Campanha";
+    }
+    
+    return form.getValues("executionType") === "recurring" 
+      ? "Nova Automação" 
+      : "Nova Campanha";
+  };
+
+  // Get form action button text
+  const getSubmitButtonText = () => {
+    const executionType = form.getValues("executionType");
+    
+    if (executionType === "recurring") {
+      return campaignToEdit 
+        ? "Atualizar Automação" 
+        : form.getValues("isActive") 
+          ? "Salvar e Ativar" 
+          : "Salvar Automação";
+    }
+    
+    return isScheduled 
+      ? "Agendar Campanha" 
+      : campaignToEdit 
+        ? "Atualizar Campanha" 
+        : "Criar Campanha";
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] p-0">
         <DialogHeader className="px-6 pt-6 pb-2">
-          <DialogTitle>
-            {campaignToEdit ? "Editar Campanha" : predefinedCampaignId ? "Usar Modelo de Campanha" : "Nova Campanha"}
-          </DialogTitle>
+          <DialogTitle>{getDialogTitle()}</DialogTitle>
           <DialogDescription>
-            {campaignToEdit 
-              ? "Edite os detalhes da sua campanha de mensageria."
-              : "Crie uma nova campanha para enviar mensagens aos seus clientes."}
+            {form.getValues("executionType") === "recurring"
+              ? "Configure uma campanha que será executada automaticamente com base em gatilhos."
+              : "Crie uma campanha para enviar mensagens aos seus clientes."}
           </DialogDescription>
         </DialogHeader>
         
@@ -460,17 +555,47 @@ const CampanhaForm = ({
                     handleChannelChange={handleChannelChange}
                   />
                   
+                  {/* Schedule or Trigger Section */}
+                  {form.getValues("executionType") === "recurring" ? (
+                    <div className="space-y-4">
+                      <h3 className="text-base font-medium">Configurar Gatilho</h3>
+                      <RecurringCampaignTriggerConfig triggerType={currentTriggerType || "manual"} />
+                      
+                      <FormField
+                        control={form.control}
+                        name="isActive"
+                        render={({ field }) => (
+                          <div className="flex items-center space-x-2 mt-4">
+                            <input
+                              type="checkbox"
+                              id="isActive"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="h-4 w-4"
+                            />
+                            <label
+                              htmlFor="isActive"
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              Ativar automação imediatamente
+                            </label>
+                          </div>
+                        )}
+                      />
+                    </div>
+                  ) : (
+                    <ScheduleSection 
+                      isScheduled={isScheduled}
+                      setIsScheduled={setIsScheduled}
+                      executionType={form.getValues("executionType")}
+                    />
+                  )}
+                  
                   {/* Contact Selection Section */}
                   <ContactSelection />
                   
                   {/* Media Section */}
                   <MediaSection />
-                  
-                  {/* Schedule Section */}
-                  <ScheduleSection 
-                    isScheduled={isScheduled}
-                    setIsScheduled={setIsScheduled}
-                  />
                   
                   {/* Save As Template Section */}
                   <SaveAsTemplateSection />
@@ -493,7 +618,7 @@ const CampanhaForm = ({
             Cancelar
           </Button>
           <Button onClick={form.handleSubmit(onSubmit)}>
-            {isScheduled ? "Agendar Campanha" : "Criar Campanha"}
+            {getSubmitButtonText()}
           </Button>
         </DialogFooter>
       </DialogContent>
