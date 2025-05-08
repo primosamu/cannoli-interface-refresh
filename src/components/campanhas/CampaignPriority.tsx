@@ -21,6 +21,14 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Save, MoveVertical } from "lucide-react";
+import {
+  FormControl,
+  FormItem,
+} from "@/components/ui/form";
+import {
+  ToggleGroup,
+  ToggleGroupItem
+} from "@/components/ui/toggle-group";
 
 // Define campaign types for priority matrix
 const campaignTypes = [
@@ -32,9 +40,12 @@ const campaignTypes = [
   { id: "custom", name: "Campanhas Personalizadas" }
 ];
 
+type PeriodType = "day" | "week" | "month";
+
 const CampaignPriority = () => {
   const { toast } = useToast();
   const [maxCampaignsPerCustomer, setMaxCampaignsPerCustomer] = useState<number>(2);
+  const [periodType, setPeriodType] = useState<PeriodType>("day");
   const [priorityOrder, setPriorityOrder] = useState<string[]>(
     campaignTypes.map(c => c.id)
   );
@@ -64,21 +75,50 @@ const CampaignPriority = () => {
     setPriorityOrder(newPriorityOrder);
   };
 
+  const getPeriodLabel = () => {
+    switch (periodType) {
+      case "day": return "por dia";
+      case "week": return "por semana";
+      case "month": return "por mês";
+      default: return "por dia";
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Maximum campaigns per customer */}
       <div className="space-y-2">
-        <Label htmlFor="maxCampaigns">Máximo de campanhas por cliente</Label>
-        <div className="flex items-center gap-4">
-          <Input
-            id="maxCampaigns"
-            type="number"
-            min={1}
-            max={10}
-            value={maxCampaignsPerCustomer}
-            onChange={(e) => setMaxCampaignsPerCustomer(Number(e.target.value))}
-            className="max-w-[120px]"
-          />
+        <Label>Limite de campanhas por cliente</Label>
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="maxCampaigns" className="whitespace-nowrap">Máximo de</Label>
+              <Input
+                id="maxCampaigns"
+                type="number"
+                min={1}
+                max={10}
+                value={maxCampaignsPerCustomer}
+                onChange={(e) => setMaxCampaignsPerCustomer(Number(e.target.value))}
+                className="max-w-[80px]"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="periodType" className="whitespace-nowrap">campanhas</Label>
+              <ToggleGroup 
+                type="single" 
+                value={periodType} 
+                onValueChange={(value) => {
+                  if (value) setPeriodType(value as PeriodType);
+                }}
+                className="border rounded-md"
+              >
+                <ToggleGroupItem value="day">Dia</ToggleGroupItem>
+                <ToggleGroupItem value="week">Semana</ToggleGroupItem>
+                <ToggleGroupItem value="month">Mês</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+          </div>
           <p className="text-sm text-muted-foreground">
             Define quantas campanhas um mesmo cliente pode receber em um período.
           </p>
