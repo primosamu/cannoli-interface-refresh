@@ -1,8 +1,8 @@
 
-import React, { useState } from "react";
-import { MessageSquare, Mail, Phone, Edit, Eye, Loader2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { MessageSquare, Mail, Phone, Edit, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { getMockCampaigns, getChannelIcon, getStatusBadge } from "./utils/campaignUtils";
+import { getRecentCampaigns } from "./CampanhaForm";
 import { Campaign, CampaignStatus } from "@/types/campaign";
 import { 
   Dialog,
@@ -10,67 +10,65 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import CampanhaForm from "./CampanhaForm";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
-const RecentCampaignsInfo: React.FC<{ campaigns?: Campaign[] }> = ({ campaigns: propCampaigns }) => {
+const RecentCampaignsInfo = () => {
+  const [recentCampaigns, setRecentCampaigns] = useState<Campaign[]>([]);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [openEditForm, setOpenEditForm] = useState(false);
   
-  // Fetch recent campaigns from Supabase
-  const { data: fetchedCampaigns, isLoading } = useQuery({
-    queryKey: ['recent_campaigns'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('campaigns')
-        .select('*')
-        .eq('type', 'campaign')
-        .order('created_at', { ascending: false })
-        .limit(5);
-        
-      if (error) {
-        console.error("Error fetching recent campaigns:", error);
-        return [];
-      }
-      
-      if (!data || data.length === 0) {
-        return getMockCampaigns();
-      }
-      
-      return data.map(campaign => ({
-        id: campaign.id,
-        name: campaign.name,
-        segment: {
-          id: campaign.segment_id || "default",
-          name: "Customer Segment",
-          description: "Description",
-          customerCount: campaign.segment_id ? 100 : 0
-        },
-        incentive: {
-          type: campaign.incentive_type as "none" | "coupon" | "loyalty" || "none",
-          couponId: campaign.coupon_id,
-          loyaltyPoints: campaign.loyalty_points
-        },
-        channel: campaign.channel as "sms" | "whatsapp" | "email",
-        whatsappType: campaign.whatsapp_type as "utility" | "marketing",
-        content: campaign.content || "",
-        imageUrl: campaign.image_url,
-        status: campaign.status as CampaignStatus,
-        createdAt: campaign.created_at,
-        scheduledAt: campaign.scheduled_at
-      }));
-    },
-    initialData: propCampaigns || getMockCampaigns()
-  });
+  // Listen for updates to recent campaigns
+  useEffect(() => {
+    // Set initial campaigns
+    setRecentCampaigns(getRecentCampaigns());
+    
+    // Set up event listener for updates
+    const handleCampaignsUpdated = (event: CustomEvent<Campaign[]>) => {
+      setRecentCampaigns(event.detail);
+    };
+
+    window.addEventListener("recentCampaignsUpdated", handleCampaignsUpdated as EventListener);
+    
+    return () => {
+      window.removeEventListener("recentCampaignsUpdated", handleCampaignsUpdated as EventListener);
+    };
+  }, []);
   
-  const recentCampaigns = fetchedCampaigns;
   const hasCampaigns = recentCampaigns.length > 0;
   
+  const getChannelIcon = (channel: string, type?: string) => {
+    switch (channel) {
+      case "whatsapp":
+        return <MessageSquare className="h-4 w-4 text-green-600" />;
+      case "email":
+        return <Mail className="h-4 w-4 text-purple-600" />;
+      case "sms":
+        return <Phone className="h-4 w-4 text-blue-600" />;
+      default:
+        return null;
+    }
+  };
+  
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "active":
+        return <Badge className="bg-green-500">Ativa</Badge>;
+      case "completed":
+        return <Badge variant="outline" className="text-gray-500">Concluída</Badge>;
+      case "scheduled":
+        return <Badge className="bg-blue-500">Agendada</Badge>;
+      case "draft":
+        return <Badge variant="outline" className="bg-gray-200 text-gray-500">Rascunho</Badge>;
+      case "paused":
+        return <Badge className="bg-orange-500">Pausada</Badge>;
+      default:
+        return null;
+    }
+  };
+
   // Format date relative to now
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

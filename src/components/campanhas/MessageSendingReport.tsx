@@ -1,54 +1,14 @@
+
 import React from "react";
 import { Calendar, BarChart2, Eye, Send, MessageSquare, Mail, Phone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { getMockCampaigns } from "./utils/campaignUtils";
+import { getRecentCampaigns } from "./CampanhaForm";
 import { Campaign } from "@/types/campaign";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
-const MessageSendingReport: React.FC = () => {
-  // Fetch campaigns from Supabase
-  const { data: campaigns } = useQuery({
-    queryKey: ['campaign_stats'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('campaigns')
-        .select('*')
-        .eq('type', 'campaign')
-        .order('created_at', { ascending: false });
-        
-      if (error || !data) {
-        console.error("Error fetching campaign stats:", error);
-        return getMockCampaigns();
-      }
-      
-      return data.map(campaign => ({
-        id: campaign.id,
-        name: campaign.name,
-        segment: {
-          id: campaign.segment_id || "default",
-          name: "Customer Segment",
-          description: "Description",
-          customerCount: campaign.segment_id ? 100 : 0
-        },
-        incentive: {
-          type: campaign.incentive_type as "none" | "coupon" | "loyalty" || "none",
-          couponId: campaign.coupon_id,
-          loyaltyPoints: campaign.loyalty_points
-        },
-        channel: campaign.channel as "sms" | "whatsapp" | "email",
-        whatsappType: campaign.whatsapp_type as "utility" | "marketing",
-        content: campaign.content || "",
-        imageUrl: campaign.image_url,
-        status: campaign.status as "draft" | "scheduled" | "active" | "completed" | "paused",
-        createdAt: campaign.created_at,
-        scheduledAt: campaign.scheduled_at
-      }));
-    },
-    initialData: getMockCampaigns()
-  });
+const MessageSendingReport = () => {
+  const campaigns = getRecentCampaigns();
   
   // Generate aggregated statistics for all campaigns
   const stats = React.useMemo(() => {
@@ -252,7 +212,7 @@ const MessageSendingReport: React.FC = () => {
                       <div>
                         <h5 className="font-medium capitalize">{channel}</h5>
                         <p className="text-sm text-muted-foreground">
-                          {typeof count === 'number' ? `${count} campanh${count === 1 ? 'a' : 'as'} (${((count / campaigns.length) * 100).toFixed(0)}%)` : ''}
+                          {count} campanh{count === 1 ? 'a' : 'as'} ({((count / campaigns.length) * 100).toFixed(0)}%)
                         </p>
                       </div>
                     </div>
