@@ -17,32 +17,46 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { CampaignExecutionType } from "@/types/campaign";
 
 interface ScheduleSectionProps {
   isScheduled: boolean;
   setIsScheduled: (isScheduled: boolean) => void;
+  executionType: CampaignExecutionType;
 }
 
-const ScheduleSection: React.FC<ScheduleSectionProps> = ({ isScheduled, setIsScheduled }) => {
+const ScheduleSection: React.FC<ScheduleSectionProps> = ({ 
+  isScheduled, 
+  setIsScheduled,
+  executionType 
+}) => {
   const form = useFormContext();
   
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <Switch
-          id="schedule"
-          checked={isScheduled}
-          onCheckedChange={setIsScheduled}
-        />
-        <label
-          htmlFor="schedule"
-          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Agendar envio
-        </label>
-      </div>
+      {executionType === "one-time" && (
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="schedule"
+            checked={isScheduled}
+            onCheckedChange={setIsScheduled}
+          />
+          <label
+            htmlFor="schedule"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Agendar envio
+          </label>
+        </div>
+      )}
       
-      {isScheduled && (
+      {executionType === "recurring" && (
+        <FormDescription className="text-sm text-muted-foreground">
+          Campanhas recorrentes serão disparadas automaticamente conforme as condições configuradas.
+        </FormDescription>
+      )}
+      
+      {isScheduled && executionType === "one-time" && (
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}

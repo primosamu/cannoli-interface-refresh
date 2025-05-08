@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { MessageSquare, Mail, Phone, Eye, Bookmark } from "lucide-react";
 import { 
@@ -35,7 +34,8 @@ const mockSavedCampaigns: Campaign[] = [
     whatsappType: "marketing",
     content: "Olá, temos uma promoção exclusiva para você como cliente premium!",
     status: "draft",
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    executionType: "one-time"
   },
   {
     id: "saved-2",
@@ -52,7 +52,8 @@ const mockSavedCampaigns: Campaign[] = [
     channel: "email",
     content: "Agradecemos pela sua primeira compra! Esperamos que tenha tido uma ótima experiência.",
     status: "draft",
-    createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
+    createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+    executionType: "one-time"
   },
   {
     id: "saved-3",
@@ -70,7 +71,8 @@ const mockSavedCampaigns: Campaign[] = [
     channel: "sms",
     content: "Você esqueceu itens no seu carrinho! Use o cupom VOLTA10 para 10% de desconto na finalização.",
     status: "draft",
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    executionType: "one-time"
   }
 ];
 

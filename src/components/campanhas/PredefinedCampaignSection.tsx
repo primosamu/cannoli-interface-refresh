@@ -68,7 +68,6 @@ const PredefinedCampaignSection = ({
                   <Switch
                     checked={campaign.isActive}
                     onCheckedChange={(checked) => onToggleCampaign(campaign.id, checked)}
-                    size="sm"
                   />
                 </div>
               )}
