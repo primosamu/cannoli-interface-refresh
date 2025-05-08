@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,8 @@ import {
   MessageSquare,
   Mail,
   Calendar,
-  FileText
+  FileText,
+  Layers
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CampanhaForm from "./CampanhaForm";
@@ -20,6 +22,7 @@ import AudienceSegmentationInfo from "./AudienceSegmentationInfo";
 import RecentCampaignsInfo from "./RecentCampaignsInfo";
 import SavedCampaignsList from "./SavedCampaignsList";
 import MessageSendingReport from "./MessageSendingReport";
+import CampaignPriority from "./CampaignPriority";
 import { Campaign, CampaignExecutionType } from "@/types/campaign";
 import { getRecentCampaigns } from "./CampanhaForm";
 
@@ -136,19 +139,6 @@ const CampanhasMensageria = () => {
           </Button>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Campanhas Personalizadas */}
-          {formattedCustomCampaigns.length > 0 && (
-            <PredefinedCampaignSection
-              title="Campanhas Personalizadas"
-              icon={<FileText className="h-5 w-5 text-indigo-500" />}
-              campaigns={formattedCustomCampaigns}
-              colorClass="bg-indigo-50"
-              onSelectCampaign={handleOpenPredefinedCampaign}
-              onToggleCampaign={handleToggleCampaign}
-              isRecurring={true}
-            />
-          )}
-
           {/* Campanhas de Recuperação */}
           <PredefinedCampaignSection
             title="Campanhas de Recuperação"
@@ -203,6 +193,35 @@ const CampanhasMensageria = () => {
             onToggleCampaign={handleToggleCampaign}
             isRecurring={true}
           />
+          
+          {/* Campanhas Personalizadas - MOVED TO BOTTOM */}
+          {formattedCustomCampaigns.length > 0 && (
+            <PredefinedCampaignSection
+              title="Campanhas Personalizadas"
+              icon={<FileText className="h-5 w-5 text-indigo-500" />}
+              campaigns={formattedCustomCampaigns}
+              colorClass="bg-indigo-50"
+              onSelectCampaign={handleOpenPredefinedCampaign}
+              onToggleCampaign={handleToggleCampaign}
+              isRecurring={true}
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Priorização de Campanhas */}
+      <Card className="bg-white">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Layers className="h-5 w-5 text-amber-500" />
+            <CardTitle className="text-lg">Organização e Priorização de Campanhas</CardTitle>
+          </div>
+          <CardDescription>
+            Defina a hierarquia de campanhas e quantas campanhas um cliente pode receber
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <CampaignPriority />
         </CardContent>
       </Card>
 
