@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
@@ -36,7 +35,6 @@ const mockCoupons = [
 const CouponSelectionEnhanced = () => {
   const form = useFormContext();
   const { toast } = useToast();
-  const [couponType, setCouponType] = useState("existing");
   
   const openCreateCoupon = () => {
     // In a real implementation, this would open a coupon creation form or navigate to coupon creation page
@@ -44,17 +42,6 @@ const CouponSelectionEnhanced = () => {
       title: "Criar novo cupom",
       description: "Esta funcionalidade será implementada em breve."
     });
-  };
-  
-  const handleCouponTypeChange = (value: string) => {
-    setCouponType(value);
-    
-    // Reset coupon fields based on selection
-    if (value === "existing") {
-      form.setValue("couponCode", "");
-    } else {
-      form.setValue("couponId", "");
-    }
   };
   
   return (
@@ -92,115 +79,76 @@ const CouponSelectionEnhanced = () => {
       
       {form.watch("incentiveType") === "coupon" && (
         <div className="border rounded-md p-4 space-y-4">
-          <RadioGroup
-            onValueChange={handleCouponTypeChange}
-            defaultValue={couponType}
-            className="flex flex-col space-y-3"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="existing" id="coupon-existing" />
-              <Label htmlFor="coupon-existing">Selecionar cupom existente</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="custom" id="coupon-custom" />
-              <Label htmlFor="coupon-custom">Definir código personalizado</Label>
-            </div>
-          </RadioGroup>
-          
-          {couponType === "existing" ? (
-            <div className="space-y-4">
-              <FormField
-                control={form.control}
-                name="couponId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cupom</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione um cupom" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {mockCoupons.map((coupon) => (
-                          <SelectItem key={coupon.id} value={coupon.id}>
-                            <div className="flex flex-col">
-                              <span>{coupon.code} - {coupon.description}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {coupon.discountType === "percentage" 
-                                  ? `${coupon.discount}% de desconto` 
-                                  : `R$${coupon.discount.toFixed(2)} de desconto`}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      Selecione um cupom de desconto para incluir na mensagem
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {/* Selected coupon details */}
-              {form.watch("couponId") && (
-                <div className="p-3 bg-slate-50 rounded-md">
-                  <p className="text-sm font-medium mb-1">Cupom selecionado:</p>
-                  {(() => {
-                    const selectedCoupon = mockCoupons.find(c => c.id === form.watch("couponId"));
-                    return selectedCoupon ? (
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">{selectedCoupon.code}</Badge>
-                          <span className="text-xs">{selectedCoupon.description}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {selectedCoupon.discountType === "percentage" 
-                            ? `${selectedCoupon.discount}% de desconto` 
-                            : `R$${selectedCoupon.discount.toFixed(2)} de desconto`}
-                        </p>
-                      </div>
-                    ) : null;
-                  })()}
-                </div>
-              )}
-              
-              <div className="pt-2">
-                <Button 
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="flex items-center gap-1 text-blue-600"
-                  onClick={openCreateCoupon}
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  Criar novo cupom
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <FormField
-              control={form.control}
-              name="couponCode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Código do cupom</FormLabel>
+          <FormField
+            control={form.control}
+            name="couponId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cupom</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <Input
-                      placeholder="ex: DESC20"
-                      {...field}
-                    />
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um cupom" />
+                    </SelectTrigger>
                   </FormControl>
-                  <FormDescription>
-                    Defina um código personalizado para este cupom
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  <SelectContent>
+                    {mockCoupons.map((coupon) => (
+                      <SelectItem key={coupon.id} value={coupon.id}>
+                        <div className="flex flex-col">
+                          <span>{coupon.code} - {coupon.description}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {coupon.discountType === "percentage" 
+                              ? `${coupon.discount}% de desconto` 
+                              : `R$${coupon.discount.toFixed(2)} de desconto`}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Selecione um cupom de desconto para incluir na mensagem
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          {/* Selected coupon details */}
+          {form.watch("couponId") && (
+            <div className="p-3 bg-slate-50 rounded-md">
+              <p className="text-sm font-medium mb-1">Cupom selecionado:</p>
+              {(() => {
+                const selectedCoupon = mockCoupons.find(c => c.id === form.watch("couponId"));
+                return selectedCoupon ? (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">{selectedCoupon.code}</Badge>
+                      <span className="text-xs">{selectedCoupon.description}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedCoupon.discountType === "percentage" 
+                        ? `${selectedCoupon.discount}% de desconto` 
+                        : `R$${selectedCoupon.discount.toFixed(2)} de desconto`}
+                    </p>
+                  </div>
+                ) : null;
+              })()}
+            </div>
           )}
+          
+          <div className="pt-2">
+            <Button 
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-1 text-blue-600"
+              onClick={openCreateCoupon}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Criar novo cupom
+            </Button>
+          </div>
         </div>
       )}
       

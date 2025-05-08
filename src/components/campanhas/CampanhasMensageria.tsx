@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -11,7 +11,7 @@ import {
   MessageSquare,
   Mail,
   Calendar,
-  RepeatIcon
+  FileText
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CampanhaForm from "./CampanhaForm";
@@ -21,7 +21,8 @@ import AudienceSegmentationInfo from "./AudienceSegmentationInfo";
 import RecentCampaignsInfo from "./RecentCampaignsInfo";
 import SavedCampaignsList from "./SavedCampaignsList";
 import MessageSendingReport from "./MessageSendingReport";
-import { CampaignExecutionType } from "@/types/campaign";
+import { Campaign, CampaignExecutionType } from "@/types/campaign";
+import { getRecentCampaigns } from "./CampanhaForm";
 
 const CampanhasMensageria = () => {
   const { toast } = useToast();
@@ -30,6 +31,7 @@ const CampanhasMensageria = () => {
   const [selectedChannel, setSelectedChannel] = useState<string | undefined>(undefined);
   const [campaignType, setCampaignType] = useState<string | undefined>(undefined);
   const [executionType, setExecutionType] = useState<CampaignExecutionType>("one-time");
+  const [customCampaigns, setCustomCampaigns] = useState<Campaign[]>([]);
   
   // Deep clone predefined campaign data to allow modifying isActive status
   const [campaigns, setCampaigns] = useState({
@@ -39,6 +41,23 @@ const CampanhasMensageria = () => {
     migracaoCanal: [...JSON.parse(JSON.stringify(predefinedCampaigns.migracaoCanal))],
     promocoesSemanais: [...JSON.parse(JSON.stringify(restaurantCampaigns.promocoesSemanais))]
   });
+
+  // Listen for updates to recent campaigns
+  useEffect(() => {
+    const handleRecentCampaignsUpdated = () => {
+      setCustomCampaigns(getRecentCampaigns());
+    };
+
+    // Initial load
+    setCustomCampaigns(getRecentCampaigns());
+    
+    // Listen for updates
+    window.addEventListener("recentCampaignsUpdated", handleRecentCampaignsUpdated);
+    
+    return () => {
+      window.removeEventListener("recentCampaignsUpdated", handleRecentCampaignsUpdated);
+    };
+  }, []);
 
   const handleOpenPredefinedCampaign = (templateId: string) => {
     setSelectedPredefinedCampaign(templateId);
@@ -52,6 +71,14 @@ const CampanhasMensageria = () => {
     setSelectedChannel(undefined);
     setCampaignType(undefined);
     setOpenCampaignForm(true);
+  };
+
+  const handleEditCustomCampaign = (campaign: Campaign) => {
+    // In a real implementation, we would set the campaign to edit
+    toast({
+      title: "Editar campanha",
+      description: `Editando a campanha "${campaign.name}"`,
+    });
   };
 
   const handleToggleCampaign = (id: string, isActive: boolean) => {
@@ -83,6 +110,15 @@ const CampanhasMensageria = () => {
     setCampaigns(newCampaigns);
   };
 
+  // Format campaigns for the custom campaigns section
+  const formattedCustomCampaigns = customCampaigns.map(campaign => ({
+    id: campaign.id,
+    title: campaign.name,
+    description: campaign.content.substring(0, 60) + (campaign.content.length > 60 ? '...' : ''),
+    isActive: campaign.isActive || false,
+    isRecurring: campaign.executionType === 'recurring'
+  }));
+
   return (
     <div className="space-y-6">
       {/* Campanhas Pré-definidas */}
@@ -100,6 +136,19 @@ const CampanhasMensageria = () => {
           </Button>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Campanhas Personalizadas */}
+          {formattedCustomCampaigns.length > 0 && (
+            <PredefinedCampaignSection
+              title="Campanhas Personalizadas"
+              icon={<FileText className="h-5 w-5 text-indigo-500" />}
+              campaigns={formattedCustomCampaigns}
+              colorClass="bg-indigo-50"
+              onSelectCampaign={handleOpenPredefinedCampaign}
+              onToggleCampaign={handleToggleCampaign}
+              isRecurring={true}
+            />
+          )}
+
           {/* Campanhas de Recuperação */}
           <PredefinedCampaignSection
             title="Campanhas de Recuperação"
