@@ -22,19 +22,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Campaign, CampaignChannel, CampaignExecutionType, CampaignTriggerType, CustomerSegment, WhatsAppMessageType } from "@/types/campaign";
+import { Campaign, CampaignChannel, CampaignExecutionType, CampaignTriggerType, CustomerSegment } from "@/types/campaign";
 import { format } from "date-fns";
-import { MessageSquare, Mail, Phone } from "lucide-react";
 import {
   BasicInfoSection,
-  MediaSection,
   ScheduleSection,
   SaveAsTemplateSection,
   MessageComposerSection,
-  PreviewSection,
-  ContactSelection,
-  RecurringCampaignTriggerConfig
 } from "./CampanhaFormComponents";
+import CouponSelectionEnhanced from "./CampanhaFormComponents/CouponSelectionEnhanced";
+import MultiChannelPreview from "./CampanhaFormComponents/MultiChannelPreview";
 
 // Mock customer segments
 const customerSegments: CustomerSegment[] = [
@@ -164,7 +161,9 @@ const formSchema = z.object({
   name: z.string().min(3, {
     message: "O nome da campanha deve ter pelo menos 3 caracteres.",
   }),
-  channel: z.enum(["whatsapp", "email", "sms"] as const),
+  channelWhatsapp: z.boolean().optional(),
+  channelEmail: z.boolean().optional(),
+  channelSms: z.boolean().optional(),
   whatsappType: z.enum(["utility", "marketing"] as const).optional(),
   segmentId: z.string({
     required_error: "Por favor selecione um segmento de clientes.",
@@ -179,17 +178,7 @@ const formSchema = z.object({
   scheduleDate: z.date().optional(),
   scheduleTime: z.string().optional(),
   saveAsTemplate: z.boolean().default(false),
-  contactSource: z.enum(["segment", "file", "manual"]).default("segment"),
-  contactFile: z.string().optional(),
-  manualContacts: z.string().optional(),
   executionType: z.enum(["one-time", "recurring"] as const).default("one-time"),
-  triggerType: z.enum(["client_inactivity", "first_purchase", "repeat_purchase", "birthday", "time_based", "manual"] as const).optional(),
-  inactivityDays: z.number().optional(),
-  purchaseCount: z.number().optional(),
-  weekday: z.number().optional(),
-  monthDay: z.number().optional(),
-  triggerTime: z.string().optional(),
-  daysBeforeBirthday: z.number().optional(),
   isActive: z.boolean().default(false)
 });
 
@@ -214,15 +203,15 @@ const CampanhaForm = ({
 }: CampanhaFormProps) => {
   const { toast } = useToast();
   const [isScheduled, setIsScheduled] = useState(false);
-  const [previewChannel, setPreviewChannel] = useState<CampaignChannel>("whatsapp");
-  const [currentTriggerType, setCurrentTriggerType] = useState<CampaignTriggerType | undefined>(undefined);
-
+  
   // Initialize form with default values or values from predefined campaign/edit
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      channel: "whatsapp",
+      channelWhatsapp: true,
+      channelEmail: false,
+      channelSms: false,
       whatsappType: "marketing",
       segmentId: "",
       content: "",
@@ -231,9 +220,7 @@ const CampanhaForm = ({
       couponCode: "",
       imageUrl: "",
       saveAsTemplate: false,
-      contactSource: "segment",
       executionType: "one-time",
-      triggerType: "client_inactivity",
       isActive: false
     },
   });
@@ -245,7 +232,9 @@ const CampanhaForm = ({
       
       form.reset({
         name: template.name || "",
-        channel: template.channel || "whatsapp",
+        channelWhatsapp: template.channel === "whatsapp",
+        channelEmail: template.channel === "email",
+        channelSms: template.channel === "sms",
         whatsappType: template.whatsappType || "marketing",
         segmentId: template.segment?.id || "",
         content: template.content || "",
@@ -254,17 +243,15 @@ const CampanhaForm = ({
         couponCode: "",
         imageUrl: template.imageUrl || "",
         saveAsTemplate: false,
-        executionType: "one-time",
-        triggerType: "client_inactivity",
+        executionType: template.executionType || "one-time",
         isActive: false
       });
-      
-      setPreviewChannel(template.channel || "whatsapp");
-      setCurrentTriggerType("client_inactivity");
     } else if (campaignToEdit) {
       form.reset({
         name: campaignToEdit.name,
-        channel: campaignToEdit.channel,
+        channelWhatsapp: campaignToEdit.channel === "whatsapp",
+        channelEmail: campaignToEdit.channel === "email",
+        channelSms: campaignToEdit.channel === "sms",
         whatsappType: campaignToEdit.whatsappType || "marketing",
         segmentId: campaignToEdit.segment.id,
         content: campaignToEdit.content,
@@ -274,17 +261,8 @@ const CampanhaForm = ({
         imageUrl: campaignToEdit.imageUrl || "",
         saveAsTemplate: false,
         executionType: campaignToEdit.executionType || "one-time",
-        triggerType: campaignToEdit.trigger?.type || "client_inactivity",
-        inactivityDays: campaignToEdit.trigger?.inactivityDays,
-        purchaseCount: campaignToEdit.trigger?.purchaseCount,
-        weekday: campaignToEdit.trigger?.weekday,
-        monthDay: campaignToEdit.trigger?.monthDay,
-        triggerTime: campaignToEdit.trigger?.time,
         isActive: campaignToEdit.isActive || false
       });
-      
-      setPreviewChannel(campaignToEdit.channel);
-      setCurrentTriggerType(campaignToEdit.trigger?.type);
       
       if (campaignToEdit.scheduledAt) {
         setIsScheduled(true);
@@ -311,7 +289,6 @@ const CampanhaForm = ({
             defaultName = "Lembrete de Reserva";
             defaultContent = "Olá! Apenas confirmando sua reserva para [DATA/HORA]. Estamos ansiosos para recebê-lo!";
             break;
-          // ... keep existing code (other case statements)
           default:
             break;
         }
@@ -319,7 +296,9 @@ const CampanhaForm = ({
       
       form.reset({
         name: defaultName,
-        channel: selectedChannel as CampaignChannel,
+        channelWhatsapp: selectedChannel === "whatsapp",
+        channelEmail: selectedChannel === "email",
+        channelSms: selectedChannel === "sms",
         whatsappType: selectedChannel === "whatsapp" ? "marketing" : undefined,
         segmentId: customerSegments[0].id,
         content: defaultContent,
@@ -329,16 +308,15 @@ const CampanhaForm = ({
         imageUrl: "",
         saveAsTemplate: false,
         executionType: "one-time",
-        triggerType: "client_inactivity",
         isActive: false
       });
-      
-      setPreviewChannel(selectedChannel as CampaignChannel);
     } else {
       // Default new form values
       form.reset({
         name: "",
-        channel: "whatsapp",
+        channelWhatsapp: true,
+        channelEmail: false,
+        channelSms: false,
         whatsappType: "marketing",
         segmentId: customerSegments[0].id,
         content: "",
@@ -348,50 +326,36 @@ const CampanhaForm = ({
         imageUrl: "",
         saveAsTemplate: false,
         executionType: "one-time",
-        triggerType: "client_inactivity",
         isActive: false
       });
     }
   }, [predefinedCampaignId, campaignToEdit, selectedChannel, campaignType, form]);
   
-  // Update current trigger type when form value changes
+  // Watch for channel changes to update WhatsApp type
   useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === "triggerType" && value.triggerType) {
-        setCurrentTriggerType(value.triggerType as CampaignTriggerType);
-      }
-      
-      if (name === "executionType" && value.executionType === "recurring") {
-        form.setValue("triggerType", "client_inactivity");
-        setCurrentTriggerType("client_inactivity");
+    const subscription = form.watch(({ channelWhatsapp }) => {
+      if (channelWhatsapp === false) {
+        form.setValue("whatsappType", undefined);
+      } else if (!form.getValues("whatsappType")) {
+        form.setValue("whatsappType", "marketing");
       }
     });
     
     return () => subscription.unsubscribe();
-  }, [form.watch]);
-
-  // Helper function to safely replace placeholders in message content
-  const getPreviewText = (content: string): string => {
-    if (!content) return "";
-    // Safely replace placeholders to prevent TypeScript errors
-    return content.replace(/\{\{nome\}\}/g, "Cliente");
-  };
-
-  // Handle channel change
-  const handleChannelChange = (value: string) => {
-    form.setValue("channel", value as CampaignChannel);
-    setPreviewChannel(value as CampaignChannel);
-    
-    // Reset WhatsApp type if channel is not WhatsApp
-    if (value !== "whatsapp") {
-      form.setValue("whatsappType", undefined);
-    } else {
-      form.setValue("whatsappType", "marketing");
-    }
-  };
+  }, [form]);
 
   // Handle form submission
   const onSubmit = (data: FormValues) => {
+    // Validate that at least one channel is selected
+    if (!data.channelWhatsapp && !data.channelEmail && !data.channelSms) {
+      toast({
+        title: "Erro",
+        description: "Selecione pelo menos um canal de envio.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Find selected segment
     const selectedSegment = customerSegments.find(seg => seg.id === data.segmentId);
     
@@ -404,15 +368,15 @@ const CampanhaForm = ({
       return;
     }
     
-    // Build campaign trigger if it's a recurring campaign
-    const trigger = data.executionType === "recurring" && data.triggerType ? {
-      type: data.triggerType,
-      inactivityDays: data.inactivityDays,
-      purchaseCount: data.purchaseCount,
-      weekday: data.weekday,
-      monthDay: data.monthDay,
-      time: data.triggerTime
-    } : undefined;
+    // Determine primary channel
+    let primaryChannel: CampaignChannel = "whatsapp";
+    if (data.channelWhatsapp) {
+      primaryChannel = "whatsapp";
+    } else if (data.channelEmail) {
+      primaryChannel = "email";
+    } else if (data.channelSms) {
+      primaryChannel = "sms";
+    }
     
     // Create campaign object
     const newCampaign: Campaign = {
@@ -424,14 +388,13 @@ const CampanhaForm = ({
         couponId: data.incentiveType === "coupon" ? data.couponId || `cpn-${Date.now()}` : undefined,
         loyaltyPoints: data.incentiveType === "loyalty" ? 10 : undefined,
       },
-      channel: data.channel,
-      whatsappType: data.channel === "whatsapp" ? data.whatsappType : undefined,
+      channel: primaryChannel,
+      whatsappType: data.channelWhatsapp ? data.whatsappType : undefined,
       content: data.content,
       imageUrl: data.imageUrl,
       status: data.executionType === "recurring" ? (data.isActive ? "active" : "paused") : (isScheduled ? "scheduled" : "active"),
       createdAt: campaignToEdit?.createdAt || new Date().toISOString(),
       executionType: data.executionType,
-      trigger: trigger,
       isActive: data.isActive,
       scheduledAt: data.executionType === "one-time" && isScheduled && data.scheduleDate ? 
         (() => {
@@ -444,16 +407,16 @@ const CampanhaForm = ({
         })() : undefined,
     };
     
+    // Store multi-channel info in campaign object
+    (newCampaign as any).multiChannel = {
+      whatsapp: data.channelWhatsapp,
+      email: data.channelEmail,
+      sms: data.channelSms
+    };
+    
     // If custom coupon code was provided
     if (data.incentiveType === "coupon" && data.couponCode) {
       (newCampaign as any).couponCode = data.couponCode;
-    }
-    
-    // Contact information
-    if (data.contactSource === "file" && data.contactFile) {
-      (newCampaign as any).contactFile = data.contactFile;
-    } else if (data.contactSource === "manual" && data.manualContacts) {
-      (newCampaign as any).manualContacts = data.manualContacts;
     }
     
     // Save campaign
@@ -499,20 +462,6 @@ const CampanhaForm = ({
     
     // Close dialog
     onOpenChange(false);
-  };
-
-  // Get channel icon
-  const getChannelIcon = (channel: CampaignChannel) => {
-    switch (channel) {
-      case "whatsapp":
-        return <MessageSquare className="h-4 w-4" />;
-      case "email":
-        return <Mail className="h-4 w-4" />;
-      case "sms":
-        return <Phone className="h-4 w-4" />;
-      default:
-        return null;
-    }
   };
 
   // Get dialog title based on form type
@@ -565,42 +514,28 @@ const CampanhaForm = ({
                   {/* Basic Information Section */}
                   <BasicInfoSection 
                     customerSegments={customerSegments}
-                    handleChannelChange={handleChannelChange}
                   />
                   
-                  {/* Schedule Section - Now handles both one-time and recurring */}
+                  {/* Schedule Section */}
                   <ScheduleSection 
                     isScheduled={isScheduled}
                     setIsScheduled={setIsScheduled}
                     executionType={form.watch("executionType")}
                   />
                   
-                  {/* Additional trigger configurations for recurring campaigns */}
-                  {form.watch("executionType") === "recurring" && (
-                    <div className="space-y-4">
-                      <h3 className="text-base font-medium">Configuração de Gatilho</h3>
-                      <FormDescription>
-                        Esta campanha será disparada automaticamente quando os clientes atenderem aos critérios definidos pelo segmento selecionado.
-                      </FormDescription>
-                    </div>
-                  )}
-                  
-                  {/* Contact Selection Section */}
-                  <ContactSelection />
-                  
-                  {/* Media Section */}
-                  <MediaSection />
+                  {/* Enhanced Coupon Selection */}
+                  <CouponSelectionEnhanced />
                   
                   {/* Save As Template Section */}
                   <SaveAsTemplateSection />
                 </div>
                 
                 <div className="space-y-6">
-                  {/* Message Composer Section */}
+                  {/* Message Composer Section with integrated image upload */}
                   <MessageComposerSection />
                   
-                  {/* Preview Section */}
-                  <PreviewSection previewChannel={previewChannel} />
+                  {/* Multi-channel Preview */}
+                  <MultiChannelPreview />
                 </div>
               </div>
             </form>

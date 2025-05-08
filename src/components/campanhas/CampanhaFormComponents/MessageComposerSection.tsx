@@ -12,11 +12,14 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, Calendar, Tag, Store, MapPin } from "lucide-react";
+import { User, Calendar, Tag, Store, MapPin, Zap, Image } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 const MessageComposerSection = () => {
   const form = useFormContext();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { toast } = useToast();
   
   // Function to insert variable tags at cursor position
   const insertTag = (tag: string) => {
@@ -39,6 +42,35 @@ const MessageComposerSection = () => {
       textarea.setSelectionRange(start + tag.length, start + tag.length);
     }, 0);
   };
+
+  const optimizeWithAI = () => {
+    // In a real implementation, this would call an AI service
+    const currentContent = form.getValues("content");
+    if (!currentContent || currentContent.trim() === "") {
+      toast({
+        title: "Conteúdo vazio",
+        description: "Por favor, escreva algum conteúdo para otimizar.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    toast({
+      title: "Otimizando conteúdo",
+      description: "Seu conteúdo está sendo otimizado pela IA...",
+    });
+    
+    // Simulate AI processing delay
+    setTimeout(() => {
+      const optimizedContent = `${currentContent}\n\n[Conteúdo otimizado pela IA - Esta é uma simulação. Em uma implementação real, este texto seria realmente otimizado.]`;
+      form.setValue("content", optimizedContent, { shouldValidate: true, shouldDirty: true });
+      
+      toast({
+        title: "Conteúdo otimizado",
+        description: "Seu conteúdo foi otimizado pela IA com sucesso.",
+      });
+    }, 1500);
+  };
   
   return (
     <div className="space-y-4">
@@ -48,6 +80,17 @@ const MessageComposerSection = () => {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Conteúdo da Mensagem</FormLabel>
+            <div className="flex gap-2 mb-2">
+              <Button 
+                type="button" 
+                size="sm" 
+                variant="outline"
+                className="gap-1"
+                onClick={optimizeWithAI}
+              >
+                <Zap className="h-3.5 w-3.5" /> Otimizar com IA
+              </Button>
+            </div>
             <FormControl>
               <Textarea 
                 placeholder="Digite sua mensagem aqui..." 
@@ -63,6 +106,70 @@ const MessageComposerSection = () => {
           </FormItem>
         )}
       />
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <FormField
+            control={form.control}
+            name="imageUrl"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Imagem (opcional)</FormLabel>
+                <FormControl>
+                  <div className="flex gap-2">
+                    <Input placeholder="URL da imagem" {...field} />
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="icon"
+                      onClick={() => {
+                        // In a real app, this would open a media library
+                        toast({
+                          title: "Biblioteca de mídia",
+                          description: "A biblioteca de mídia seria aberta aqui.",
+                        });
+                      }}
+                    >
+                      <Image className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </FormControl>
+                <FormDescription>
+                  Adicione uma imagem para sua campanha
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <div>
+          {form.watch("imageUrl") && (
+            <div className="border rounded-md p-2 mt-6">
+              <p className="text-xs font-medium mb-1">Pré-visualização da imagem:</p>
+              <div className="bg-slate-100 rounded h-[120px] flex items-center justify-center">
+                {form.watch("imageUrl") ? (
+                  <img 
+                    src={form.watch("imageUrl")} 
+                    alt="Preview" 
+                    className="max-h-[110px] max-w-full object-contain rounded"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=300&h=150";
+                      toast({
+                        title: "Erro ao carregar imagem",
+                        description: "Verifique a URL da imagem fornecida.",
+                        variant: "destructive"
+                      });
+                    }}
+                  />
+                ) : (
+                  <span className="text-xs text-gray-500">Nenhuma imagem definida</span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
       
       <div>
         <h4 className="text-sm font-medium mb-2">Variáveis disponíveis:</h4>

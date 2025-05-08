@@ -6,10 +6,10 @@ import {
   FormItem,
   FormLabel,
   FormControl,
+  FormDescription,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -17,26 +17,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CustomerSegment } from "@/types/campaign";
+import { CheckedState } from "@radix-ui/react-checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
 import { MessageSquare, Mail, Phone } from "lucide-react";
-import { FormDescription } from "@/components/ui/form";
-import { CampaignChannel, CustomerSegment } from "@/types/campaign";
-import CouponSelection from "./CouponSelection";
 
 interface BasicInfoSectionProps {
   customerSegments: CustomerSegment[];
-  handleChannelChange: (value: string) => void;
 }
 
-const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
-  customerSegments,
-  handleChannelChange,
-}) => {
+const BasicInfoSection = ({ customerSegments }: BasicInfoSectionProps) => {
   const form = useFormContext();
-  const incentiveType = form.watch("incentiveType");
-  
+
   return (
-    <div className="space-y-6">
-      {/* Campaign Name */}
+    <div className="space-y-4">
       <FormField
         control={form.control}
         name="name"
@@ -44,145 +38,145 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           <FormItem>
             <FormLabel>Nome da Campanha</FormLabel>
             <FormControl>
-              <Input placeholder="Ex: Promoção de Fim de Semana" {...field} />
+              <Input placeholder="Digite o nome da campanha" {...field} />
             </FormControl>
+            <FormDescription>
+              Dê um nome descritivo para sua campanha
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
       />
-      
-      {/* Channel Selection */}
-      <FormField
-        control={form.control}
-        name="channel"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Canal de Envio</FormLabel>
-            <FormControl>
-              <Tabs 
-                value={field.value} 
-                onValueChange={handleChannelChange}
-                className="w-full"
-              >
-                <TabsList className="grid grid-cols-3 w-full">
-                  <TabsTrigger value="whatsapp" className="flex items-center gap-1">
-                    <MessageSquare className="h-4 w-4" /> WhatsApp
-                  </TabsTrigger>
-                  <TabsTrigger value="email" className="flex items-center gap-1">
-                    <Mail className="h-4 w-4" /> E-mail
-                  </TabsTrigger>
-                  <TabsTrigger value="sms" className="flex items-center gap-1">
-                    <Phone className="h-4 w-4" /> SMS
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      
-      {/* WhatsApp Type (only if WhatsApp is selected) */}
-      {form.watch("channel") === "whatsapp" && (
-        <FormField
-          control={form.control}
-          name="whatsappType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tipo de Mensagem WhatsApp</FormLabel>
-              <Select 
-                value={field.value} 
-                onValueChange={field.onChange}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tipo de mensagem" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="utility">Serviço/Utilidade</SelectItem>
-                  <SelectItem value="marketing">Marketing</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                Mensagens de serviço são para informações úteis como confirmações e lembretes.
-                Mensagens de marketing são para promoções e divulgações.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      )}
-      
-      {/* Customer Segment */}
+
       <FormField
         control={form.control}
         name="segmentId"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Segmento de Clientes</FormLabel>
-            <Select 
-              value={field.value} 
-              onValueChange={field.onChange}
-            >
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um segmento" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {customerSegments.map(segment => (
+                {customerSegments.map((segment) => (
                   <SelectItem key={segment.id} value={segment.id}>
-                    {segment.name} ({segment.customerCount} clientes)
+                    <div className="flex flex-col">
+                      <span>{segment.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {segment.description} ({segment.customerCount} clientes)
+                      </span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            <FormDescription>
+              Escolha o segmento de clientes que receberá esta campanha
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
       />
-      
-      {/* Incentive Type */}
+
       <FormField
         control={form.control}
-        name="incentiveType"
-        render={({ field }) => (
+        name="channels"
+        render={() => (
           <FormItem>
-            <FormLabel>Incentivo</FormLabel>
-            <Select 
-              value={field.value} 
-              onValueChange={(value) => {
-                field.onChange(value);
-                // Reset couponId when incentive type changes
-                if (value !== "coupon") {
-                  form.setValue("couponId", undefined);
-                }
-              }}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um tipo de incentivo" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="none">Sem incentivo</SelectItem>
-                <SelectItem value="coupon">Cupom de desconto</SelectItem>
-                <SelectItem value="loyalty">Pontos de fidelidade</SelectItem>
-              </SelectContent>
-            </Select>
+            <FormLabel>Canais de Envio</FormLabel>
+            <div className="grid grid-cols-3 gap-2">
+              <FormField
+                control={form.control}
+                name="channelWhatsapp"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value as CheckedState}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="flex items-center gap-1">
+                        <MessageSquare className="h-4 w-4 text-green-600" /> WhatsApp
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="channelEmail"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value as CheckedState}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="flex items-center gap-1">
+                        <Mail className="h-4 w-4 text-blue-600" /> Email
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="channelSms"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value as CheckedState}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="flex items-center gap-1">
+                        <Phone className="h-4 w-4 text-purple-600" /> SMS
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
+            <FormDescription>
+              Selecione um ou mais canais para enviar sua campanha
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
       />
-      
-      {/* Coupon Selection (only when coupon is selected) */}
-      {incentiveType === "coupon" && (
+
+      {form.watch("channelWhatsapp") && (
         <FormField
           control={form.control}
-          name="couponId"
-          render={() => (
-            <CouponSelection />
+          name="whatsappType"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tipo de mensagem WhatsApp</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="utility">Utilitária (Serviço)</SelectItem>
+                  <SelectItem value="marketing">Marketing (Promoções)</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Mensagens de marketing exigem template aprovado pelo WhatsApp
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
           )}
         />
       )}
