@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -116,7 +115,8 @@ const CampanhasMensageria = () => {
     title: campaign.name,
     description: campaign.content.substring(0, 60) + (campaign.content.length > 60 ? '...' : ''),
     isActive: campaign.isActive || false,
-    isRecurring: campaign.executionType === 'recurring'
+    isRecurring: campaign.executionType === 'recurring',
+    badge: campaign.executionType === 'recurring' ? 'Automação' : 'Campanha'  // Added the missing badge property
   }));
 
   return (
