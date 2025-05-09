@@ -5,17 +5,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 
 type AuthContextType = {
-  user: User | null;
+  user: User | { id: string; email: string } | null;
   session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
   updateProfile: (data: { first_name?: string; last_name?: string; avatar_url?: string }) => Promise<void>;
 };
 
+const guestUser = {
+  id: "guest-user",
+  email: "guest@example.com"
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | { id: string; email: string } | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -24,14 +29,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
-        setUser(session?.user ?? null);
+        setUser(session?.user ?? guestUser);
       }
     );
 
     // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setUser(session?.user ?? null);
+      setUser(session?.user ?? guestUser);
       setLoading(false);
     });
 
@@ -42,6 +47,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      setUser(guestUser);
       toast.success("Logout realizado com sucesso");
     } catch (error: any) {
       toast.error(error.message || "Falha ao realizar logout");
@@ -50,7 +56,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const updateProfile = async (data: { first_name?: string; last_name?: string; avatar_url?: string }) => {
     try {
-      if (!user) throw new Error("Usuário não autenticado");
+      if (!user || user.id === "guest-user") {
+        toast.info("Você precisa estar logado para atualizar seu perfil");
+        return;
+      }
 
       const { error } = await supabase
         .from("profiles")
