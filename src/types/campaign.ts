@@ -40,6 +40,7 @@ export interface CampaignTrigger {
 export interface Campaign {
   id: string;
   name: string;
+  description?: string;
   segment: CustomerSegment;
   incentive: CampaignIncentive;
   channel: CampaignChannel;

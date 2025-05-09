@@ -161,6 +161,9 @@ const formSchema = z.object({
   name: z.string().min(3, {
     message: "O nome da campanha deve ter pelo menos 3 caracteres.",
   }),
+  description: z.string().min(5, {
+    message: "A descrição deve ter pelo menos 5 caracteres.",
+  }).optional(),
   channelWhatsapp: z.boolean().optional(),
   channelEmail: z.boolean().optional(),
   channelSms: z.boolean().optional(),
@@ -209,6 +212,7 @@ const CampanhaForm = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      description: "",
       channelWhatsapp: true,
       channelEmail: false,
       channelSms: false,
@@ -232,6 +236,7 @@ const CampanhaForm = ({
       
       form.reset({
         name: template.name || "",
+        description: template.description || "",
         channelWhatsapp: template.channel === "whatsapp",
         channelEmail: template.channel === "email",
         channelSms: template.channel === "sms",
@@ -249,6 +254,7 @@ const CampanhaForm = ({
     } else if (campaignToEdit) {
       form.reset({
         name: campaignToEdit.name,
+        description: campaignToEdit.description || "",
         channelWhatsapp: campaignToEdit.channel === "whatsapp",
         channelEmail: campaignToEdit.channel === "email",
         channelSms: campaignToEdit.channel === "sms",
@@ -274,19 +280,23 @@ const CampanhaForm = ({
       // Set form values based on selected channel and campaign type
       let defaultContent = "";
       let defaultName = "";
+      let defaultDescription = "";
       
       if (campaignType) {
         switch (campaignType) {
           case "promotion":
             defaultName = "Promoção Especial";
+            defaultDescription = "Detalhes da promoção";
             defaultContent = "Olá! Temos uma promoção especial para você: [DETALHE DA PROMOÇÃO]. Válido até [DATA]. Aproveite!";
             break;
           case "news":
             defaultName = "Novidade no Cardápio";
+            defaultDescription = "Anúncio de novo prato";
             defaultContent = "Olá! Temos novidades no cardápio! Conheça nosso novo prato: [NOME DO PRATO]. Venha experimentar!";
             break;
           case "reminder":
             defaultName = "Lembrete de Reserva";
+            defaultDescription = "Confirmação de reserva";
             defaultContent = "Olá! Apenas confirmando sua reserva para [DATA/HORA]. Estamos ansiosos para recebê-lo!";
             break;
           default:
@@ -296,6 +306,7 @@ const CampanhaForm = ({
       
       form.reset({
         name: defaultName,
+        description: defaultDescription,
         channelWhatsapp: selectedChannel === "whatsapp",
         channelEmail: selectedChannel === "email",
         channelSms: selectedChannel === "sms",
@@ -314,6 +325,7 @@ const CampanhaForm = ({
       // Default new form values
       form.reset({
         name: "",
+        description: "",
         channelWhatsapp: true,
         channelEmail: false,
         channelSms: false,
@@ -382,6 +394,7 @@ const CampanhaForm = ({
     const newCampaign: Campaign = {
       id: campaignToEdit?.id || `camp-${Date.now()}`,
       name: data.name,
+      description: data.description,
       segment: selectedSegment,
       incentive: {
         type: data.incentiveType,
@@ -511,10 +524,163 @@ const CampanhaForm = ({
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-6">
-                  {/* Basic Information Section */}
-                  <BasicInfoSection 
-                    customerSegments={customerSegments}
-                  />
+                  {/* Basic Information Section with description field */}
+                  <div className="space-y-4 border rounded-md p-4">
+                    <h3 className="text-lg font-medium">Informações Básicas</h3>
+                    
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Título da Campanha</FormLabel>
+                          <FormControl>
+                            <input
+                              className="w-full px-3 py-2 border rounded-md"
+                              placeholder="Digite o título da campanha"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Subtítulo/Descrição</FormLabel>
+                          <FormControl>
+                            <input
+                              className="w-full px-3 py-2 border rounded-md"
+                              placeholder="Digite uma breve descrição da campanha"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Um breve texto explicativo sobre sua campanha
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="segmentId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Segmento de Clientes</FormLabel>
+                          <FormControl>
+                            <select
+                              className="w-full px-3 py-2 border rounded-md"
+                              {...field}
+                            >
+                              <option value="">Selecione um segmento</option>
+                              {customerSegments.map((segment) => (
+                                <option key={segment.id} value={segment.id}>
+                                  {segment.name} ({segment.customerCount} clientes)
+                                </option>
+                              ))}
+                            </select>
+                          </FormControl>
+                          <FormDescription>
+                            Selecione qual grupo de clientes receberá esta campanha
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="space-y-2">
+                      <FormLabel>Canal de Envio</FormLabel>
+                      <div className="flex flex-wrap gap-4">
+                        <FormField
+                          control={form.control}
+                          name="channelWhatsapp"
+                          render={({ field }) => (
+                            <FormItem className="flex items-center space-x-2">
+                              <FormControl>
+                                <input
+                                  type="checkbox"
+                                  className="h-4 w-4"
+                                  checked={field.value}
+                                  onChange={field.onChange}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">WhatsApp</FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="channelEmail"
+                          render={({ field }) => (
+                            <FormItem className="flex items-center space-x-2">
+                              <FormControl>
+                                <input
+                                  type="checkbox"
+                                  className="h-4 w-4"
+                                  checked={field.value}
+                                  onChange={field.onChange}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">Email</FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="channelSms"
+                          render={({ field }) => (
+                            <FormItem className="flex items-center space-x-2">
+                              <FormControl>
+                                <input
+                                  type="checkbox"
+                                  className="h-4 w-4"
+                                  checked={field.value}
+                                  onChange={field.onChange}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">SMS</FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <FormDescription>
+                        Selecione quais canais serão utilizados para envio
+                      </FormDescription>
+                    </div>
+                    
+                    {form.watch("channelWhatsapp") && (
+                      <FormField
+                        control={form.control}
+                        name="whatsappType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Tipo de Mensagem WhatsApp</FormLabel>
+                            <FormControl>
+                              <select
+                                className="w-full px-3 py-2 border rounded-md"
+                                {...field}
+                              >
+                                <option value="utility">Utilitária</option>
+                                <option value="marketing">Marketing</option>
+                              </select>
+                            </FormControl>
+                            <FormDescription>
+                              Utilitárias: transacionais e urgentes. Marketing: promocionais.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                  </div>
                   
                   {/* Schedule Section */}
                   <ScheduleSection 
