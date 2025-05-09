@@ -15,8 +15,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   // Show loading indicator while checking auth state
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-white">
-        <div className="text-primary text-lg">Carregando...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cannoli-cream to-white">
+        <div className="text-cannoli-brown text-lg">Carregando...</div>
       </div>
     );
   }
@@ -28,11 +28,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-purple-50 to-white">
+      <div className="min-h-screen flex w-full bg-gradient-to-br from-cannoli-cream to-white">
         <Sidebar />
         <div className="flex-1 flex flex-col">
           <Navbar />
-          <main className="flex-1 p-6 overflow-auto">{children}</main>
+          <main className="flex-1 p-4 md:p-6 overflow-auto">{children}</main>
         </div>
       </div>
     </SidebarProvider>
