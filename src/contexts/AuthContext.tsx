@@ -8,8 +8,6 @@ type AuthContextType = {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (data: { first_name?: string; last_name?: string; avatar_url?: string }) => Promise<void>;
 };
@@ -39,42 +37,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-      toast.success("Login realizado com sucesso!");
-    } catch (error: any) {
-      toast.error(error.message || "Falha ao realizar login");
-      throw error;
-    }
-  };
-
-  const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-          },
-        },
-      });
-
-      if (error) throw error;
-      toast.success("Conta criada com sucesso! Verifique seu email.");
-    } catch (error: any) {
-      toast.error(error.message || "Falha ao criar conta");
-      throw error;
-    }
-  };
 
   const signOut = async () => {
     try {
@@ -107,8 +69,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     user,
     session,
     loading,
-    signIn,
-    signUp,
     signOut,
     updateProfile,
   };
