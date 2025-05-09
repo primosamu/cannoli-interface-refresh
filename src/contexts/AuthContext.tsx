@@ -4,15 +4,20 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 
+type GuestUser = {
+  id: string;
+  email: string;
+};
+
 type AuthContextType = {
-  user: User | { id: string; email: string } | null;
+  user: User | GuestUser | null;
   session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
   updateProfile: (data: { first_name?: string; last_name?: string; avatar_url?: string }) => Promise<void>;
 };
 
-const guestUser = {
+const guestUser: GuestUser = {
   id: "guest-user",
   email: "guest@example.com"
 };
@@ -20,7 +25,7 @@ const guestUser = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | { id: string; email: string } | null>(null);
+  const [user, setUser] = useState<User | GuestUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 

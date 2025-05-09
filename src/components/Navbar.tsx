@@ -52,12 +52,14 @@ const Navbar = () => {
   const getUserInitials = () => {
     if (!user) return "?";
     
-    // Try to get name from profile metadata
-    const firstName = user.user_metadata?.first_name || '';
-    const lastName = user.user_metadata?.last_name || '';
-    
-    if (firstName && lastName) {
-      return `${firstName[0]}${lastName[0]}`.toUpperCase();
+    // Check if it's a Supabase User with metadata
+    if ('user_metadata' in user) {
+      const firstName = user.user_metadata?.first_name || '';
+      const lastName = user.user_metadata?.last_name || '';
+      
+      if (firstName && lastName) {
+        return `${firstName[0]}${lastName[0]}`.toUpperCase();
+      }
     }
     
     // Fallback to email

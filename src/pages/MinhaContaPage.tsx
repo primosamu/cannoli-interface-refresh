@@ -10,8 +10,12 @@ import { User } from "lucide-react";
 
 const MinhaContaPage = () => {
   const { user, updateProfile } = useAuth();
-  const [firstName, setFirstName] = useState(user?.user_metadata?.first_name || "");
-  const [lastName, setLastName] = useState(user?.user_metadata?.last_name || "");
+  const [firstName, setFirstName] = useState(
+    'user_metadata' in user ? user.user_metadata?.first_name || "" : ""
+  );
+  const [lastName, setLastName] = useState(
+    'user_metadata' in user ? user.user_metadata?.last_name || "" : ""
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   const getUserInitials = () => {
