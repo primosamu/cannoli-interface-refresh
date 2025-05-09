@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -125,7 +126,7 @@ export function CampaignWizard({ open, onOpenChange, templates }: CampaignWizard
             </Button>
           )}
           
-          <Button onClick={handleNext}>
+          <Button onClick={handleNext} disabled={step === 2 && selectedPlatforms.length === 0}>
             {step === totalSteps ? (
               <>
                 Criar Campanha

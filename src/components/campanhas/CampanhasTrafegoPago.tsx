@@ -6,20 +6,14 @@ import {
   Store, 
   Search, 
   PlusCircle, 
-  BarChart3, 
-  Clock, 
+  Clock,
   MapPin, 
-  Phone, 
-  Calendar, 
-  DollarSign, 
-  Eye, 
-  FileText, 
-  ChevronRight,
-  Users,
-  ArrowRight,
+  Calendar,
+  Check,
   CheckCircle, 
   Percent,
-  BarChart
+  BarChart,
+  ArrowRight
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -32,14 +26,14 @@ import { GoogleMyBusinessCard } from "./trafego-pago/GoogleMyBusinessCard";
 import { CampaignTemplateCard } from "./trafego-pago/CampaignTemplateCard";
 import { CampaignReportCard } from "./trafego-pago/CampaignReportCard";
 import { ActiveCampaignCard } from "./trafego-pago/ActiveCampaignCard";
-import { AdPlatform, CampaignTemplate, AdCampaignType } from "@/types/campaign";
+import { CampaignTemplate } from "@/types/campaign";
 
 const CampanhasTrafegoPago = () => {
   const { toast } = useToast();
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [timeFilter, setTimeFilter] = useState("7d");
 
-  // Mock campaign templates for food service - Fixed to use regular arrays not readonly arrays
+  // Campaign templates for food service
   const campaignTemplates: CampaignTemplate[] = [
     {
       id: "1",
@@ -333,7 +327,7 @@ const CampanhasTrafegoPago = () => {
           
           <Button variant="link" className="mt-4 p-0 h-auto">
             Ver mais dicas para restaurantes
-            <ChevronRight className="ml-1 h-4 w-4" />
+            <ArrowRight className="ml-1 h-4 w-4" />
           </Button>
         </CardContent>
       </Card>
