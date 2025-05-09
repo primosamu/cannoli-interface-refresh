@@ -1,7 +1,18 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Store, ChevronRight, MapPin, Search, Phone, Clock, StarIcon, Users, Eye } from "lucide-react";
+import { 
+  Store, 
+  ChevronRight, 
+  MapPin, 
+  Search, 
+  Phone, 
+  Clock, 
+  StarIcon, 
+  Users, 
+  Eye,
+  CheckCircle 
+} from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
