@@ -6,6 +6,34 @@ export type AdPlatform = "meta" | "google" | "tiktok";
 export type AdCampaignType = "local_visitors" | "delivery_orders" | "new_dish" | "special_event" | "brand_awareness";
 export type CampaignExecutionType = "one-time" | "recurring";
 export type CampaignTriggerType = "client_inactivity" | "first_purchase" | "repeat_purchase" | "birthday" | "time_based" | "manual";
+export type ImageGenerationFormat = "square" | "portrait" | "story" | "banner" | "ad";
+export type ImageGenerationStatus = "idle" | "generating" | "complete" | "error";
+
+export interface GeneratedImage {
+  id: string;
+  url: string;
+  prompt: string;
+  format: ImageGenerationFormat;
+  width: number;
+  height: number;
+  platform: string;
+  createdAt: string;
+}
+
+export interface ImageGenerationOptions {
+  prompt: string;
+  formats: {
+    id: string;
+    name: string;
+    width: number;
+    height: number;
+    platform: string;
+    selected: boolean;
+  }[];
+  useRestaurantLogo?: boolean;
+  useRestaurantColors?: boolean;
+  style?: string;
+}
 
 export interface CustomerSegment {
   id: string;
@@ -53,6 +81,7 @@ export interface Campaign {
   executionType: CampaignExecutionType;
   trigger?: CampaignTrigger;
   isActive?: boolean;
+  generatedImages?: GeneratedImage[];
 }
 
 export interface AdCreative {

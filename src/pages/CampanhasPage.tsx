@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CampanhasMensageria from "@/components/campanhas/CampanhasMensageria";
 import ChannelConfigurationForm from "@/components/campanhas/ChannelConfigurationForm";
 import CampanhasTrafegoPago from "@/components/campanhas/CampanhasTrafegoPago";
+import ImageGeneratorForm from "@/components/campanhas/ImageGenerator/ImageGeneratorForm";
 import { useLocation } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -22,6 +23,8 @@ const CampanhasPage = () => {
       setActiveTab("trafego-pago");
     } else if (tab === "configuracoes") {
       setActiveTab("configuracoes");
+    } else if (tab === "gerador-imagens") {
+      setActiveTab("gerador-imagens");
     } else {
       setActiveTab("campanhas");
     }
@@ -31,9 +34,10 @@ const CampanhasPage = () => {
     <div className="container mx-auto space-y-6 py-4">
       <Tabs defaultValue="campanhas" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className={isMobile ? "w-full flex" : ""}>
-          <TabsTrigger value="campanhas" className={isMobile ? "flex-1" : ""}>Mensageria</TabsTrigger>
-          <TabsTrigger value="trafego-pago" className={isMobile ? "flex-1" : ""}>Tráfego Pago</TabsTrigger>
-          <TabsTrigger value="configuracoes" className={isMobile ? "flex-1" : ""}>Configurações</TabsTrigger>
+          <TabsTrigger value="campanhas" className={isMobile ? "flex-1 text-xs" : ""}>Mensageria</TabsTrigger>
+          <TabsTrigger value="trafego-pago" className={isMobile ? "flex-1 text-xs" : ""}>Tráfego Pago</TabsTrigger>
+          <TabsTrigger value="gerador-imagens" className={isMobile ? "flex-1 text-xs" : ""}>Gerador de Imagens</TabsTrigger>
+          <TabsTrigger value="configuracoes" className={isMobile ? "flex-1 text-xs" : ""}>Configurações</TabsTrigger>
         </TabsList>
         <TabsContent value="campanhas">
           <Card className="bg-white/50 backdrop-blur-sm p-4 overflow-x-auto">
@@ -43,6 +47,11 @@ const CampanhasPage = () => {
         <TabsContent value="trafego-pago">
           <Card className="bg-white/50 backdrop-blur-sm p-4 overflow-x-auto">
             <CampanhasTrafegoPago />
+          </Card>
+        </TabsContent>
+        <TabsContent value="gerador-imagens">
+          <Card className="bg-white/50 backdrop-blur-sm p-4 overflow-x-auto">
+            <ImageGeneratorForm />
           </Card>
         </TabsContent>
         <TabsContent value="configuracoes">
