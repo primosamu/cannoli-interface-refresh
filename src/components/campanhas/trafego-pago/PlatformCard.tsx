@@ -18,9 +18,10 @@ interface PlatformCardProps {
   icon: AdPlatform | string;
   stats: PlatformStat[];
   benefits: string[];
+  onCreateCampaign: (platform: AdPlatform | string) => void;
 }
 
-export function PlatformCard({ title, description, icon, stats, benefits }: PlatformCardProps) {
+export function PlatformCard({ title, description, icon, stats, benefits, onCreateCampaign }: PlatformCardProps) {
   const [showInfoDialog, setShowInfoDialog] = useState(false);
   
   let iconComponent;
@@ -93,7 +94,14 @@ export function PlatformCard({ title, description, icon, stats, benefits }: Plat
             </div>
             
             <div className="pt-2">
-              <Button className="w-full" variant="outline">
+              <Button 
+                className="w-full" 
+                onClick={() => onCreateCampaign(icon)}
+                style={{ 
+                  backgroundColor: icon === "meta" ? "#1877F2" : icon === "google" ? "#EA4335" : "#000000",
+                  color: "white"
+                }}
+              >
                 Criar campanha
               </Button>
             </div>

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -19,13 +18,16 @@ interface CampaignWizardProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   templates: CampaignTemplate[];
+  initialPlatform?: AdPlatform;
 }
 
-export function CampaignWizard({ open, onOpenChange, templates }: CampaignWizardProps) {
+export function CampaignWizard({ open, onOpenChange, templates, initialPlatform }: CampaignWizardProps) {
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [selectedTemplate, setSelectedTemplate] = useState<CampaignTemplate | null>(null);
-  const [selectedPlatforms, setSelectedPlatforms] = useState<AdPlatform[]>([]);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<AdPlatform[]>(
+    initialPlatform ? [initialPlatform] : []
+  );
   
   const totalSteps = 5;
   
@@ -45,7 +47,16 @@ export function CampaignWizard({ open, onOpenChange, templates }: CampaignWizard
   
   const handleSelectTemplate = (template: CampaignTemplate) => {
     setSelectedTemplate(template);
-    setSelectedPlatforms(template.platforms);
+    // If we have an initial platform, keep it selected
+    if (initialPlatform) {
+      if (!template.platforms.includes(initialPlatform)) {
+        setSelectedPlatforms([...template.platforms.slice(0, 1)]);
+      } else {
+        setSelectedPlatforms([initialPlatform]);
+      }
+    } else {
+      setSelectedPlatforms(template.platforms);
+    }
     setStep(2);
   };
   
@@ -60,7 +71,7 @@ export function CampaignWizard({ open, onOpenChange, templates }: CampaignWizard
   const handleCreateCampaign = () => {
     toast({
       title: "Campanha criada com sucesso!",
-      description: "Você receberá um e-mail quando sua campanha começar a ser veiculada.",
+      description: `Sua campanha será veiculada nas plataformas: ${selectedPlatforms.join(', ')}. Você receberá um e-mail quando começar a ser veiculada.`,
     });
     
     setStep(1);
@@ -72,17 +83,24 @@ export function CampaignWizard({ open, onOpenChange, templates }: CampaignWizard
   const renderStepContent = () => {
     switch (step) {
       case 1:
-        return <ObjectiveStep templates={templates} onSelectTemplate={handleSelectTemplate} />;
+        return <ObjectiveStep 
+          templates={templates} 
+          onSelectTemplate={handleSelectTemplate} 
+          initialPlatform={initialPlatform} 
+        />;
       case 2:
         return <PlatformsStep 
           selectedPlatforms={selectedPlatforms} 
           onTogglePlatform={handleTogglePlatform} 
           templateName={selectedTemplate?.name || ""} 
+          initialPlatform={initialPlatform}
         />;
       case 3:
         return <RestaurantInfoStep />;
       case 4:
-        return <BudgetStep />;
+        return <BudgetStep 
+          selectedPlatforms={selectedPlatforms}
+        />;
       case 5:
         return <ReviewStep 
           templateName={selectedTemplate?.name || ""} 
@@ -93,8 +111,22 @@ export function CampaignWizard({ open, onOpenChange, templates }: CampaignWizard
     }
   };
   
+  // Reset the wizard state when opened
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      setStep(1);
+      setSelectedTemplate(null);
+      if (initialPlatform) {
+        setSelectedPlatforms([initialPlatform]);
+      } else {
+        setSelectedPlatforms([]);
+      }
+    }
+    onOpenChange(open);
+  };
+  
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl">
@@ -121,7 +153,7 @@ export function CampaignWizard({ open, onOpenChange, templates }: CampaignWizard
               Voltar
             </Button>
           ) : (
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button variant="outline" onClick={() => handleOpenChange(false)}>
               Cancelar
             </Button>
           )}
@@ -148,17 +180,25 @@ export function CampaignWizard({ open, onOpenChange, templates }: CampaignWizard
 interface ObjectiveStepProps {
   templates: CampaignTemplate[];
   onSelectTemplate: (template: CampaignTemplate) => void;
+  initialPlatform?: AdPlatform;
 }
 
-function ObjectiveStep({ templates, onSelectTemplate }: ObjectiveStepProps) {
+function ObjectiveStep({ templates, onSelectTemplate, initialPlatform }: ObjectiveStepProps) {
+  // If initial platform is provided, filter templates to show only those supporting that platform
+  const filteredTemplates = initialPlatform 
+    ? templates.filter(template => template.platforms.includes(initialPlatform))
+    : templates;
+    
   return (
     <div className="space-y-4">
       <p className="text-muted-foreground">
-        Escolha o objetivo principal da sua campanha:
+        {initialPlatform ? 
+          `Escolha o objetivo principal da sua campanha para ${initialPlatform === 'meta' ? 'Meta Ads' : initialPlatform === 'google' ? 'Google Ads' : 'TikTok Ads'}:` : 
+          'Escolha o objetivo principal da sua campanha:'}
       </p>
       
       <div className="grid gap-4 md:grid-cols-2">
-        {templates.map((template) => (
+        {filteredTemplates.map((template) => (
           <div 
             key={template.id}
             className="border rounded-lg p-4 cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-colors"
@@ -187,26 +227,34 @@ interface PlatformsStepProps {
   selectedPlatforms: AdPlatform[];
   onTogglePlatform: (platform: AdPlatform) => void;
   templateName: string;
+  initialPlatform?: AdPlatform;
 }
 
-function PlatformsStep({ selectedPlatforms, onTogglePlatform, templateName }: PlatformsStepProps) {
+function PlatformsStep({ selectedPlatforms, onTogglePlatform, templateName, initialPlatform }: PlatformsStepProps) {
   const platforms: {id: AdPlatform, name: string, description: string}[] = [
     { id: "google", name: "Google Ads", description: "Busca Google, Google Maps e parceiros" },
     { id: "meta", name: "Meta Ads", description: "Facebook e Instagram" },
     { id: "tiktok", name: "TikTok Ads", description: "Vídeos no TikTok" }
   ];
   
+  // If initialPlatform is provided, filter out other platforms
+  const displayPlatforms = initialPlatform 
+    ? platforms.filter(p => p.id === initialPlatform)
+    : platforms;
+    
   return (
     <div className="space-y-4">
       <div>
         <h3 className="font-medium mb-1">Objetivo: {templateName}</h3>
         <p className="text-muted-foreground">
-          Selecione as plataformas onde deseja veicular sua campanha:
+          {initialPlatform ? 
+            "Confirme a plataforma para sua campanha:" : 
+            "Selecione as plataformas onde deseja veicular sua campanha:"}
         </p>
       </div>
       
       <div className="space-y-3">
-        {platforms.map((platform) => {
+        {displayPlatforms.map((platform) => {
           const isSelected = selectedPlatforms.includes(platform.id);
           return (
             <div 
@@ -335,19 +383,86 @@ function RestaurantInfoStep() {
   );
 }
 
-function BudgetStep() {
+interface BudgetStepProps {
+  selectedPlatforms: AdPlatform[];
+}
+
+function BudgetStep({ selectedPlatforms }: BudgetStepProps) {
   const [budgetOption, setBudgetOption] = useState("50");
   const [dateRange, setDateRange] = useState("continuo");
   
-  const audienceEstimate = () => {
-    switch (budgetOption) {
-      case "25": return "1.500 - 3.000";
-      case "50": return "3.000 - 7.000";
-      case "100": return "7.000 - 15.000";
-      case "custom": return "Estimativa personalizada";
-      default: return "3.000 - 7.000";
+  // Get platform-specific budget options
+  const getBudgetOptions = () => {
+    // Default budget options
+    let options = [
+      { value: "25", label: "R$ 25" },
+      { value: "50", label: "R$ 50" },
+      { value: "100", label: "R$ 100" },
+      { value: "custom", label: "Outro" }
+    ];
+    
+    // Adjust budget based on platform
+    if (selectedPlatforms.includes("google") && !selectedPlatforms.includes("meta") && !selectedPlatforms.includes("tiktok")) {
+      // Google-specific budgets (slightly higher)
+      options = [
+        { value: "35", label: "R$ 35" },
+        { value: "70", label: "R$ 70" },
+        { value: "120", label: "R$ 120" },
+        { value: "custom", label: "Outro" }
+      ];
+    } else if (selectedPlatforms.includes("tiktok")) {
+      // TikTok requires higher minimum budgets
+      options = [
+        { value: "50", label: "R$ 50" },
+        { value: "100", label: "R$ 100" },
+        { value: "150", label: "R$ 150" },
+        { value: "custom", label: "Outro" }
+      ];
     }
+    
+    return options;
   };
+  
+  const audienceEstimate = () => {
+    const budgetNum = parseInt(budgetOption === "custom" ? "50" : budgetOption);
+    let baseReach = {
+      min: budgetNum * 30,
+      max: budgetNum * 70
+    };
+    
+    // Adjust reach based on platforms
+    if (selectedPlatforms.includes("meta")) {
+      baseReach.min = Math.round(baseReach.min * 1.2);
+      baseReach.max = Math.round(baseReach.max * 1.3);
+    }
+    
+    if (selectedPlatforms.includes("tiktok")) {
+      baseReach.min = Math.round(baseReach.min * 1.5);
+      baseReach.max = Math.round(baseReach.max * 1.8);
+    }
+    
+    return `${baseReach.min.toLocaleString()} - ${baseReach.max.toLocaleString()}`;
+  };
+  
+  // Get platform-specific recommendations
+  const getPlatformRecommendation = () => {
+    if (selectedPlatforms.includes("google")) {
+      return "O Google Ads tem melhor desempenho para clientes que já estão procurando por restaurantes.";
+    } else if (selectedPlatforms.includes("meta") && !selectedPlatforms.includes("google")) {
+      return "O Meta Ads é excelente para mostrar imagens dos seus pratos e ambiente.";
+    } else if (selectedPlatforms.includes("tiktok")) {
+      return "O TikTok Ads tem alto engajamento para conteúdos de vídeo curtos e dinâmicos.";
+    }
+    return "";
+  };
+  
+  const budgetOptions = getBudgetOptions();
+  const platformRecommendation = getPlatformRecommendation();
+  
+  // If the budget option isn't in the new options list, reset to first option
+  if (!budgetOptions.find(opt => opt.value === budgetOption)) {
+    setBudgetOption(budgetOptions[0].value);
+  }
   
   return (
     <div className="space-y-5">
@@ -361,17 +476,16 @@ function BudgetStep() {
       <div className="space-y-3">
         <Label>Orçamento diário (R$)</Label>
         <div className="grid grid-cols-4 gap-3">
-          {["25", "50", "100", "custom"].map((option) => {
-            const isSelected = budgetOption === option;
-            const label = option === "custom" ? "Outro" : `R$ ${option}`;
+          {budgetOptions.map((option) => {
+            const isSelected = budgetOption === option.value;
             
             return (
               <div 
-                key={option}
+                key={option.value}
                 className={`border rounded-lg p-3 text-center cursor-pointer ${isSelected ? 'border-2 border-purple-400 bg-purple-50' : 'hover:bg-slate-50'}`}
-                onClick={() => setBudgetOption(option)}
+                onClick={() => setBudgetOption(option.value)}
               >
-                <span className={`font-medium ${isSelected ? 'text-purple-600' : ''}`}>{label}</span>
+                <span className={`font-medium ${isSelected ? 'text-purple-600' : ''}`}>{option.label}</span>
               </div>
             );
           })}
@@ -389,8 +503,13 @@ function BudgetStep() {
             <span className="font-medium">Alcance estimado: {audienceEstimate()} pessoas</span>
           </div>
           <p className="text-muted-foreground">
-            Este é um alcance aproximado com base no seu orçamento e segmentação geográfica.
+            Este é um alcance aproximado com base no seu orçamento, plataformas selecionadas e segmentação geográfica.
           </p>
+          {platformRecommendation && (
+            <p className="text-blue-600 mt-2 text-xs">
+              💡 {platformRecommendation}
+            </p>
+          )}
         </div>
       </div>
       

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,12 +25,13 @@ import { GoogleMyBusinessCard } from "./trafego-pago/GoogleMyBusinessCard";
 import { CampaignTemplateCard } from "./trafego-pago/CampaignTemplateCard";
 import { CampaignReportCard } from "./trafego-pago/CampaignReportCard";
 import { ActiveCampaignCard } from "./trafego-pago/ActiveCampaignCard";
-import { CampaignTemplate } from "@/types/campaign";
+import { CampaignTemplate, AdPlatform } from "@/types/campaign";
 
 const CampanhasTrafegoPago = () => {
   const { toast } = useToast();
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [timeFilter, setTimeFilter] = useState("7d");
+  const [selectedPlatform, setSelectedPlatform] = useState<AdPlatform | undefined>(undefined);
 
   // Campaign templates for food service
   const campaignTemplates: CampaignTemplate[] = [
@@ -132,15 +132,29 @@ const CampanhasTrafegoPago = () => {
     }
   ];
 
-  const openCampaignWizard = () => {
+  const openCampaignWizard = (platform?: AdPlatform) => {
+    setSelectedPlatform(platform);
     setIsWizardOpen(true);
   };
 
   const handleTemplateSelect = (template) => {
+    setSelectedPlatform(undefined);
     setIsWizardOpen(true);
     toast({
       title: "Template selecionado",
       description: `Você selecionou o template: ${template.name}`,
+    });
+  };
+
+  const handlePlatformCreateCampaign = (platform: AdPlatform | string) => {
+    // Convert to AdPlatform type if needed
+    const adPlatform = platform as AdPlatform;
+    setSelectedPlatform(adPlatform);
+    setIsWizardOpen(true);
+    
+    toast({
+      title: "Criando campanha",
+      description: `Você está criando uma campanha para ${adPlatform === 'meta' ? 'Meta Ads' : adPlatform === 'google' ? 'Google Ads' : 'TikTok Ads'}`,
     });
   };
 
@@ -154,7 +168,7 @@ const CampanhasTrafegoPago = () => {
             Crie campanhas para atrair mais clientes e aumentar seus pedidos
           </p>
         </div>
-        <Button onClick={openCampaignWizard} size="lg" className="bg-purple-600 hover:bg-purple-700">
+        <Button onClick={() => openCampaignWizard()} size="lg" className="bg-purple-600 hover:bg-purple-700">
           <PlusCircle className="mr-2 h-5 w-5" />
           Nova Campanha
         </Button>
@@ -206,7 +220,7 @@ const CampanhasTrafegoPago = () => {
           ) : (
             <div className="bg-slate-50 rounded-lg p-4 border text-center">
               <p className="text-sm text-muted-foreground mb-2">Você ainda não possui campanhas de tráfego pago ativas</p>
-              <Button variant="outline" onClick={openCampaignWizard} size="sm">
+              <Button variant="outline" onClick={() => openCampaignWizard()} size="sm">
                 Criar minha primeira campanha
               </Button>
             </div>
@@ -225,6 +239,7 @@ const CampanhasTrafegoPago = () => {
             { label: "Custo por clique médio", value: "R$ 0,45" }
           ]}
           benefits={["Alto alcance local", "Imagens e vídeos dos pratos", "Foco em delivery"]}
+          onCreateCampaign={handlePlatformCreateCampaign}
         />
 
         <PlatformCard
@@ -236,6 +251,7 @@ const CampanhasTrafegoPago = () => {
             { label: "Custo por clique médio", value: "R$ 0,85" }
           ]}
           benefits={["Pessoas procurando restaurantes", "Anúncios na área local", "Integração com Google Meu Negócio"]}
+          onCreateCampaign={handlePlatformCreateCampaign}
         />
 
         <PlatformCard
@@ -247,6 +263,7 @@ const CampanhasTrafegoPago = () => {
             { label: "Custo por clique médio", value: "R$ 0,65" }
           ]}
           benefits={["Público jovem", "Formato vídeo vertical", "Tendências culinárias"]}
+          onCreateCampaign={handlePlatformCreateCampaign}
         />
       </div>
 
@@ -337,6 +354,7 @@ const CampanhasTrafegoPago = () => {
         open={isWizardOpen} 
         onOpenChange={setIsWizardOpen}
         templates={campaignTemplates}
+        initialPlatform={selectedPlatform}
       />
     </div>
   );
