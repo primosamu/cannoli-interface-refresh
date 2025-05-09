@@ -15,7 +15,7 @@ const CampanhasPage = () => {
   const [activeTab, setActiveTab] = useState<string>("campanhas");
 
   useEffect(() => {
-    // Processar parâmetro da URL para definir aba ativa
+    // Process URL parameter to set active tab
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get("tab");
     
@@ -50,14 +50,14 @@ const CampanhasPage = () => {
         <TabsList 
           className={
             isMobile 
-              ? "w-full flex mb-4 bg-cannoli-cream/50 p-1 rounded-lg border border-cannoli-yellow/30" 
+              ? "w-full grid grid-cols-3 mb-4 bg-cannoli-cream/50 p-1 rounded-lg border border-cannoli-yellow/30" 
               : "bg-cannoli-cream/50 p-1 rounded-lg border border-cannoli-yellow/30"
           }
         >
           <TabsTrigger 
             value="campanhas" 
             className={`
-              ${isMobile ? "flex-1 text-sm py-2" : "px-4 py-2"} 
+              ${isMobile ? "text-xs py-2" : "px-4 py-2"} 
               data-[state=active]:bg-cannoli-yellow data-[state=active]:text-cannoli-brown
               transition-all duration-200
             `}
@@ -67,7 +67,7 @@ const CampanhasPage = () => {
           <TabsTrigger 
             value="trafego-pago" 
             className={`
-              ${isMobile ? "flex-1 text-sm py-2" : "px-4 py-2"} 
+              ${isMobile ? "text-xs py-2" : "px-4 py-2"} 
               data-[state=active]:bg-cannoli-yellow data-[state=active]:text-cannoli-brown
               transition-all duration-200
             `}
@@ -77,7 +77,7 @@ const CampanhasPage = () => {
           <TabsTrigger 
             value="configuracoes" 
             className={`
-              ${isMobile ? "flex-1 text-sm py-2" : "px-4 py-2"}
+              ${isMobile ? "text-xs py-2" : "px-4 py-2"}
               data-[state=active]:bg-cannoli-yellow data-[state=active]:text-cannoli-brown
               transition-all duration-200
             `}
