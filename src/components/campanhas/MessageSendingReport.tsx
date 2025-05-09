@@ -155,7 +155,7 @@ const MessageSendingReport = () => {
         
         <CardContent className="space-y-6 mt-4">
           {stats && (
-            <TabsContent value={activeTab} forceMount={activeTab === "all"}>
+            <TabsContent value={activeTab}>
               {/* Overall Stats */}
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 <div className="bg-slate-50 rounded-lg p-4 border">
