@@ -10,8 +10,8 @@ import {
   CardDescription
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "@/components/ui/sonner";
-import { ImageGeneratorIcon, ArrowRight, Loader } from "lucide-react";
+import { toast } from "sonner";
+import { FileText, ArrowRight, Loader } from "lucide-react";
 import ImageUploader from "./ImageUploader";
 import PromptInput from "./PromptInput";
 import ImageFormatSelector, { ImageFormat } from "./ImageFormatSelector";
@@ -117,16 +117,12 @@ const ImageGeneratorForm = ({ onSaveImages }: ImageGeneratorFormProps) => {
     const selectedFormats = formats.filter(f => f.selected);
     
     if (selectedFormats.length === 0) {
-      toast("Selecione pelo menos um formato de imagem", {
-        variant: "destructive"
-      });
+      toast("Selecione pelo menos um formato de imagem");
       return;
     }
     
     if (!prompt.trim()) {
-      toast("Por favor, insira uma descrição para a imagem", {
-        variant: "destructive"
-      });
+      toast("Por favor, insira uma descrição para a imagem");
       return;
     }
     
@@ -152,7 +148,6 @@ const ImageGeneratorForm = ({ onSaveImages }: ImageGeneratorFormProps) => {
       console.error("Error generating images:", error);
       setGenerationStatus("error");
       toast("Erro ao gerar imagens", {
-        variant: "destructive",
         duration: 5000,
       });
     }
@@ -321,26 +316,10 @@ const ImageGeneratorForm = ({ onSaveImages }: ImageGeneratorFormProps) => {
   );
 };
 
+// Create a custom ImageGeneratorIcon since it doesn't exist in lucide-react
 const ImageGeneratorIcon = () => (
   <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary">
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      width="24" 
-      height="24" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    >
-      <path d="M15 2H9a1 1 0 0 0-1 1v2c0 .6.4 1 1 1h6c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1Z"/>
-      <path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/>
-      <path d="M15 11h2"/>
-      <path d="M13 15h4"/>
-      <path d="M13 19h4"/>
-      <rect x="7" y="11" width="4" height="8" rx="1"/>
-    </svg>
+    <FileText size={24} />
   </div>
 );
 

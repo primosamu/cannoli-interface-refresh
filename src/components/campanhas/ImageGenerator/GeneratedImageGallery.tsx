@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { Check, Download, Trash2, Save } from "lucide-react";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { GeneratedImage } from "@/types/campaign";
 
@@ -45,9 +44,7 @@ const GeneratedImageGallery = ({
       toast("Download iniciado");
     } catch (error) {
       console.error("Erro ao fazer download da imagem:", error);
-      toast("Erro ao fazer download da imagem", {
-        variant: "destructive"
-      });
+      toast("Erro ao fazer download da imagem");
     }
   };
 
