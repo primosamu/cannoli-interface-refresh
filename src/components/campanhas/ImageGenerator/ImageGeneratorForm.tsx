@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { GeneratedImage } from "@/types/campaign";
+import { GeneratedImage, ImageGenerationFormat } from "@/types/campaign";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,6 +24,17 @@ const ImageGeneratorIcon = () => (
   </div>
 );
 
+// Helper function to convert string format to ImageGenerationFormat type
+const mapFormatToImageGenerationFormat = (format: string): ImageGenerationFormat => {
+  // Map the format names to the expected ImageGenerationFormat values
+  if (format.toLowerCase().includes('square')) return 'square';
+  if (format.toLowerCase().includes('story')) return 'story';
+  if (format.toLowerCase().includes('banner')) return 'banner';
+  if (format.toLowerCase().includes('ad')) return 'ad';
+  // Default to 'portrait' for other formats
+  return 'portrait';
+};
+
 // Mock function to simulate image generation (will be replaced with real API call later)
 const mockGenerateImages = async (
   files: File[], 
@@ -40,12 +50,12 @@ const mockGenerateImages = async (
     .map((format, index) => ({
       id: `generated-${Date.now()}-${index}`,
       url: URL.createObjectURL(files[0] || new Blob()),
-      format: format.name,
+      format: mapFormatToImageGenerationFormat(format.name), // Use the helper function to convert
       width: format.width,
       height: format.height,
       platform: format.platform,
       prompt,
-      createdAt: new Date().toISOString() // Add the missing createdAt property
+      createdAt: new Date().toISOString()
     }));
 };
 
@@ -149,9 +159,7 @@ const ImageGeneratorForm = () => {
     } catch (error) {
       console.error("Error generating images:", error);
       setGenerationStatus("error");
-      toast("Erro ao gerar imagens", {
-        duration: 5000,
-      });
+      toast("Erro ao gerar imagens");
     }
   };
   
