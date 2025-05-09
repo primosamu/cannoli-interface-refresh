@@ -1,3 +1,4 @@
+
 import { 
   Home,
   BookOpen,
@@ -37,7 +38,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
   SidebarMenuSub,
   SidebarMenuSubButton,
@@ -68,6 +68,7 @@ const menuItems = [
     submenu: [
       { icon: MessageSquare, label: "Mensageria", path: "/campanhas" },
       { icon: Target, label: "Tráfego Pago", path: "/campanhas?tab=trafego-pago" },
+      { icon: Image, label: "Gerador de Imagens", path: "/campanhas?tab=gerador-imagens" },
       { icon: Settings, label: "Configurações", path: "/campanhas?tab=configuracoes" },
     ],
     path: "/campanhas" 

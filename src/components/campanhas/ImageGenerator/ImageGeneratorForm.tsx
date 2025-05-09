@@ -1,12 +1,12 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { GeneratedImage } from "@/types/campaign";
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
+  CardContent,
   CardDescription
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,103 +17,80 @@ import PromptInput from "./PromptInput";
 import ImageFormatSelector, { ImageFormat } from "./ImageFormatSelector";
 import GeneratedImageGallery from "./GeneratedImageGallery";
 import GenerationOptions from "./GenerationOptions";
-import { GeneratedImage, ImageGenerationStatus } from "@/types/campaign";
 
-// Mock function to simulate AI image generation
+// Mock function to simulate image generation (will be replaced with real API call later)
 const mockGenerateImages = async (
+  files: File[], 
   prompt: string, 
-  formats: ImageFormat[],
-  style: string,
-  useRestaurantLogo: boolean,
-  useRestaurantColors: boolean,
+  formats: ImageFormat[]
 ): Promise<GeneratedImage[]> => {
-  // This is just a mock function - in a real app this would call your AI image generation API
-  const selectedFormats = formats.filter(f => f.selected);
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 2000));
   
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 3000));
-  
-  return selectedFormats.map(format => {
-    const id = `img-${Math.random().toString(36).substr(2, 9)}`;
-    // Use placeholder image URLs based on dimensions
-    const imageUrl = `https://via.placeholder.com/${format.width}x${format.height}?text=${encodeURIComponent(format.name)}`;
-    
-    return {
-      id,
-      url: imageUrl,
-      prompt,
-      format: format.name.toLowerCase() as any,
+  // Create sample generated images
+  return formats
+    .filter(format => format.selected)
+    .map((format, index) => ({
+      id: `generated-${Date.now()}-${index}`,
+      url: URL.createObjectURL(files[0] || new Blob()),
+      format: format.name,
       width: format.width,
       height: format.height,
       platform: format.platform,
-      createdAt: new Date().toISOString()
-    };
-  });
+      prompt
+    }));
 };
 
-interface ImageGeneratorFormProps {
-  onSaveImages?: (images: GeneratedImage[]) => void;
-}
-
-const ImageGeneratorForm = ({ onSaveImages }: ImageGeneratorFormProps) => {
-  const [activeTab, setActiveTab] = useState("upload");
+const ImageGeneratorForm = () => {
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [prompt, setPrompt] = useState("");
-  const [generationStatus, setGenerationStatus] = useState<ImageGenerationStatus>("idle");
+  const [formats, setFormats] = useState<ImageFormat[]>([
+    { name: "Instagram Feed", width: 1080, height: 1080, platform: "Instagram", selected: false },
+    { name: "Instagram Story", width: 1080, height: 1920, platform: "Instagram", selected: false },
+    { name: "Facebook Feed", width: 1200, height: 630, platform: "Facebook", selected: false },
+    { name: "WhatsApp Status", width: 720, height: 1280, platform: "WhatsApp", selected: false },
+    { name: "Twitter Post", width: 1200, height: 675, platform: "Twitter", selected: false },
+    { name: "YouTube Thumbnail", width: 1280, height: 720, platform: "YouTube", selected: false },
+    { name: "Google Ads", width: 300, height: 250, platform: "Google", selected: false },
+    { name: "Banner Site", width: 728, height: 90, platform: "Web", selected: false },
+  ]);
+  
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
-  const [useRestaurantLogo, setUseRestaurantLogo] = useState(false);
-  const [useRestaurantColors, setUseRestaurantColors] = useState(false);
-  const [style, setStyle] = useState("realistic");
+  const [activeTab, setActiveTab] = useState<string>("upload");
+  const [generationStatus, setGenerationStatus] = useState<"idle" | "generating" | "complete" | "error">("idle");
   const [savedImages, setSavedImages] = useState<GeneratedImage[]>([]);
   
-  // Predefined image formats
-  const [formats, setFormats] = useState<ImageFormat[]>([
-    // Meta/Instagram formats
-    { id: "instagram-square", name: "Instagram Square", width: 1080, height: 1080, platform: "Instagram", selected: true },
-    { id: "instagram-portrait", name: "Instagram Portrait", width: 1080, height: 1350, platform: "Instagram", selected: false },
-    { id: "instagram-story", name: "Instagram Story", width: 1080, height: 1920, platform: "Instagram", selected: false },
-    { id: "facebook-post", name: "Facebook Post", width: 1200, height: 630, platform: "Facebook", selected: false },
-    { id: "facebook-cover", name: "Facebook Cover", width: 1640, height: 924, platform: "Facebook", selected: false },
-    
-    // WhatsApp formats
-    { id: "whatsapp-standard", name: "WhatsApp", width: 800, height: 800, platform: "WhatsApp", selected: false },
-    { id: "whatsapp-status", name: "WhatsApp Status", width: 720, height: 1280, platform: "WhatsApp", selected: false },
-    
-    // Email formats
-    { id: "email-banner", name: "Email Banner", width: 600, height: 200, platform: "Email", selected: false },
-    { id: "email-header", name: "Email Header", width: 600, height: 300, platform: "Email", selected: false },
-    
-    // Google Ads formats
-    { id: "google-display-1", name: "Google Rectangle", width: 300, height: 250, platform: "Google Ads", selected: false },
-    { id: "google-display-2", name: "Google Leaderboard", width: 728, height: 90, platform: "Google Ads", selected: false },
-    { id: "google-display-3", name: "Google Large", width: 336, height: 280, platform: "Google Ads", selected: false },
-  ]);
-
   const handleImagesSelected = (files: File[]) => {
-    setUploadedImages(prev => [...prev, ...files]);
+    setUploadedImages(files);
   };
-
+  
   const handleRemoveImage = (index: number) => {
-    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+    const updatedImages = [...uploadedImages];
+    updatedImages.splice(index, 1);
+    setUploadedImages(updatedImages);
   };
-
-  const handleFormatToggle = (id: string) => {
-    setFormats(prev => 
-      prev.map(format => 
-        format.id === id ? { ...format, selected: !format.selected } : format
-      )
-    );
+  
+  const handlePromptChange = (value: string) => {
+    setPrompt(value);
   };
-
+  
+  const handleFormatSelect = (index: number) => {
+    const updatedFormats = [...formats];
+    updatedFormats[index].selected = !updatedFormats[index].selected;
+    setFormats(updatedFormats);
+  };
+  
   const handleSelectAllFormats = () => {
-    setFormats(prev => prev.map(format => ({ ...format, selected: true })));
+    const allSelected = formats.every(format => format.selected);
+    const updatedFormats = formats.map(format => ({
+      ...format,
+      selected: !allSelected
+    }));
+    setFormats(updatedFormats);
   };
-
-  const handleUnselectAllFormats = () => {
-    setFormats(prev => prev.map(format => ({ ...format, selected: false })));
-  };
-
+  
   const handleGenerateImages = async () => {
+    // Basic validation
     const selectedFormats = formats.filter(f => f.selected);
     
     if (selectedFormats.length === 0) {
@@ -126,24 +103,25 @@ const ImageGeneratorForm = ({ onSaveImages }: ImageGeneratorFormProps) => {
       return;
     }
     
+    if (uploadedImages.length === 0) {
+      toast("Por favor, faça o upload de pelo menos uma imagem");
+      return;
+    }
+    
     try {
       setGenerationStatus("generating");
       
-      const newImages = await mockGenerateImages(
+      // Call API to generate images (mocked for now)
+      const images = await mockGenerateImages(
+        uploadedImages,
         prompt,
-        selectedFormats,
-        style,
-        useRestaurantLogo,
-        useRestaurantColors
+        formats
       );
       
-      setGeneratedImages(newImages);
+      setGeneratedImages(images);
       setGenerationStatus("complete");
-      setActiveTab("preview");
+      setActiveTab("resultado");
       
-      toast("Imagens geradas com sucesso", {
-        duration: 3000,
-      });
     } catch (error) {
       console.error("Error generating images:", error);
       setGenerationStatus("error");
@@ -152,167 +130,149 @@ const ImageGeneratorForm = ({ onSaveImages }: ImageGeneratorFormProps) => {
       });
     }
   };
-
+  
   const handleSaveImage = (image: GeneratedImage) => {
-    setSavedImages(prev => {
-      const newSaved = [...prev, image];
-      // If parent component provided a callback, call it
-      if (onSaveImages) {
-        onSaveImages(newSaved);
-      }
-      return newSaved;
-    });
+    setSavedImages(prev => [...prev, image]);
   };
-
-  const handleDeleteImage = (imageId: string) => {
+  
+  const handleDeleteGeneratedImage = (imageId: string) => {
     setGeneratedImages(prev => prev.filter(img => img.id !== imageId));
-    setSavedImages(prev => prev.filter(img => img.id !== imageId));
   };
-
+  
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <ImageGeneratorIcon />
-          <div>
-            <CardTitle>Gerador de Imagens</CardTitle>
-            <CardDescription>
-              Crie imagens personalizadas para suas campanhas de marketing
-            </CardDescription>
-          </div>
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <ImageGeneratorIcon />
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Gerador de Imagens</h2>
+          <p className="text-muted-foreground">
+            Crie imagens otimizadas para suas campanhas de marketing em diferentes plataformas.
+          </p>
         </div>
-      </CardHeader>
+      </div>
       
-      <Tabs 
-        value={activeTab} 
-        onValueChange={setActiveTab}
-        className="w-full"
-      >
-        <CardContent>
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="upload">1. Materiais</TabsTrigger>
-            <TabsTrigger value="prompt">2. Configuração</TabsTrigger>
-            <TabsTrigger value="preview">3. Visualização</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="upload" className="space-y-4">
-            <div className="space-y-4">
-              <h3 className="font-medium text-lg">Upload de Materiais</h3>
-              <p className="text-sm text-muted-foreground">
-                Faça upload de imagens que serão usadas como referência para a geração da nova imagem.
-                Você pode enviar fotos do restaurante, pratos, logo, entre outros.
-              </p>
-              
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col gap-2">
+        <TabsList className="max-w-md">
+          <TabsTrigger value="upload">1. Upload de Materiais</TabsTrigger>
+          <TabsTrigger value="formato">2. Formatos e Descrição</TabsTrigger>
+          <TabsTrigger value="resultado" disabled={generatedImages.length === 0}>
+            3. Resultado
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="upload" className="pt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Upload de Materiais</CardTitle>
+              <CardDescription>
+                Faça upload das imagens para usar como base na criação das suas campanhas.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
               <ImageUploader 
-                onImagesSelected={handleImagesSelected} 
+                onImagesSelected={handleImagesSelected}
                 uploadedImages={uploadedImages}
                 onRemoveImage={handleRemoveImage}
               />
-            </div>
-            
-            <div className="flex justify-end mt-4">
-              <Button
-                type="button"
-                onClick={() => setActiveTab("prompt")}
-                className="flex items-center gap-1"
-              >
-                Próximo
-                <ArrowRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="prompt" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-6">
-                <PromptInput 
-                  value={prompt}
-                  onChange={setPrompt}
-                  productType="pizza"
-                  campaignType="promotion"
-                />
-                
-                <GenerationOptions
-                  useRestaurantLogo={useRestaurantLogo}
-                  setUseRestaurantLogo={setUseRestaurantLogo}
-                  useRestaurantColors={useRestaurantColors}
-                  setUseRestaurantColors={setUseRestaurantColors}
-                  style={style}
-                  setStyle={setStyle}
+              
+              {uploadedImages.length > 0 && (
+                <div className="mt-6 flex justify-end">
+                  <Button onClick={() => setActiveTab("formato")} className="flex items-center">
+                    Próximo 
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="formato" className="pt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Formatos e Descrição</CardTitle>
+              <CardDescription>
+                Selecione os formatos de imagem desejados e adicione uma descrição
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="font-medium text-lg mb-4">Formatos de Imagem</h3>
+                <ImageFormatSelector 
+                  formats={formats}
+                  onFormatSelect={handleFormatSelect}
+                  onSelectAll={handleSelectAllFormats}
                 />
               </div>
               
-              <ImageFormatSelector
-                formats={formats}
-                onFormatToggle={handleFormatToggle}
-                onSelectAll={handleSelectAllFormats}
-                onUnselectAll={handleUnselectAllFormats}
+              <div>
+                <h3 className="font-medium text-lg mb-4">Descrição</h3>
+                <PromptInput 
+                  value={prompt}
+                  onChange={handlePromptChange}
+                />
+              </div>
+              
+              <GenerationOptions />
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button variant="outline" onClick={() => setActiveTab("upload")}>
+                  Voltar
+                </Button>
+                <Button 
+                  onClick={handleGenerateImages}
+                  disabled={generationStatus === "generating"}
+                  className="flex items-center"
+                >
+                  {generationStatus === "generating" ? (
+                    <>
+                      <Loader className="mr-2 h-4 w-4 animate-spin" />
+                      Gerando...
+                    </>
+                  ) : "Gerar Imagens"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="resultado" className="pt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Imagens Geradas</CardTitle>
+              <CardDescription>
+                Visualize, baixe ou salve as imagens geradas para usar nas suas campanhas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <GeneratedImageGallery 
+                images={generatedImages}
+                onSaveImage={handleSaveImage}
+                onDeleteImage={handleDeleteGeneratedImage}
               />
-            </div>
-            
-            <div className="flex justify-between mt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setActiveTab("upload")}
-              >
-                Voltar
-              </Button>
               
-              <Button
-                type="button"
-                onClick={handleGenerateImages}
-                disabled={generationStatus === "generating"}
-              >
-                {generationStatus === "generating" ? (
-                  <>
-                    <Loader className="w-4 h-4 animate-spin mr-2" />
-                    Gerando...
-                  </>
-                ) : "Gerar Imagens"}
-              </Button>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="preview">
-            <GeneratedImageGallery
-              images={generatedImages}
-              onSaveImage={handleSaveImage}
-              onDeleteImage={handleDeleteImage}
-            />
-            
-            <div className="flex justify-between mt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setActiveTab("prompt")}
-              >
-                Voltar
-              </Button>
-              
-              <Button
-                type="button"
-                onClick={handleGenerateImages}
-                disabled={generationStatus === "generating"}
-              >
-                {generationStatus === "generating" ? "Gerando..." : "Gerar Novamente"}
-              </Button>
-            </div>
-          </TabsContent>
-        </CardContent>
+              <div className="flex justify-end space-x-2 pt-6">
+                <Button variant="outline" onClick={() => setActiveTab("formato")}>
+                  Voltar
+                </Button>
+                <Button
+                  onClick={() => {
+                    setGenerationStatus("idle");
+                    setActiveTab("upload");
+                    setUploadedImages([]);
+                    setGeneratedImages([]);
+                    setPrompt("");
+                    setFormats(formats.map(f => ({ ...f, selected: false })));
+                  }}
+                >
+                  Novo Processo
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
-      
-      <CardFooter className="border-t bg-muted/50 flex justify-between">
-        <p className="text-xs text-muted-foreground">
-          Imagens salvas: {savedImages.length}
-        </p>
-        {savedImages.length > 0 && (
-          <Button variant="outline" size="sm" onClick={() => window.location.href = "/imagens"}>
-            Ver na Galeria
-          </Button>
-        )}
-      </CardFooter>
-    </Card>
+    </div>
   );
 };
 

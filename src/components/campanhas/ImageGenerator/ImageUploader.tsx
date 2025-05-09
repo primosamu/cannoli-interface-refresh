@@ -2,7 +2,17 @@
 import { useState, useRef } from "react";
 import { Upload, X, FileImage, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+export type ImageCategory = "logo" | "restaurant" | "products" | "other";
+
+interface CategoryImageMap {
+  logo: File[];
+  restaurant: File[];
+  products: File[];
+  other: File[];
+}
 
 interface ImageUploaderProps {
   onImagesSelected: (files: File[]) => void;
@@ -16,8 +26,17 @@ const ImageUploader = ({
   onRemoveImage,
 }: ImageUploaderProps) => {
   const [isDragging, setIsDragging] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<ImageCategory>("logo");
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  
+  // Group uploaded images by category
+  const [categorizedImages, setCategorizedImages] = useState<CategoryImageMap>({
+    logo: [],
+    restaurant: [],
+    products: [],
+    other: []
+  });
+  
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(true);
@@ -37,7 +56,7 @@ const ImageUploader = ({
       );
       
       if (files.length > 0) {
-        onImagesSelected(files);
+        handleFilesSelected(files);
       } else {
         toast("Apenas arquivos de imagem são permitidos.");
       }
@@ -51,68 +70,124 @@ const ImageUploader = ({
       );
       
       if (files.length > 0) {
-        onImagesSelected(files);
+        handleFilesSelected(files);
       }
     }
   };
+  
+  const handleFilesSelected = (files: File[]) => {
+    // Add files to the current category
+    const updatedCategorizedImages = {
+      ...categorizedImages,
+      [activeCategory]: [...categorizedImages[activeCategory], ...files]
+    };
+    
+    setCategorizedImages(updatedCategorizedImages);
+    
+    // Combine all files for the parent component
+    const allFiles = [
+      ...updatedCategorizedImages.logo,
+      ...updatedCategorizedImages.restaurant,
+      ...updatedCategorizedImages.products,
+      ...updatedCategorizedImages.other
+    ];
+    
+    onImagesSelected(allFiles);
+  };
+  
+  const handleRemoveImage = (category: ImageCategory, index: number) => {
+    // Remove from category
+    const updatedCategoryImages = [...categorizedImages[category]];
+    updatedCategoryImages.splice(index, 1);
+    
+    const updatedCategorizedImages = {
+      ...categorizedImages,
+      [category]: updatedCategoryImages
+    };
+    
+    setCategorizedImages(updatedCategorizedImages);
+    
+    // Find the global index to notify parent
+    const allFiles = [
+      ...categorizedImages.logo,
+      ...categorizedImages.restaurant,
+      ...categorizedImages.products,
+      ...categorizedImages.other
+    ];
+    
+    const globalIndex = allFiles.findIndex(file => file === categorizedImages[category][index]);
+    if (globalIndex !== -1) {
+      onRemoveImage(globalIndex);
+    }
+  };
 
-  const checkImageQuality = (file: File): Promise<{ isLowQuality: boolean, width: number, height: number }> => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        // Consider an image low quality if under 500px in either dimension
-        const isLowQuality = img.width < 500 || img.height < 500;
-        resolve({ isLowQuality, width: img.width, height: img.height });
-        URL.revokeObjectURL(img.src);
-      };
-      img.src = URL.createObjectURL(file);
-    });
+  const categoryLabels: Record<ImageCategory, string> = {
+    logo: "Logo",
+    restaurant: "Fotos do Restaurante",
+    products: "Fotos de Produtos",
+    other: "Outras Imagens"
   };
 
   return (
     <div className="space-y-4">
-      <div 
-        className={`border-2 border-dashed rounded-lg p-4 text-center ${
-          isDragging ? "border-primary bg-primary/5" : "border-gray-200"
-        }`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        <div className="py-8 flex flex-col items-center">
-          <Upload className="h-10 w-10 text-gray-400 mb-2" />
-          <p className="text-sm text-gray-600 mb-1">
-            Arraste e solte imagens aqui ou
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            Selecionar Arquivos
-          </Button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            multiple
-            accept="image/*"
-            className="hidden"
-          />
-        </div>
-      </div>
+      <Tabs value={activeCategory} onValueChange={(value) => setActiveCategory(value as ImageCategory)}>
+        <TabsList className="grid grid-cols-4 mb-4">
+          <TabsTrigger value="logo">Logo</TabsTrigger>
+          <TabsTrigger value="restaurant">Restaurante</TabsTrigger>
+          <TabsTrigger value="products">Produtos</TabsTrigger>
+          <TabsTrigger value="other">Outras</TabsTrigger>
+        </TabsList>
+        
+        {(Object.keys(categorizedImages) as ImageCategory[]).map((category) => (
+          <TabsContent key={category} value={category}>
+            <div 
+              className={`border-2 border-dashed rounded-lg p-4 text-center ${
+                isDragging ? "border-primary bg-primary/5" : "border-gray-200"
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <div className="py-8 flex flex-col items-center">
+                <Upload className="h-10 w-10 text-gray-400 mb-2" />
+                <p className="text-sm text-gray-600 mb-1">
+                  Arraste e solte {categoryLabels[category].toLowerCase()} aqui ou
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Selecionar Arquivos
+                </Button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                />
+              </div>
+            </div>
 
-      {uploadedImages.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {uploadedImages.map((file, index) => (
-            <ImagePreview 
-              key={index} 
-              file={file} 
-              onRemove={() => onRemoveImage(index)} 
-            />
-          ))}
-        </div>
-      )}
+            {categorizedImages[category].length > 0 && (
+              <div className="mt-4">
+                <h4 className="text-sm font-medium mb-2">{categoryLabels[category]} ({categorizedImages[category].length})</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {categorizedImages[category].map((file, index) => (
+                    <ImagePreview 
+                      key={`${category}-${index}`} 
+                      file={file} 
+                      onRemove={() => handleRemoveImage(category, index)} 
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </TabsContent>
+        ))}
+      </Tabs>
     </div>
   );
 };
