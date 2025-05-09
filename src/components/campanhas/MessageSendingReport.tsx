@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Calendar, BarChart2, Eye, Send, MessageSquare, Mail, Phone, Filter, Clock, AlertCircle, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -155,156 +154,282 @@ const MessageSendingReport = () => {
         
         <CardContent className="space-y-6 mt-4">
           {stats && (
-            <TabsContent value={activeTab}>
-              {/* Overall Stats */}
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                <div className="bg-slate-50 rounded-lg p-4 border">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Total de mensagens</p>
-                      <h4 className="text-2xl font-semibold mt-1">{stats.totalMessages}</h4>
+            <>
+              <TabsContent value="all">
+                {/* Overall Stats */}
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <div className="bg-slate-50 rounded-lg p-4 border">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Total de mensagens</p>
+                        <h4 className="text-2xl font-semibold mt-1">{stats.totalMessages}</h4>
+                      </div>
+                      <div className="bg-primary/10 p-2 rounded-full">
+                        <Send className="h-5 w-5 text-primary" />
+                      </div>
                     </div>
-                    <div className="bg-primary/10 p-2 rounded-full">
-                      <Send className="h-5 w-5 text-primary" />
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Em {filteredCampaigns.length} campanhas {activeTab !== "all" ? `de ${activeTab}` : ""}
-                  </p>
-                </div>
-                
-                <div className="bg-slate-50 rounded-lg p-4 border">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Campanhas ativas</p>
-                      <h4 className="text-2xl font-semibold mt-1">{stats.activeCampaigns}</h4>
-                    </div>
-                    <div className="bg-green-500/10 p-2 rounded-full">
-                      <Calendar className="h-5 w-5 text-green-500" />
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {stats.activeCampaigns > 0 ? 
-                      `${((stats.activeCampaigns / filteredCampaigns.length) * 100).toFixed(0)}% das campanhas` :
-                      "Nenhuma campanha ativa"
-                    }
-                  </p>
-                </div>
-                
-                <div className="bg-slate-50 rounded-lg p-4 border">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Taxa de {activeTab === "whatsapp" ? "visualização" : activeTab === "email" ? "abertura" : "recebimento"}</p>
-                      <h4 className="text-2xl font-semibold mt-1">{stats.openRate}%</h4>
-                    </div>
-                    <div className="bg-blue-500/10 p-2 rounded-full">
-                      <Eye className="h-5 w-5 text-blue-500" />
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {stats.totalOpened} {terminology.openedTerm} de {stats.totalDelivered} {terminology.deliveredTerm}
-                  </p>
-                </div>
-                
-                <div className="bg-slate-50 rounded-lg p-4 border">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Taxa de engajamento</p>
-                      <h4 className="text-2xl font-semibold mt-1">{stats.engagementRate}%</h4>
-                    </div>
-                    <div className="bg-purple-500/10 p-2 rounded-full">
-                      <BarChart2 className="h-5 w-5 text-purple-500" />
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {stats.totalEngaged} {terminology.engagedTerm} de {stats.totalOpened} {terminology.openedTerm}
-                  </p>
-                </div>
-              </div>
-              
-              {/* Delivery Funnel with Channel-specific terminology */}
-              <div className="bg-slate-50 rounded-lg p-6 border">
-                <h4 className="font-medium mb-4">Funil de entrega {activeTab !== "all" ? `- ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}` : ""}</h4>
-                
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Envios</span>
-                      <span className="font-medium">{stats.totalSent} / {stats.totalMessages}</span>
-                    </div>
-                    <Progress value={(stats.totalSent / stats.totalMessages) * 100} className="h-2" />
-                    <p className="text-xs text-muted-foreground">
-                      {((stats.totalSent / stats.totalMessages) * 100).toFixed(1)}% das mensagens planejadas foram enviadas
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Em {filteredCampaigns.length} campanhas {activeTab !== "all" ? `de ${activeTab}` : ""}
                     </p>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>{terminology.deliveredTerm}</span>
-                      <span className="font-medium">{stats.totalDelivered} / {stats.totalSent}</span>
+                  <div className="bg-slate-50 rounded-lg p-4 border">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Campanhas ativas</p>
+                        <h4 className="text-2xl font-semibold mt-1">{stats.activeCampaigns}</h4>
+                      </div>
+                      <div className="bg-green-500/10 p-2 rounded-full">
+                        <Calendar className="h-5 w-5 text-green-500" />
+                      </div>
                     </div>
-                    <Progress value={(stats.totalDelivered / stats.totalSent) * 100} className="h-2" />
-                    <p className="text-xs text-muted-foreground">
-                      {stats.deliveryRate}% das mensagens enviadas foram {terminology.deliveredTerm.toLowerCase()}
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {stats.activeCampaigns > 0 ? 
+                        `${((stats.activeCampaigns / filteredCampaigns.length) * 100).toFixed(0)}% das campanhas` :
+                        "Nenhuma campanha ativa"
+                      }
                     </p>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>{terminology.openedTerm}</span>
-                      <span className="font-medium">{stats.totalOpened} / {stats.totalDelivered}</span>
+                  <div className="bg-slate-50 rounded-lg p-4 border">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Taxa de {activeTab === "whatsapp" ? "visualização" : activeTab === "email" ? "abertura" : "recebimento"}</p>
+                        <h4 className="text-2xl font-semibold mt-1">{stats.openRate}%</h4>
+                      </div>
+                      <div className="bg-blue-500/10 p-2 rounded-full">
+                        <Eye className="h-5 w-5 text-blue-500" />
+                      </div>
                     </div>
-                    <Progress value={(stats.totalOpened / stats.totalDelivered) * 100} className="h-2" />
-                    <p className="text-xs text-muted-foreground">
-                      {stats.openRate}% das mensagens {terminology.deliveredTerm.toLowerCase()} foram {terminology.openedTerm.toLowerCase()}
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {stats.totalOpened} {terminology.openedTerm} de {stats.totalDelivered} {terminology.deliveredTerm}
                     </p>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>{terminology.engagedTerm}</span>
-                      <span className="font-medium">{stats.totalEngaged} / {stats.totalOpened}</span>
+                  <div className="bg-slate-50 rounded-lg p-4 border">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Taxa de engajamento</p>
+                        <h4 className="text-2xl font-semibold mt-1">{stats.engagementRate}%</h4>
+                      </div>
+                      <div className="bg-purple-500/10 p-2 rounded-full">
+                        <BarChart2 className="h-5 w-5 text-purple-500" />
+                      </div>
                     </div>
-                    <Progress value={(stats.totalEngaged / stats.totalOpened) * 100} className="h-2" />
-                    <p className="text-xs text-muted-foreground">
-                      {stats.engagementRate}% das mensagens {terminology.openedTerm.toLowerCase()} geraram {terminology.engagedTerm.toLowerCase()}
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {stats.totalEngaged} {terminology.engagedTerm} de {stats.totalOpened} {terminology.openedTerm}
                     </p>
                   </div>
                 </div>
-              </div>
-              
-              {/* Channel Distribution - Only show in "All" tab */}
-              {activeTab === "all" && (
+                
+                {/* Delivery Funnel with Channel-specific terminology */}
                 <div className="bg-slate-50 rounded-lg p-6 border">
-                  <h4 className="font-medium mb-4">Distribuição por canal</h4>
+                  <h4 className="font-medium mb-4">Funil de entrega</h4>
                   
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    {Object.entries(stats.channelDistribution).map(([channel, count]) => (
-                      <div key={channel} className="bg-white p-4 rounded-md border">
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-full ${
-                            channel === 'whatsapp' ? 'bg-green-100' : 
-                            channel === 'email' ? 'bg-purple-100' : 'bg-blue-100'
-                          }`}>
-                            {channel === 'whatsapp' && <MessageSquare className="h-4 w-4 text-green-600" />}
-                            {channel === 'email' && <Mail className="h-4 w-4 text-purple-600" />}
-                            {channel === 'sms' && <Phone className="h-4 w-4 text-blue-600" />}
-                          </div>
-                          <div>
-                            <h5 className="font-medium capitalize">{channel}</h5>
-                            <p className="text-sm text-muted-foreground">
-                              {count} campanh{count === 1 ? 'a' : 'as'} ({((count / filteredCampaigns.length) * 100).toFixed(0)}%)
-                            </p>
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Envios</span>
+                        <span className="font-medium">{stats.totalSent} / {stats.totalMessages}</span>
+                      </div>
+                      <Progress value={(stats.totalSent / stats.totalMessages) * 100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {((stats.totalSent / stats.totalMessages) * 100).toFixed(1)}% das mensagens planejadas foram enviadas
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>{terminology.deliveredTerm}</span>
+                        <span className="font-medium">{stats.totalDelivered} / {stats.totalSent}</span>
+                      </div>
+                      <Progress value={(stats.totalDelivered / stats.totalSent) * 100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {stats.deliveryRate}% das mensagens enviadas foram {terminology.deliveredTerm.toLowerCase()}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>{terminology.openedTerm}</span>
+                        <span className="font-medium">{stats.totalOpened} / {stats.totalDelivered}</span>
+                      </div>
+                      <Progress value={(stats.totalOpened / stats.totalDelivered) * 100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {stats.openRate}% das mensagens {terminology.deliveredTerm.toLowerCase()} foram {terminology.openedTerm.toLowerCase()}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>{terminology.engagedTerm}</span>
+                        <span className="font-medium">{stats.totalEngaged} / {stats.totalOpened}</span>
+                      </div>
+                      <Progress value={(stats.totalEngaged / stats.totalOpened) * 100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {stats.engagementRate}% das mensagens {terminology.openedTerm.toLowerCase()} geraram {terminology.engagedTerm.toLowerCase()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Channel Distribution - Only show in "All" tab */}
+                {activeTab === "all" && (
+                  <div className="bg-slate-50 rounded-lg p-6 border">
+                    <h4 className="font-medium mb-4">Distribuição por canal</h4>
+                    
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                      {Object.entries(stats.channelDistribution).map(([channel, count]) => (
+                        <div key={channel} className="bg-white p-4 rounded-md border">
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-full ${
+                              channel === 'whatsapp' ? 'bg-green-100' : 
+                              channel === 'email' ? 'bg-purple-100' : 'bg-blue-100'
+                            }`}>
+                              {channel === 'whatsapp' && <MessageSquare className="h-4 w-4 text-green-600" />}
+                              {channel === 'email' && <Mail className="h-4 w-4 text-purple-600" />}
+                              {channel === 'sms' && <Phone className="h-4 w-4 text-blue-600" />}
+                            </div>
+                            <div>
+                              <h5 className="font-medium capitalize">{channel}</h5>
+                              <p className="text-sm text-muted-foreground">
+                                {count} campanh{count === 1 ? 'a' : 'as'} ({((count / filteredCampaigns.length) * 100).toFixed(0)}%)
+                              </p>
+                            </div>
                           </div>
                         </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Call to action */}
+                <div className="flex justify-center pt-4">
+                  <Button>
+                    Ver relatório detalhado
+                  </Button>
+                </div>
+              </TabsContent>
+            
+              <TabsContent value="whatsapp">
+                {/* Overall Stats */}
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <div className="bg-slate-50 rounded-lg p-4 border">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Total de mensagens</p>
+                        <h4 className="text-2xl font-semibold mt-1">{stats.totalMessages}</h4>
                       </div>
-                    ))}
+                      <div className="bg-primary/10 p-2 rounded-full">
+                        <Send className="h-5 w-5 text-primary" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Em {filteredCampaigns.length} campanhas de WhatsApp
+                    </p>
+                  </div>
+                  
+                  <div className="bg-slate-50 rounded-lg p-4 border">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Campanhas ativas</p>
+                        <h4 className="text-2xl font-semibold mt-1">{stats.activeCampaigns}</h4>
+                      </div>
+                      <div className="bg-green-500/10 p-2 rounded-full">
+                        <Calendar className="h-5 w-5 text-green-500" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {stats.activeCampaigns > 0 ? 
+                        `${((stats.activeCampaigns / filteredCampaigns.length) * 100).toFixed(0)}% das campanhas` :
+                        "Nenhuma campanha ativa"
+                      }
+                    </p>
+                  </div>
+                  
+                  <div className="bg-slate-50 rounded-lg p-4 border">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Taxa de visualização</p>
+                        <h4 className="text-2xl font-semibold mt-1">{stats.openRate}%</h4>
+                      </div>
+                      <div className="bg-blue-500/10 p-2 rounded-full">
+                        <Eye className="h-5 w-5 text-blue-500" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {stats.totalOpened} {terminology.openedTerm} de {stats.totalDelivered} {terminology.deliveredTerm}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-slate-50 rounded-lg p-4 border">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Taxa de engajamento</p>
+                        <h4 className="text-2xl font-semibold mt-1">{stats.engagementRate}%</h4>
+                      </div>
+                      <div className="bg-purple-500/10 p-2 rounded-full">
+                        <BarChart2 className="h-5 w-5 text-purple-500" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {stats.totalEngaged} {terminology.engagedTerm} de {stats.totalOpened} {terminology.openedTerm}
+                    </p>
                   </div>
                 </div>
-              )}
-              
-              {/* Channel-specific metrics */}
-              {activeTab === "whatsapp" && (
+                
+                {/* Delivery Funnel with Channel-specific terminology */}
+                <div className="bg-slate-50 rounded-lg p-6 border">
+                  <h4 className="font-medium mb-4">Funil de entrega - WhatsApp</h4>
+                  
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Envios</span>
+                        <span className="font-medium">{stats.totalSent} / {stats.totalMessages}</span>
+                      </div>
+                      <Progress value={(stats.totalSent / stats.totalMessages) * 100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {((stats.totalSent / stats.totalMessages) * 100).toFixed(1)}% das mensagens planejadas foram enviadas
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>{terminology.deliveredTerm}</span>
+                        <span className="font-medium">{stats.totalDelivered} / {stats.totalSent}</span>
+                      </div>
+                      <Progress value={(stats.totalDelivered / stats.totalSent) * 100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {stats.deliveryRate}% das mensagens enviadas foram {terminology.deliveredTerm.toLowerCase()}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>{terminology.openedTerm}</span>
+                        <span className="font-medium">{stats.totalOpened} / {stats.totalDelivered}</span>
+                      </div>
+                      <Progress value={(stats.totalOpened / stats.totalDelivered) * 100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {stats.openRate}% das mensagens {terminology.deliveredTerm.toLowerCase()} foram {terminology.openedTerm.toLowerCase()}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>{terminology.engagedTerm}</span>
+                        <span className="font-medium">{stats.totalEngaged} / {stats.totalOpened}</span>
+                      </div>
+                      <Progress value={(stats.totalEngaged / stats.totalOpened) * 100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {stats.engagementRate}% das mensagens {terminology.openedTerm.toLowerCase()} geraram {terminology.engagedTerm.toLowerCase()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Channel-specific metrics */}
                 <div className="bg-slate-50 rounded-lg p-6 border">
                   <h4 className="font-medium mb-4">Métricas específicas de WhatsApp</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -331,9 +456,134 @@ const MessageSendingReport = () => {
                     </div>
                   </div>
                 </div>
-              )}
-              
-              {activeTab === "email" && (
+                
+                {/* Call to action */}
+                <div className="flex justify-center pt-4">
+                  <Button>
+                    Ver relatório detalhado
+                  </Button>
+                </div>
+              </TabsContent>
+            
+              <TabsContent value="email">
+                {/* Overall Stats */}
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <div className="bg-slate-50 rounded-lg p-4 border">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Total de mensagens</p>
+                        <h4 className="text-2xl font-semibold mt-1">{stats.totalMessages}</h4>
+                      </div>
+                      <div className="bg-primary/10 p-2 rounded-full">
+                        <Send className="h-5 w-5 text-primary" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Em {filteredCampaigns.length} campanhas de Email
+                    </p>
+                  </div>
+                  
+                  <div className="bg-slate-50 rounded-lg p-4 border">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Campanhas ativas</p>
+                        <h4 className="text-2xl font-semibold mt-1">{stats.activeCampaigns}</h4>
+                      </div>
+                      <div className="bg-green-500/10 p-2 rounded-full">
+                        <Calendar className="h-5 w-5 text-green-500" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {stats.activeCampaigns > 0 ? 
+                        `${((stats.activeCampaigns / filteredCampaigns.length) * 100).toFixed(0)}% das campanhas` :
+                        "Nenhuma campanha ativa"
+                      }
+                    </p>
+                  </div>
+                  
+                  <div className="bg-slate-50 rounded-lg p-4 border">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Taxa de abertura</p>
+                        <h4 className="text-2xl font-semibold mt-1">{stats.openRate}%</h4>
+                      </div>
+                      <div className="bg-blue-500/10 p-2 rounded-full">
+                        <Eye className="h-5 w-5 text-blue-500" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {stats.totalOpened} {terminology.openedTerm} de {stats.totalDelivered} {terminology.deliveredTerm}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-slate-50 rounded-lg p-4 border">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Taxa de engajamento</p>
+                        <h4 className="text-2xl font-semibold mt-1">{stats.engagementRate}%</h4>
+                      </div>
+                      <div className="bg-purple-500/10 p-2 rounded-full">
+                        <BarChart2 className="h-5 w-5 text-purple-500" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {stats.totalEngaged} {terminology.engagedTerm} de {stats.totalOpened} {terminology.openedTerm}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Delivery Funnel with Channel-specific terminology */}
+                <div className="bg-slate-50 rounded-lg p-6 border">
+                  <h4 className="font-medium mb-4">Funil de entrega - Email</h4>
+                  
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Envios</span>
+                        <span className="font-medium">{stats.totalSent} / {stats.totalMessages}</span>
+                      </div>
+                      <Progress value={(stats.totalSent / stats.totalMessages) * 100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {((stats.totalSent / stats.totalMessages) * 100).toFixed(1)}% das mensagens planejadas foram enviadas
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>{terminology.deliveredTerm}</span>
+                        <span className="font-medium">{stats.totalDelivered} / {stats.totalSent}</span>
+                      </div>
+                      <Progress value={(stats.totalDelivered / stats.totalSent) * 100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {stats.deliveryRate}% das mensagens enviadas foram {terminology.deliveredTerm.toLowerCase()}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>{terminology.openedTerm}</span>
+                        <span className="font-medium">{stats.totalOpened} / {stats.totalDelivered}</span>
+                      </div>
+                      <Progress value={(stats.totalOpened / stats.totalDelivered) * 100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {stats.openRate}% das mensagens {terminology.deliveredTerm.toLowerCase()} foram {terminology.openedTerm.toLowerCase()}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>{terminology.engagedTerm}</span>
+                        <span className="font-medium">{stats.totalEngaged} / {stats.totalOpened}</span>
+                      </div>
+                      <Progress value={(stats.totalEngaged / stats.totalOpened) * 100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {stats.engagementRate}% das mensagens {terminology.openedTerm.toLowerCase()} geraram {terminology.engagedTerm.toLowerCase()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Channel-specific metrics */}
                 <div className="bg-slate-50 rounded-lg p-6 border">
                   <h4 className="font-medium mb-4">Métricas específicas de Email</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -360,9 +610,134 @@ const MessageSendingReport = () => {
                     </div>
                   </div>
                 </div>
-              )}
-              
-              {activeTab === "sms" && (
+                
+                {/* Call to action */}
+                <div className="flex justify-center pt-4">
+                  <Button>
+                    Ver relatório detalhado
+                  </Button>
+                </div>
+              </TabsContent>
+            
+              <TabsContent value="sms">
+                {/* Overall Stats */}
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <div className="bg-slate-50 rounded-lg p-4 border">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Total de mensagens</p>
+                        <h4 className="text-2xl font-semibold mt-1">{stats.totalMessages}</h4>
+                      </div>
+                      <div className="bg-primary/10 p-2 rounded-full">
+                        <Send className="h-5 w-5 text-primary" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Em {filteredCampaigns.length} campanhas de SMS
+                    </p>
+                  </div>
+                  
+                  <div className="bg-slate-50 rounded-lg p-4 border">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Campanhas ativas</p>
+                        <h4 className="text-2xl font-semibold mt-1">{stats.activeCampaigns}</h4>
+                      </div>
+                      <div className="bg-green-500/10 p-2 rounded-full">
+                        <Calendar className="h-5 w-5 text-green-500" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {stats.activeCampaigns > 0 ? 
+                        `${((stats.activeCampaigns / filteredCampaigns.length) * 100).toFixed(0)}% das campanhas` :
+                        "Nenhuma campanha ativa"
+                      }
+                    </p>
+                  </div>
+                  
+                  <div className="bg-slate-50 rounded-lg p-4 border">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Taxa de recebimento</p>
+                        <h4 className="text-2xl font-semibold mt-1">{stats.openRate}%</h4>
+                      </div>
+                      <div className="bg-blue-500/10 p-2 rounded-full">
+                        <Eye className="h-5 w-5 text-blue-500" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {stats.totalOpened} {terminology.openedTerm} de {stats.totalDelivered} {terminology.deliveredTerm}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-slate-50 rounded-lg p-4 border">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Taxa de engajamento</p>
+                        <h4 className="text-2xl font-semibold mt-1">{stats.engagementRate}%</h4>
+                      </div>
+                      <div className="bg-purple-500/10 p-2 rounded-full">
+                        <BarChart2 className="h-5 w-5 text-purple-500" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {stats.totalEngaged} {terminology.engagedTerm} de {stats.totalOpened} {terminology.openedTerm}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Delivery Funnel with SMS-specific terminology */}
+                <div className="bg-slate-50 rounded-lg p-6 border">
+                  <h4 className="font-medium mb-4">Funil de entrega - SMS</h4>
+                  
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Envios</span>
+                        <span className="font-medium">{stats.totalSent} / {stats.totalMessages}</span>
+                      </div>
+                      <Progress value={(stats.totalSent / stats.totalMessages) * 100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {((stats.totalSent / stats.totalMessages) * 100).toFixed(1)}% das mensagens planejadas foram enviadas
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>{terminology.deliveredTerm}</span>
+                        <span className="font-medium">{stats.totalDelivered} / {stats.totalSent}</span>
+                      </div>
+                      <Progress value={(stats.totalDelivered / stats.totalSent) * 100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {stats.deliveryRate}% das mensagens enviadas foram {terminology.deliveredTerm.toLowerCase()}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>{terminology.openedTerm}</span>
+                        <span className="font-medium">{stats.totalOpened} / {stats.totalDelivered}</span>
+                      </div>
+                      <Progress value={(stats.totalOpened / stats.totalDelivered) * 100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {stats.openRate}% das mensagens {terminology.deliveredTerm.toLowerCase()} foram {terminology.openedTerm.toLowerCase()}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>{terminology.engagedTerm}</span>
+                        <span className="font-medium">{stats.totalEngaged} / {stats.totalOpened}</span>
+                      </div>
+                      <Progress value={(stats.totalEngaged / stats.totalOpened) * 100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {stats.engagementRate}% das mensagens {terminology.openedTerm.toLowerCase()} geraram {terminology.engagedTerm.toLowerCase()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* SMS-specific metrics */}
                 <div className="bg-slate-50 rounded-lg p-6 border">
                   <h4 className="font-medium mb-4">Métricas específicas de SMS</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -525,15 +900,15 @@ const MessageSendingReport = () => {
                     </div>
                   </div>
                 </div>
-              )}
-              
-              {/* Call to action */}
-              <div className="flex justify-center pt-4">
-                <Button>
-                  Ver relatório detalhado
-                </Button>
-              </div>
-            </TabsContent>
+                
+                {/* Call to action */}
+                <div className="flex justify-center pt-4">
+                  <Button>
+                    Ver relatório detalhado
+                  </Button>
+                </div>
+              </TabsContent>
+            </>
           )}
         </CardContent>
       </Tabs>
@@ -542,4 +917,3 @@ const MessageSendingReport = () => {
 };
 
 export default MessageSendingReport;
-
