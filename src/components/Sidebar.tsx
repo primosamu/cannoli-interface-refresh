@@ -152,9 +152,12 @@ const Sidebar = () => {
         {state === 'expanded' && (
           <h1 className="text-xl font-bold text-primary">Cannoli</h1>
         )}
-        <SidebarTrigger>
+        <button
+          onClick={toggleSidebar}
+          className="p-1 rounded-md hover:bg-slate-100"
+        >
           {state === 'expanded' ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </SidebarTrigger>
+        </button>
       </div>
       <SidebarContent>
         <SidebarGroup>

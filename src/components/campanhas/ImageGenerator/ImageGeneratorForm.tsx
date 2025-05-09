@@ -18,6 +18,13 @@ import ImageFormatSelector, { ImageFormat } from "./ImageFormatSelector";
 import GeneratedImageGallery from "./GeneratedImageGallery";
 import GenerationOptions from "./GenerationOptions";
 
+// Custom icon since it doesn't exist in lucide-react
+const ImageGeneratorIcon = () => (
+  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary">
+    <FileText size={24} />
+  </div>
+);
+
 // Mock function to simulate image generation (will be replaced with real API call later)
 const mockGenerateImages = async (
   files: File[], 
@@ -37,7 +44,8 @@ const mockGenerateImages = async (
       width: format.width,
       height: format.height,
       platform: format.platform,
-      prompt
+      prompt,
+      createdAt: new Date().toISOString() // Add the missing createdAt property
     }));
 };
 
@@ -45,20 +53,25 @@ const ImageGeneratorForm = () => {
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [prompt, setPrompt] = useState("");
   const [formats, setFormats] = useState<ImageFormat[]>([
-    { name: "Instagram Feed", width: 1080, height: 1080, platform: "Instagram", selected: false },
-    { name: "Instagram Story", width: 1080, height: 1920, platform: "Instagram", selected: false },
-    { name: "Facebook Feed", width: 1200, height: 630, platform: "Facebook", selected: false },
-    { name: "WhatsApp Status", width: 720, height: 1280, platform: "WhatsApp", selected: false },
-    { name: "Twitter Post", width: 1200, height: 675, platform: "Twitter", selected: false },
-    { name: "YouTube Thumbnail", width: 1280, height: 720, platform: "YouTube", selected: false },
-    { name: "Google Ads", width: 300, height: 250, platform: "Google", selected: false },
-    { name: "Banner Site", width: 728, height: 90, platform: "Web", selected: false },
+    { id: "instagram-feed", name: "Instagram Feed", width: 1080, height: 1080, platform: "Instagram", selected: false },
+    { id: "instagram-story", name: "Instagram Story", width: 1080, height: 1920, platform: "Instagram", selected: false },
+    { id: "facebook-feed", name: "Facebook Feed", width: 1200, height: 630, platform: "Facebook", selected: false },
+    { id: "whatsapp-status", name: "WhatsApp Status", width: 720, height: 1280, platform: "WhatsApp", selected: false },
+    { id: "twitter-post", name: "Twitter Post", width: 1200, height: 675, platform: "Twitter", selected: false },
+    { id: "youtube-thumbnail", name: "YouTube Thumbnail", width: 1280, height: 720, platform: "YouTube", selected: false },
+    { id: "google-ads", name: "Google Ads", width: 300, height: 250, platform: "Google", selected: false },
+    { id: "banner-site", name: "Banner Site", width: 728, height: 90, platform: "Web", selected: false },
   ]);
   
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [activeTab, setActiveTab] = useState<string>("upload");
   const [generationStatus, setGenerationStatus] = useState<"idle" | "generating" | "complete" | "error">("idle");
   const [savedImages, setSavedImages] = useState<GeneratedImage[]>([]);
+  
+  // Style and generation options
+  const [useRestaurantLogo, setUseRestaurantLogo] = useState<boolean>(false);
+  const [useRestaurantColors, setUseRestaurantColors] = useState<boolean>(false);
+  const [style, setStyle] = useState<string>("realistic");
   
   const handleImagesSelected = (files: File[]) => {
     setUploadedImages(files);
@@ -74,17 +87,28 @@ const ImageGeneratorForm = () => {
     setPrompt(value);
   };
   
-  const handleFormatSelect = (index: number) => {
+  const handleFormatToggle = (id: string) => {
     const updatedFormats = [...formats];
-    updatedFormats[index].selected = !updatedFormats[index].selected;
-    setFormats(updatedFormats);
+    const index = updatedFormats.findIndex(format => format.id === id);
+    if (index !== -1) {
+      updatedFormats[index].selected = !updatedFormats[index].selected;
+      setFormats(updatedFormats);
+    }
   };
   
-  const handleSelectAllFormats = () => {
+  const handleSelectAll = () => {
     const allSelected = formats.every(format => format.selected);
     const updatedFormats = formats.map(format => ({
       ...format,
       selected: !allSelected
+    }));
+    setFormats(updatedFormats);
+  };
+  
+  const handleUnselectAll = () => {
+    const updatedFormats = formats.map(format => ({
+      ...format,
+      selected: false
     }));
     setFormats(updatedFormats);
   };
@@ -200,8 +224,9 @@ const ImageGeneratorForm = () => {
                 <h3 className="font-medium text-lg mb-4">Formatos de Imagem</h3>
                 <ImageFormatSelector 
                   formats={formats}
-                  onFormatSelect={handleFormatSelect}
-                  onSelectAll={handleSelectAllFormats}
+                  onFormatToggle={handleFormatToggle}
+                  onSelectAll={handleSelectAll}
+                  onUnselectAll={handleUnselectAll}
                 />
               </div>
               
@@ -213,7 +238,14 @@ const ImageGeneratorForm = () => {
                 />
               </div>
               
-              <GenerationOptions />
+              <GenerationOptions 
+                useRestaurantLogo={useRestaurantLogo}
+                setUseRestaurantLogo={setUseRestaurantLogo}
+                useRestaurantColors={useRestaurantColors}
+                setUseRestaurantColors={setUseRestaurantColors}
+                style={style}
+                setStyle={setStyle}
+              />
               
               <div className="flex justify-end space-x-2 pt-4">
                 <Button variant="outline" onClick={() => setActiveTab("upload")}>
@@ -275,12 +307,5 @@ const ImageGeneratorForm = () => {
     </div>
   );
 };
-
-// Create a custom ImageGeneratorIcon since it doesn't exist in lucide-react
-const ImageGeneratorIcon = () => (
-  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary">
-    <FileText size={24} />
-  </div>
-);
 
 export default ImageGeneratorForm;
