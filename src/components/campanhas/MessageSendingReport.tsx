@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Calendar, BarChart2, Eye, Send, MessageSquare, Mail, Phone, Filter } from "lucide-react";
+import { Calendar, BarChart2, Eye, Send, MessageSquare, Mail, Phone, Filter, Clock, AlertCircle, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getRecentCampaigns } from "./CampanhaForm";
 import { Campaign } from "@/types/campaign";
@@ -194,7 +194,7 @@ const MessageSendingReport = () => {
                 <div className="bg-slate-50 rounded-lg p-4 border">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">Taxa de {activeTab === "whatsapp" ? "visualização" : "abertura"}</p>
+                      <p className="text-sm text-muted-foreground">Taxa de {activeTab === "whatsapp" ? "visualização" : activeTab === "email" ? "abertura" : "recebimento"}</p>
                       <h4 className="text-2xl font-semibold mt-1">{stats.openRate}%</h4>
                     </div>
                     <div className="bg-blue-500/10 p-2 rounded-full">
@@ -365,7 +365,7 @@ const MessageSendingReport = () => {
               {activeTab === "sms" && (
                 <div className="bg-slate-50 rounded-lg p-6 border">
                   <h4 className="font-medium mb-4">Métricas específicas de SMS</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-white p-4 rounded-md border">
                       <h5 className="font-medium text-sm">Taxa de entrega</h5>
                       <p className="text-2xl font-semibold mt-1">{(94.5).toFixed(1)}%</p>
@@ -387,6 +387,142 @@ const MessageSendingReport = () => {
                         SMS com resposta do cliente
                       </p>
                     </div>
+                    <div className="bg-white p-4 rounded-md border">
+                      <h5 className="font-medium text-sm">Tempo médio de entrega</h5>
+                      <p className="text-2xl font-semibold mt-1">8.3s</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Do envio até o recebimento
+                      </p>
+                    </div>
+                    <div className="bg-white p-4 rounded-md border">
+                      <h5 className="font-medium text-sm">Detalhamento de operadoras</h5>
+                      <p className="text-2xl font-semibold mt-1">4</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Principais operadoras utilizadas
+                      </p>
+                    </div>
+                    <div className="bg-white p-4 rounded-md border">
+                      <h5 className="font-medium text-sm">Status DND</h5>
+                      <p className="text-2xl font-semibold mt-1">{Math.round(stats.totalSent * 0.025)}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Contatos em lista de não perturbe
+                      </p>
+                    </div>
+                    <div className="bg-white p-4 rounded-md border">
+                      <h5 className="font-medium text-sm">Taxa de conversão</h5>
+                      <p className="text-2xl font-semibold mt-1">3.4%</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Resultaram em conversão de vendas
+                      </p>
+                    </div>
+                    <div className="bg-white p-4 rounded-md border">
+                      <h5 className="font-medium text-sm">Custo por SMS</h5>
+                      <p className="text-2xl font-semibold mt-1">R$ 0.08</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Valor médio por mensagem
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* SMS Delivery Time Chart */}
+                  <div className="mt-6">
+                    <h5 className="font-medium text-sm mb-4">Desempenho de entrega por operadora</h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                      <div className="bg-white p-4 rounded-md border col-span-1">
+                        <h6 className="text-sm font-medium">Operadoras</h6>
+                        <div className="space-y-3 mt-4">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Vivo</span>
+                            <span className="text-sm font-medium">42%</span>
+                          </div>
+                          <Progress value={42} className="h-1.5" />
+                          
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Claro</span>
+                            <span className="text-sm font-medium">28%</span>
+                          </div>
+                          <Progress value={28} className="h-1.5" />
+                          
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">TIM</span>
+                            <span className="text-sm font-medium">23%</span>
+                          </div>
+                          <Progress value={23} className="h-1.5" />
+                          
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Oi</span>
+                            <span className="text-sm font-medium">7%</span>
+                          </div>
+                          <Progress value={7} className="h-1.5" />
+                        </div>
+                      </div>
+                      
+                      <div className="bg-white p-4 rounded-md border col-span-1">
+                        <h6 className="text-sm font-medium">Taxa de entrega</h6>
+                        <div className="space-y-3 mt-4">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Vivo</span>
+                            <span className="text-sm font-medium">96.8%</span>
+                          </div>
+                          <Progress value={96.8} className="h-1.5" />
+                          
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Claro</span>
+                            <span className="text-sm font-medium">95.2%</span>
+                          </div>
+                          <Progress value={95.2} className="h-1.5" />
+                          
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">TIM</span>
+                            <span className="text-sm font-medium">93.7%</span>
+                          </div>
+                          <Progress value={93.7} className="h-1.5" />
+                          
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Oi</span>
+                            <span className="text-sm font-medium">91.4%</span>
+                          </div>
+                          <Progress value={91.4} className="h-1.5" />
+                        </div>
+                      </div>
+                      
+                      <div className="bg-white p-4 rounded-md border col-span-1 sm:col-span-2">
+                        <h6 className="text-sm font-medium">Status das mensagens</h6>
+                        <div className="grid grid-cols-2 gap-4 mt-4">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-5 w-5 text-green-500" />
+                            <div>
+                              <p className="text-sm font-medium">Entregues</p>
+                              <p className="text-xs text-muted-foreground">94.5%</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="h-5 w-5 text-red-500" />
+                            <div>
+                              <p className="text-sm font-medium">Falhas</p>
+                              <p className="text-xs text-muted-foreground">5.5%</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-5 w-5 text-amber-500" />
+                            <div>
+                              <p className="text-sm font-medium">Atrasos</p>
+                              <p className="text-xs text-muted-foreground">2.3%</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-5 w-5 text-blue-500" />
+                            <div>
+                              <p className="text-sm font-medium">Respostas</p>
+                              <p className="text-xs text-muted-foreground">5.8%</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -406,3 +542,4 @@ const MessageSendingReport = () => {
 };
 
 export default MessageSendingReport;
+
