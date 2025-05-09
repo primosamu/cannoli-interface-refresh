@@ -1,47 +1,46 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 48 100% 98%;
-    --foreground: 30 30% 20%;
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
     
-    --card: 48 100% 99%;
-    --card-foreground: 30 30% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
     
-    --popover: 48 100% 98%;
-    --popover-foreground: 30 30% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
     
-    --primary: 38 100% 74%;
-    --primary-foreground: 30 30% 20%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 355 100% 100%;
     
-    --secondary: 30 50% 40%;
+    --secondary: 24 96% 62%;
     --secondary-foreground: 0 0% 98%;
     
-    --muted: 48 30% 94%;
-    --muted-foreground: 30 20% 40%;
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
     
-    --accent: 120 40% 80%;
-    --accent-foreground: 120 40% 20%;
+    --accent: 12 96% 62%;
+    --accent-foreground: 0 0% 98%;
     
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 38 40% 85%;
-    --input: 38 40% 85%;
-    --ring: 38 100% 60%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 142 76% 36%;
     --radius: 0.5rem;
 
-    --sidebar-background: 48 80% 95%;
-    --sidebar-foreground: 30 30% 25%;
-    --sidebar-primary: 38 100% 74%;
-    --sidebar-primary-foreground: 30 30% 20%;
-    --sidebar-accent: 30 50% 94%;
-    --sidebar-accent-foreground: 30 30% 20%;
-    --sidebar-border: 38 40% 80%;
-    --sidebar-ring: 38 100% 60%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 142 76% 36%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 142 76% 36%;
   }
 
   @font-face {
@@ -110,42 +109,41 @@
   }
 
   .dark {
-    --background: 30 15% 10%;
-    --foreground: 48 30% 90%;
+    --background: 20 14.3% 4.1%;
+    --foreground: 0 0% 95%;
     
-    --card: 30 15% 15%;
-    --card-foreground: 48 30% 90%;
+    --card: 24 9.8% 10%;
+    --card-foreground: 0 0% 95%;
     
-    --popover: 30 15% 12%;
-    --popover-foreground: 48 30% 90%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 95%;
     
-    --primary: 38 90% 60%;
-    --primary-foreground: 30 15% 10%;
+    --primary: 142 70% 30%;
+    --primary-foreground: 355 100% 100%;
     
-    --secondary: 30 60% 30%;
-    --secondary-foreground: 48 30% 90%;
+    --secondary: 24 96% 62%;
+    --secondary-foreground: 0 0% 98%;
     
-    --muted: 30 15% 20%;
-    --muted-foreground: 48 20% 70%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 240 5% 64.9%;
     
-    --accent: 120 30% 40%;
-    --accent-foreground: 120 15% 90%;
+    --accent: 12 96% 62%;
+    --accent-foreground: 0 0% 98%;
     
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 30 20% 25%;
-    --input: 30 20% 25%;
-    --ring: 38 90% 50%;
-    
-    --sidebar-background: 30 15% 12%;
-    --sidebar-foreground: 48 30% 90%;
-    --sidebar-primary: 38 90% 60%;
-    --sidebar-primary-foreground: 30 15% 10%;
-    --sidebar-accent: 30 20% 20%;
-    --sidebar-accent-foreground: 48 30% 90%;
-    --sidebar-border: 30 20% 25%;
-    --sidebar-ring: 38 90% 50%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 142 76% 36%;
+    --sidebar-background: 20 14.3% 4.1%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 142 70% 30%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 142 76% 36%;
   }
 
   * {
@@ -158,18 +156,10 @@
 
   .gradient-bar {
     @apply absolute bottom-0 left-0 w-full h-1;
-    background: linear-gradient(to right, #FFDA7A, #8B5A2B);
+    background: linear-gradient(to right, #6366f1, #8b5cf6);
   }
 
   .spinner-container {
     @apply flex items-center justify-center h-full w-full;
-  }
-  
-  .cannoli-gradient-bg {
-    background: linear-gradient(135deg, #FFF8E1 0%, #FFDA7A 100%);
-  }
-  
-  .cannoli-card {
-    @apply bg-white/80 backdrop-blur-sm border border-cannoli-yellow/30 shadow-sm;
   }
 }
