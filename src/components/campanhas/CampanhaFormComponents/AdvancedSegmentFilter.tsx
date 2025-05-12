@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Filter, X, Plus, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -107,7 +106,8 @@ interface FilterCondition {
   field: string;
   operator: string;
   value: string | number | boolean | null;
-  secondValue?: string | number | null; // For "between" operator
+  // Fix: Update secondValue to include boolean type since it's being used for boolean fields
+  secondValue?: string | number | boolean | null;
 }
 
 interface FilterGroup {
