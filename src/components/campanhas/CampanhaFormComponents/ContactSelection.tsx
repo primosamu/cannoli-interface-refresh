@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CustomerSegment } from "@/types/campaign";
+import AdvancedSegmentFilter, { AdvancedSegmentFilterProps } from "./AdvancedSegmentFilter";
 
 // Mock customer segments - this will be replaced with API data later
 const customerSegments: CustomerSegment[] = [
@@ -63,7 +64,7 @@ const customerSegments: CustomerSegment[] = [
 const ContactSelection = () => {
   const form = useFormContext();
   const [showContactDialog, setShowContactDialog] = useState(false);
-  const [contactMode, setContactMode] = useState<"segment" | "upload" | "manual">("segment");
+  const [contactMode, setContactMode] = useState<"segment" | "advanced-segment" | "upload" | "manual">("segment");
   const [manualContacts, setManualContacts] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const selectedSegmentId = form.watch("segmentId");
@@ -86,6 +87,9 @@ const ContactSelection = () => {
     } else if (contactMode === "segment" && selectedSegmentId) {
       form.setValue("contactSource", "segment");
       // Already have segmentId selected
+    } else if (contactMode === "advanced-segment") {
+      form.setValue("contactSource", "advanced-segment");
+      // The filter data is already set by the AdvancedSegmentFilter component
     }
     
     setShowContactDialog(false);
@@ -97,12 +101,22 @@ const ContactSelection = () => {
     return segment ? segment.name : "Nenhum segmento selecionado";
   };
 
+  // Handle saving a new segment from advanced filter
+  const handleSaveAdvancedSegment = (name: string, description: string) => {
+    // Here you would save the segment to the database
+    console.log("Saving advanced segment:", name, description);
+    // For the demo, we'll just show a toast or alert
+    alert(`Segmento "${name}" salvo com sucesso!`);
+  };
+
   // Get contact source info text
   const getContactSourceInfo = () => {
     const source = form.watch("contactSource");
     
     if (source === "segment") {
       return `Segmento: ${getSelectedSegmentName()}`;
+    } else if (source === "advanced-segment") {
+      return "Segmento avançado personalizado";
     } else if (source === "file" && form.watch("contactFile")) {
       return `Arquivo: ${form.watch("contactFile")}`;
     } else if (source === "manual") {
@@ -111,6 +125,11 @@ const ContactSelection = () => {
     }
     
     return "Nenhuma fonte selecionada";
+  };
+
+  const handleAdvancedFilterChange: AdvancedSegmentFilterProps["onChange"] = (filterGroups) => {
+    // Store filter groups in the form
+    form.setValue("advancedSegmentFilters", filterGroups);
   };
 
   return (
@@ -133,20 +152,28 @@ const ContactSelection = () => {
               <Badge variant="outline">{customerSegments.find(seg => seg.id === selectedSegmentId)?.customerCount || 0} destinatários</Badge>
             </div>
           )}
+          
+          {form.watch("contactSource") === "advanced-segment" && (
+            <div className="mt-2 text-sm text-slate-500">
+              <Badge variant="outline">Segmentação personalizada</Badge>
+              <span className="ml-2">Filtros personalizados aplicados</span>
+            </div>
+          )}
         </div>
       </FormControl>
       <FormMessage />
 
       {/* Dialog for contact selection */}
       <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-auto">
           <DialogHeader>
             <DialogTitle>Selecionar destinatários</DialogTitle>
           </DialogHeader>
           
-          <Tabs value={contactMode} onValueChange={(value) => setContactMode(value as "segment" | "upload" | "manual")}>
-            <TabsList className="grid grid-cols-3 mb-4">
+          <Tabs value={contactMode} onValueChange={(value) => setContactMode(value as "segment" | "advanced-segment" | "upload" | "manual")}>
+            <TabsList className="grid grid-cols-4 mb-4">
               <TabsTrigger value="segment">Segmento</TabsTrigger>
+              <TabsTrigger value="advanced-segment">Segmento Avançado</TabsTrigger>
               <TabsTrigger value="upload">Importar</TabsTrigger>
               <TabsTrigger value="manual">Manual</TabsTrigger>
             </TabsList>
@@ -184,6 +211,18 @@ const ContactSelection = () => {
                   ))}
                 </RadioGroup>
               </div>
+            </TabsContent>
+            
+            <TabsContent value="advanced-segment" className="space-y-4">
+              <FormDescription>
+                Crie um segmento personalizado com critérios avançados
+              </FormDescription>
+              
+              <AdvancedSegmentFilter 
+                onChange={handleAdvancedFilterChange} 
+                initialFilters={form.watch("advancedSegmentFilters") || []}
+                onSaveSegment={handleSaveAdvancedSegment}
+              />
             </TabsContent>
             
             <TabsContent value="upload" className="space-y-4">
