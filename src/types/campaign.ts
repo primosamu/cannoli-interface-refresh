@@ -5,9 +5,15 @@ export type IncentiveType = "none" | "coupon" | "loyalty";
 export type AdPlatform = "meta" | "google" | "tiktok";
 export type AdCampaignType = "local_visitors" | "delivery_orders" | "new_dish" | "special_event" | "brand_awareness";
 export type CampaignExecutionType = "one-time" | "recurring";
-export type CampaignTriggerType = "client_inactivity" | "first_purchase" | "repeat_purchase" | "birthday" | "time_based" | "manual";
+export type CampaignTriggerType = "client_inactivity" | "first_purchase" | "repeat_purchase" | "birthday" | "time_based" | "manual" | "immediate" | "scheduled";
 export type ImageGenerationFormat = "square" | "portrait" | "story" | "banner" | "ad";
 export type ImageGenerationStatus = "idle" | "generating" | "complete" | "error";
+export type FrequencyUnit = "days" | "weeks" | "months";
+
+export interface FrequencySettings {
+  interval: number;
+  unit: FrequencyUnit;
+}
 
 export interface GeneratedImage {
   id: string;
@@ -63,6 +69,8 @@ export interface CampaignTrigger {
   weekday?: number;
   monthDay?: number;
   time?: string;
+  recurringDays?: number[];  // Dias da semana (0 = domingo, 6 = sábado)
+  recurringTime?: string;    // Horário de envio para campanhas recorrentes agendadas
 }
 
 export interface Campaign {
@@ -82,6 +90,9 @@ export interface Campaign {
   trigger?: CampaignTrigger;
   isActive?: boolean;
   generatedImages?: GeneratedImage[];
+  campaignStartDate?: string;  // Data de início para campanhas recorrentes
+  campaignEndDate?: string;    // Data de término para campanhas recorrentes
+  maxFrequency?: FrequencySettings;  // Configuração de frequência máxima
 }
 
 export interface AdCreative {
