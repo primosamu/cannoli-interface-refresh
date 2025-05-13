@@ -1,6 +1,6 @@
 
 import React from "react";
-import { CampaignChannel, IncentiveType, WhatsAppMessageType } from "@/types/campaign";
+import { Campaign, CampaignChannel, IncentiveType, WhatsAppMessageType } from "@/types/campaign";
 import WhatsAppPreview from "./CampanhaFormComponents/WhatsAppPreview";
 import SmsPreview from "./CampanhaFormComponents/SmsPreview";
 import EmailPreview from "./CampanhaFormComponents/EmailPreview";
@@ -20,6 +20,7 @@ interface CampanhaPreviewProps {
   incentiveType: IncentiveType;
   coupon?: Coupon;
   loyaltyPoints?: number;
+  campaign?: Campaign; // Add campaign prop
 }
 
 const CampanhaPreview = ({ 
@@ -29,27 +30,35 @@ const CampanhaPreview = ({
   imageUrl, 
   incentiveType, 
   coupon, 
-  loyaltyPoints 
+  loyaltyPoints,
+  campaign // Add campaign prop
 }: CampanhaPreviewProps) => {
   
-  if (channel === "whatsapp") {
+  // If campaign prop is provided, extract values from it
+  const finalChannel = campaign?.channel || channel;
+  const finalWhatsappType = campaign?.whatsappType || whatsappType;
+  const finalContent = campaign?.content || content;
+  const finalImageUrl = campaign?.imageUrl || imageUrl;
+  const finalIncentiveType = campaign?.incentive?.type || incentiveType;
+  
+  if (finalChannel === "whatsapp") {
     return (
       <WhatsAppPreview
-        content={content}
-        imageUrl={imageUrl}
-        incentiveType={incentiveType}
+        content={finalContent}
+        imageUrl={finalImageUrl}
+        incentiveType={finalIncentiveType}
         coupon={coupon}
         loyaltyPoints={loyaltyPoints}
-        whatsappType={whatsappType}
+        whatsappType={finalWhatsappType}
       />
     );
   }
   
-  if (channel === "sms") {
+  if (finalChannel === "sms") {
     return (
       <SmsPreview
-        content={content}
-        incentiveType={incentiveType}
+        content={finalContent}
+        incentiveType={finalIncentiveType}
         coupon={coupon}
         loyaltyPoints={loyaltyPoints}
       />
@@ -59,9 +68,9 @@ const CampanhaPreview = ({
   // Default to email preview
   return (
     <EmailPreview
-      content={content}
-      imageUrl={imageUrl}
-      incentiveType={incentiveType}
+      content={finalContent}
+      imageUrl={finalImageUrl}
+      incentiveType={finalIncentiveType}
       coupon={coupon}
       loyaltyPoints={loyaltyPoints}
     />
