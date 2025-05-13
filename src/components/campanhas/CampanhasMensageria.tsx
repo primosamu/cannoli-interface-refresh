@@ -1,243 +1,149 @@
-
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { 
-  Plus, 
-  Clock,
-  Star,
-  TrendingUp,
-  Send,
-  MessageSquare,
-  Mail,
-  Calendar,
-  FileText,
-  Layers
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import CampanhaForm from "./CampanhaForm";
-import PredefinedCampaignSection from "./PredefinedCampaignSection";
-import { predefinedCampaigns, restaurantCampaigns } from "./predefinedCampaignsData";
-import AudienceSegmentationInfo from "./AudienceSegmentationInfo";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
+import { ArrowUpRight, Bell, Tag, Zap } from "lucide-react";
+import { Campaign } from "@/types/campaign";
+import CampanhaForm, { getRecentCampaigns } from "./CampanhaForm";
+import CampanhaPreview from "./CampanhaPreview";
 import RecentCampaignsInfo from "./RecentCampaignsInfo";
-import SavedCampaignsList from "./SavedCampaignsList";
-import MessageSendingReport from "./MessageSendingReport";
-import CampaignPriority from "./CampaignPriority";
-import { Campaign, CampaignExecutionType } from "@/types/campaign";
-import { getRecentCampaigns } from "./CampanhaForm";
+import PredefinedCampaignSection from "./PredefinedCampaignSection";
+import { quickCampaignsData, recurringCampaignsData } from "./predefinedCampaignsData";
 
 const CampanhasMensageria = () => {
-  const { toast } = useToast();
-  const [openCampaignForm, setOpenCampaignForm] = useState(false);
-  const [selectedPredefinedCampaign, setSelectedPredefinedCampaign] = useState<string | undefined>(undefined);
-  const [selectedChannel, setSelectedChannel] = useState<string | undefined>(undefined);
-  const [campaignType, setCampaignType] = useState<string | undefined>(undefined);
-  const [executionType, setExecutionType] = useState<CampaignExecutionType>("one-time");
-  const [customCampaigns, setCustomCampaigns] = useState<Campaign[]>([]);
-  
-  // Deep clone predefined campaign data to allow modifying isActive status
-  const [campaigns, setCampaigns] = useState({
-    recuperacao: [...JSON.parse(JSON.stringify(predefinedCampaigns.recuperacao))],
-    fidelizacao: [...JSON.parse(JSON.stringify(predefinedCampaigns.fidelizacao))],
-    padroesConsumo: [...JSON.parse(JSON.stringify(predefinedCampaigns.padroesConsumo))],
-    migracaoCanal: [...JSON.parse(JSON.stringify(predefinedCampaigns.migracaoCanal))],
-    promocoesSemanais: [...JSON.parse(JSON.stringify(restaurantCampaigns.promocoesSemanais))]
-  });
+  const [formOpen, setFormOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const [campaignToEdit, setCampaignToEdit] = useState<Campaign | undefined>(undefined);
+  const [predefCampaignId, setPredefCampaignId] = useState<string | null>(null);
+  const [recentCampaigns, setRecentCampaigns] = useState<Campaign[]>([]);
 
-  // Listen for updates to recent campaigns
   useEffect(() => {
-    const handleRecentCampaignsUpdated = () => {
-      setCustomCampaigns(getRecentCampaigns());
+    // Subscribe to the event
+    const handleRecentCampaignsUpdated = (event: CustomEvent) => {
+      setRecentCampaigns(event.detail);
     };
 
-    // Initial load
-    setCustomCampaigns(getRecentCampaigns());
-    
-    // Listen for updates
     window.addEventListener("recentCampaignsUpdated", handleRecentCampaignsUpdated);
-    
+
+    // Get initial recent campaigns
+    setRecentCampaigns(getRecentCampaigns());
+
+    // Cleanup subscription on unmount
     return () => {
       window.removeEventListener("recentCampaignsUpdated", handleRecentCampaignsUpdated);
     };
   }, []);
 
-  const handleOpenPredefinedCampaign = (templateId: string) => {
-    setSelectedPredefinedCampaign(templateId);
-    setSelectedChannel(undefined);
-    setCampaignType(undefined);
-    setOpenCampaignForm(true);
+  // Handle opening campaign preview
+  const handleOpenPreview = (campaign: Campaign) => {
+    setSelectedCampaign(campaign);
+    setPreviewOpen(true);
   };
 
-  const handleOpenCustomCampaign = () => {
-    setSelectedPredefinedCampaign(undefined);
-    setSelectedChannel(undefined);
-    setCampaignType(undefined);
-    setOpenCampaignForm(true);
+  // Handle opening campaign for editing
+  const handleOpenEdit = (campaign: Campaign) => {
+    setCampaignToEdit(campaign);
+    setFormOpen(true);
   };
 
-  const handleEditCustomCampaign = (campaign: Campaign) => {
-    // In a real implementation, we would set the campaign to edit
-    toast({
-      title: "Editar campanha",
-      description: `Editando a campanha "${campaign.name}"`,
-    });
+  // Handle opening predefined campaign
+  const handleOpenPredefinedCampaign = (id: string) => {
+    setPredefCampaignId(id);
+    setFormOpen(true);
   };
 
-  const handleToggleCampaign = (id: string, isActive: boolean) => {
-    // Find and update the campaign in all campaign groups
-    const newCampaigns = { ...campaigns };
-    
-    Object.keys(newCampaigns).forEach((groupKey) => {
-      const group = newCampaigns[groupKey as keyof typeof newCampaigns];
-      const index = group.findIndex(campaign => campaign.id === id);
-      
-      if (index !== -1) {
-        group[index] = {
-          ...group[index],
-          isActive
-        };
-        
-        // Show toast message
-        toast({
-          title: isActive 
-            ? "Campanha ativada" 
-            : "Campanha desativada",
-          description: isActive 
-            ? `A campanha "${group[index].title}" foi ativada e será executada automaticamente.` 
-            : `A campanha "${group[index].title}" foi desativada.`,
-        });
-      }
-    });
-    
-    setCampaigns(newCampaigns);
+  // Handle toggling recurring campaign active state
+  const handleToggleRecurringCampaign = (id: string, isActive: boolean) => {
+    console.log(`Campanha ${id} ${isActive ? 'ativada' : 'desativada'}`);
+    // Aqui você implementaria a lógica para atualizar o estado da campanha
+    // no backend ou estado global da aplicação
   };
-
-  // Format campaigns for the custom campaigns section
-  const formattedCustomCampaigns = customCampaigns.map(campaign => ({
-    id: campaign.id,
-    title: campaign.name,
-    description: campaign.content.substring(0, 60) + (campaign.content.length > 60 ? '...' : ''),
-    isActive: campaign.isActive || false,
-    isRecurring: campaign.executionType === 'recurring',
-    badge: campaign.executionType === 'recurring' ? 'Automação' : 'Campanha'  // Added the missing badge property
-  }));
 
   return (
-    <div className="space-y-6">
-      {/* Campanhas Pré-definidas */}
-      <Card className="bg-white">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-xl">Campanhas e Automações</CardTitle>
-            <CardDescription>
-              Configure campanhas únicas ou automações recorrentes para diversos cenários
-            </CardDescription>
-          </div>
-          <Button onClick={() => handleOpenCustomCampaign()}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Campanha
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Campanhas de Recuperação */}
-          <PredefinedCampaignSection
-            title="Campanhas de Recuperação"
-            icon={<TrendingUp className="h-5 w-5 text-blue-500" />}
-            campaigns={campaigns.recuperacao}
-            colorClass="bg-blue-50"
-            onSelectCampaign={handleOpenPredefinedCampaign}
-            onToggleCampaign={handleToggleCampaign}
-            isRecurring={true}
-          />
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold tracking-tight">Campanhas de Mensageria</h2>
+        <Button onClick={() => setFormOpen(true)}>Nova Campanha</Button>
+      </div>
 
-          {/* Campanhas de Fidelização */}
-          <PredefinedCampaignSection
-            title="Campanhas de Fidelização"
-            icon={<Star className="h-5 w-5 text-green-500" />}
-            campaigns={campaigns.fidelizacao}
-            colorClass="bg-green-50"
-            onSelectCampaign={handleOpenPredefinedCampaign}
-            onToggleCampaign={handleToggleCampaign}
-            isRecurring={true}
-          />
-
-          {/* Campanhas por Padrões de Consumo */}
-          <PredefinedCampaignSection
-            title="Campanhas por Padrões de Consumo"
-            icon={<Clock className="h-5 w-5 text-purple-500" />}
-            campaigns={campaigns.padroesConsumo}
-            colorClass="bg-purple-50"
-            onSelectCampaign={handleOpenPredefinedCampaign}
-            onToggleCampaign={handleToggleCampaign}
-            isRecurring={true}
-          />
-
-          {/* Campanhas de Migração de Canal */}
-          <PredefinedCampaignSection
-            title="Campanhas de Migração de Canal"
-            icon={<Send className="h-5 w-5 text-orange-500" />}
-            campaigns={campaigns.migracaoCanal}
-            colorClass="bg-orange-50"
-            onSelectCampaign={handleOpenPredefinedCampaign}
-            onToggleCampaign={handleToggleCampaign}
-            isRecurring={true}
-          />
-          
-          {/* Promoções Semanais */}
-          <PredefinedCampaignSection
-            title="Promoções Semanais"
-            icon={<Calendar className="h-5 w-5 text-purple-500" />}
-            campaigns={campaigns.promocoesSemanais}
-            colorClass="bg-purple-50"
-            onSelectCampaign={handleOpenPredefinedCampaign}
-            onToggleCampaign={handleToggleCampaign}
-            isRecurring={true}
-          />
-          
-          {/* Campanhas Personalizadas - MOVED TO BOTTOM */}
-          {formattedCustomCampaigns.length > 0 && (
-            <PredefinedCampaignSection
-              title="Campanhas Personalizadas"
-              icon={<FileText className="h-5 w-5 text-indigo-500" />}
-              campaigns={formattedCustomCampaigns}
-              colorClass="bg-indigo-50"
+      <Tabs defaultValue="recentes" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="recentes">Campanhas Recentes</TabsTrigger>
+          <TabsTrigger value="predefinidas">Modelos Predefinidos</TabsTrigger>
+          <TabsTrigger value="automacoes">Automações</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="recentes">
+          <RecentCampaignsInfo />
+        </TabsContent>
+        
+        <TabsContent value="predefinidas">
+          <div className="space-y-8">
+            <PredefinedCampaignSection 
+              title="Recuperação de Clientes" 
+              icon={<ArrowUpRight className="h-5 w-5 text-blue-500" />}
+              campaigns={quickCampaignsData.slice(0, 2)}
+              colorClass="bg-blue-50"
               onSelectCampaign={handleOpenPredefinedCampaign}
-              onToggleCampaign={handleToggleCampaign}
+            />
+            
+            <PredefinedCampaignSection 
+              title="Anúncio de Novidades" 
+              icon={<Bell className="h-5 w-5 text-green-500" />}
+              campaigns={quickCampaignsData.slice(2)}
+              colorClass="bg-green-50"
+              onSelectCampaign={handleOpenPredefinedCampaign}
+            />
+            
+            <PredefinedCampaignSection 
+              title="Promoções e Descontos" 
+              icon={<Tag className="h-5 w-5 text-amber-500" />}
+              campaigns={quickCampaignsData}
+              colorClass="bg-amber-50"
+              onSelectCampaign={handleOpenPredefinedCampaign}
+            />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="automacoes">
+          <div className="space-y-8">
+            <PredefinedCampaignSection 
+              title="Automações de Marketing" 
+              icon={<Zap className="h-5 w-5 text-purple-500" />}
+              campaigns={recurringCampaignsData}
+              colorClass="bg-purple-50"
+              onSelectCampaign={handleOpenPredefinedCampaign}
+              onToggleCampaign={handleToggleRecurringCampaign}
               isRecurring={true}
             />
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Priorização de Campanhas */}
-      <Card className="bg-white">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Layers className="h-5 w-5 text-amber-500" />
-            <CardTitle className="text-lg">Organização e Priorização de Campanhas</CardTitle>
           </div>
-          <CardDescription>
-            Defina a hierarquia de campanhas e quantas campanhas um cliente pode receber
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <CampaignPriority />
-        </CardContent>
-      </Card>
+        </TabsContent>
+      </Tabs>
 
-      <AudienceSegmentationInfo />
-      <RecentCampaignsInfo />
-      <SavedCampaignsList />
-      <MessageSendingReport />
-
-      {/* Campaign Form */}
+      {/* Campaign Form Dialog */}
       <CampanhaForm 
-        open={openCampaignForm} 
-        onOpenChange={setOpenCampaignForm}
-        predefinedCampaignId={selectedPredefinedCampaign}
-        selectedChannel={selectedChannel}
-        campaignType={campaignType}
+        open={formOpen} 
+        onOpenChange={setFormOpen}
+        predefinedCampaignId={predefCampaignId}
+        campaignToEdit={campaignToEdit}
       />
+
+      {/* Campaign Preview Dialog */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Prévia da Campanha</DialogTitle>
+            <DialogDescription>
+              Visualize como seu cliente receberá esta mensagem
+            </DialogDescription>
+          </DialogHeader>
+          {selectedCampaign && (
+            <CampanhaPreview campaign={selectedCampaign} />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
