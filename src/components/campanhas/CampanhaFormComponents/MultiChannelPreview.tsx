@@ -3,7 +3,7 @@ import React from "react";
 import { useFormContext } from "react-hook-form";
 import { MessageSquare, Mail, Phone } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CampaignChannel } from "@/types/campaign";
+import { IncentiveType } from "@/types/campaign";
 import WhatsAppPreview from "./WhatsAppPreview";
 import EmailPreview from "./EmailPreview";
 import SmsPreview from "./SmsPreview";
@@ -17,15 +17,26 @@ interface Coupon {
 
 // Find coupon by ID from mock data
 const mockCoupons = [
-  { id: "cpn-1", code: "DESC15", discount: 15, discountType: "percentage" as const },
-  { id: "cpn-2", code: "DESC20", discount: 20, discountType: "percentage" as const },
-  { id: "cpn-3", code: "DESC10", discount: 10, discountType: "percentage" as const },
-  { id: "cpn-4", code: "FRETE", discount: 0, discountType: "percentage" as const },
-  { id: "cpn-5", code: "10REAIS", discount: 10, discountType: "fixed" as const },
+  { id: "cpn-123", code: "DESC15", discount: 15, discountType: "percentage" as const },
+  { id: "cpn-456", code: "DESC20", discount: 20, discountType: "percentage" as const },
+  { id: "cpn-789", code: "DESC10", discount: 10, discountType: "percentage" as const },
+  { id: "cpn-321", code: "FRETE", discount: 0, discountType: "percentage" as const },
+  { id: "custom-manual", code: "MANUAL", discount: 10, discountType: "percentage" as const },
 ];
 
 const findCouponById = (id: string | undefined): Coupon | undefined => {
   if (!id) return undefined;
+  
+  // For manually entered coupons, use the coupon code from the form
+  if (id.startsWith("custom-")) {
+    return {
+      id,
+      code: "MANUAL", // This will be replaced with the form value
+      discount: 10,
+      discountType: "percentage" as const
+    };
+  }
+  
   return mockCoupons.find(c => c.id === id);
 };
 
@@ -39,6 +50,19 @@ const MultiChannelPreview = () => {
   
   // Get active channel count for grid layout
   const activeChannelCount = [whatsappActive, emailActive, smsActive].filter(Boolean).length;
+  
+  // Get coupon data
+  const couponId = form.watch("couponId");
+  const couponCode = form.watch("couponCode");
+  const incentiveType = form.watch("incentiveType");
+  
+  // Get coupon from our mock data or create one for manual entries
+  let coupon = findCouponById(couponId);
+  
+  // If we have a manual coupon code, override the code property
+  if (coupon && couponCode) {
+    coupon = { ...coupon, code: couponCode };
+  }
   
   // If no channels are selected, show a default message
   if (!whatsappActive && !emailActive && !smsActive) {
@@ -59,9 +83,9 @@ const MultiChannelPreview = () => {
           <WhatsAppPreview
             content={form.watch("content") || ""}
             imageUrl={form.watch("imageUrl")}
-            incentiveType={form.watch("incentiveType")}
-            coupon={findCouponById(form.watch("couponId"))}
-            loyaltyPoints={form.watch("incentiveType") === "loyalty" ? 10 : undefined}
+            incentiveType={incentiveType}
+            coupon={coupon}
+            loyaltyPoints={incentiveType === "loyalty" ? 10 : undefined}
             whatsappType={form.watch("whatsappType")}
           />
         )}
@@ -70,18 +94,18 @@ const MultiChannelPreview = () => {
           <EmailPreview
             content={form.watch("content") || ""}
             imageUrl={form.watch("imageUrl")}
-            incentiveType={form.watch("incentiveType")}
-            coupon={findCouponById(form.watch("couponId"))}
-            loyaltyPoints={form.watch("incentiveType") === "loyalty" ? 10 : undefined}
+            incentiveType={incentiveType}
+            coupon={coupon}
+            loyaltyPoints={incentiveType === "loyalty" ? 10 : undefined}
           />
         )}
         
         {smsActive && (
           <SmsPreview
             content={form.watch("content") || ""}
-            incentiveType={form.watch("incentiveType")}
-            coupon={findCouponById(form.watch("couponId"))}
-            loyaltyPoints={form.watch("incentiveType") === "loyalty" ? 10 : undefined}
+            incentiveType={incentiveType}
+            coupon={coupon}
+            loyaltyPoints={incentiveType === "loyalty" ? 10 : undefined}
           />
         )}
       </div>
@@ -117,9 +141,9 @@ const MultiChannelPreview = () => {
             <WhatsAppPreview
               content={form.watch("content") || ""}
               imageUrl={form.watch("imageUrl")}
-              incentiveType={form.watch("incentiveType")}
-              coupon={findCouponById(form.watch("couponId"))}
-              loyaltyPoints={form.watch("incentiveType") === "loyalty" ? 10 : undefined}
+              incentiveType={incentiveType}
+              coupon={coupon}
+              loyaltyPoints={incentiveType === "loyalty" ? 10 : undefined}
               whatsappType={form.watch("whatsappType")}
             />
           </TabsContent>
@@ -130,9 +154,9 @@ const MultiChannelPreview = () => {
             <EmailPreview
               content={form.watch("content") || ""}
               imageUrl={form.watch("imageUrl")}
-              incentiveType={form.watch("incentiveType")}
-              coupon={findCouponById(form.watch("couponId"))}
-              loyaltyPoints={form.watch("incentiveType") === "loyalty" ? 10 : undefined}
+              incentiveType={incentiveType}
+              coupon={coupon}
+              loyaltyPoints={incentiveType === "loyalty" ? 10 : undefined}
             />
           </TabsContent>
         )}
@@ -141,9 +165,9 @@ const MultiChannelPreview = () => {
           <TabsContent value="sms" className="py-3">
             <SmsPreview
               content={form.watch("content") || ""}
-              incentiveType={form.watch("incentiveType")}
-              coupon={findCouponById(form.watch("couponId"))}
-              loyaltyPoints={form.watch("incentiveType") === "loyalty" ? 10 : undefined}
+              incentiveType={incentiveType}
+              coupon={coupon}
+              loyaltyPoints={incentiveType === "loyalty" ? 10 : undefined}
             />
           </TabsContent>
         )}

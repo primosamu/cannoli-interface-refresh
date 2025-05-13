@@ -192,8 +192,8 @@ const formSchema = z.object({
   campaignStartDate: z.date().optional(),
   campaignEndDate: z.date().optional(),
   maxFrequency: z.object({
-    interval: z.number().positive(),
-    unit: z.enum(["days", "weeks", "months"])
+    interval: z.number().positive().default(1),  // Always provide default to ensure the property is not optional
+    unit: z.enum(["days", "weeks", "months"]).default("weeks")
   }),
   isActive: z.boolean().default(false)
 });
@@ -273,7 +273,7 @@ const CampanhaForm = ({
         recurringDays: template.trigger?.recurringDays || [],
         recurringTime: template.trigger?.recurringTime || "",
         maxFrequency: template.maxFrequency || {
-          interval: 1, // Ensure interval has a default value
+          interval: 1,
           unit: "weeks"
         },
         campaignStartDate: template.campaignStartDate ? new Date(template.campaignStartDate) : undefined,
@@ -281,6 +281,12 @@ const CampanhaForm = ({
         isActive: template.isActive || false
       });
     } else if (campaignToEdit) {
+      // Ensure maxFrequency always has an interval value
+      const maxFrequency: FrequencySettings = campaignToEdit.maxFrequency || {
+        interval: 1,
+        unit: "weeks"
+      };
+
       form.reset({
         name: campaignToEdit.name,
         description: campaignToEdit.description || "",
@@ -299,10 +305,7 @@ const CampanhaForm = ({
         triggerType: campaignToEdit.trigger?.type as any || "immediate",
         recurringDays: campaignToEdit.trigger?.recurringDays || [],
         recurringTime: campaignToEdit.trigger?.recurringTime || "",
-        maxFrequency: campaignToEdit.maxFrequency || {
-          interval: 1, // Ensure interval has a default value
-          unit: "weeks"
-        },
+        maxFrequency: maxFrequency,
         campaignStartDate: campaignToEdit.campaignStartDate ? new Date(campaignToEdit.campaignStartDate) : undefined,
         campaignEndDate: campaignToEdit.campaignEndDate ? new Date(campaignToEdit.campaignEndDate) : undefined,
         isActive: campaignToEdit.isActive || false
@@ -361,7 +364,7 @@ const CampanhaForm = ({
         recurringDays: [],
         recurringTime: "",
         maxFrequency: {
-          interval: 1, // Ensure interval has a default value
+          interval: 1,
           unit: "weeks"
         },
         campaignStartDate: undefined,
@@ -389,7 +392,7 @@ const CampanhaForm = ({
         recurringDays: [],
         recurringTime: "",
         maxFrequency: {
-          interval: 1, // Ensure interval has a default value
+          interval: 1,
           unit: "weeks"
         },
         isActive: false

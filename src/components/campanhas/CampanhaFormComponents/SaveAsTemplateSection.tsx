@@ -1,39 +1,40 @@
 
 import React from "react";
 import { useFormContext } from "react-hook-form";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-} from "@/components/ui/form";
+import { FormField, FormItem, FormControl, FormDescription } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
+import { Save } from "lucide-react";
 
 const SaveAsTemplateSection = () => {
   const form = useFormContext();
   
   return (
-    <FormField
-      control={form.control}
-      name="saveAsTemplate"
-      render={({ field }) => (
-        <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-          <FormControl>
-            <Switch
-              checked={field.value}
-              onCheckedChange={field.onChange}
-            />
-          </FormControl>
-          <div className="space-y-1 leading-none">
-            <FormLabel>Salvar como modelo</FormLabel>
-            <FormDescription>
-              Salve esta campanha como modelo para uso futuro
-            </FormDescription>
-          </div>
-        </FormItem>
-      )}
-    />
+    <div className="border rounded-md p-4">
+      <div className="flex items-center space-x-2">
+        <Save className="h-4 w-4 text-primary" />
+        <h3 className="text-lg font-medium">Salvar como modelo</h3>
+      </div>
+      
+      <FormField
+        control={form.control}
+        name="saveAsTemplate"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 mt-2">
+            <div className="space-y-0.5">
+              <FormDescription>
+                Salvar esta campanha como modelo para uso futuro
+              </FormDescription>
+            </div>
+            <FormControl>
+              <Switch
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            </FormControl>
+          </FormItem>
+        )}
+      />
+    </div>
   );
 };
 
