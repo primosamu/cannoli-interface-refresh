@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -22,7 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Campaign, CampaignChannel, CampaignExecutionType, CampaignTriggerType, CustomerSegment } from "@/types/campaign";
+import { Campaign, CampaignChannel, CampaignExecutionType, CampaignTriggerType, CustomerSegment, FrequencySettings } from "@/types/campaign";
 import { format } from "date-fns";
 import {
   BasicInfoSection,
@@ -194,7 +195,7 @@ const formSchema = z.object({
   maxFrequency: z.object({
     interval: z.number().positive(),
     unit: z.enum(["days", "weeks", "months"])
-  }).optional(),
+  }),
   isActive: z.boolean().default(false)
 });
 
