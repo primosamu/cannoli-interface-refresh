@@ -243,7 +243,7 @@ const CampanhaForm = ({
       recurringDays: [],
       recurringTime: "",
       maxFrequency: {
-        interval: 1,
+        interval: 1, 
         unit: "weeks"
       },
       isActive: false
@@ -254,6 +254,12 @@ const CampanhaForm = ({
   useEffect(() => {
     if (predefinedCampaignId && predefinedCampaignTemplates[predefinedCampaignId]) {
       const template = predefinedCampaignTemplates[predefinedCampaignId];
+      
+      // Ensure maxFrequency always has an interval value
+      const maxFrequency: FrequencySettings = template.maxFrequency || {
+        interval: 1,
+        unit: "weeks"
+      };
       
       form.reset({
         name: template.name || "",
@@ -273,10 +279,7 @@ const CampanhaForm = ({
         triggerType: template.trigger?.type as any || "immediate",
         recurringDays: template.trigger?.recurringDays || [],
         recurringTime: template.trigger?.recurringTime || "",
-        maxFrequency: template.maxFrequency || {
-          interval: 1,
-          unit: "weeks"
-        },
+        maxFrequency: maxFrequency,
         campaignStartDate: template.campaignStartDate ? new Date(template.campaignStartDate) : undefined,
         campaignEndDate: template.campaignEndDate ? new Date(template.campaignEndDate) : undefined,
         isActive: template.isActive || false
