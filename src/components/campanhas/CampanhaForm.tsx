@@ -242,7 +242,7 @@ const CampanhaForm = ({
       recurringDays: [],
       recurringTime: "",
       maxFrequency: {
-        interval: 1,
+        interval: 1, // Ensuring interval is always provided as a required field
         unit: "weeks"
       },
       isActive: false

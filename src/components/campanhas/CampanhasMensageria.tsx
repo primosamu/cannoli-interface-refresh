@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -140,7 +141,12 @@ const CampanhasMensageria = () => {
             </DialogDescription>
           </DialogHeader>
           {selectedCampaign && (
-            <CampanhaPreview campaign={selectedCampaign} />
+            <CampanhaPreview 
+              campaign={selectedCampaign}
+              channel="whatsapp" // Default value, will be overridden by campaign if provided
+              content="" // Default value, will be overridden by campaign if provided
+              incentiveType="none" // Default value, will be overridden by campaign if provided
+            />
           )}
         </DialogContent>
       </Dialog>
