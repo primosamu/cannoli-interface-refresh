@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -243,7 +242,7 @@ const CampanhaForm = ({
       recurringDays: [],
       recurringTime: "",
       maxFrequency: {
-        interval: 1, // Ensuring interval is always provided as a required field
+        interval: 1, // Always provide a default value for interval
         unit: "weeks"
       },
       isActive: false
@@ -274,7 +273,7 @@ const CampanhaForm = ({
         recurringDays: template.trigger?.recurringDays || [],
         recurringTime: template.trigger?.recurringTime || "",
         maxFrequency: template.maxFrequency || {
-          interval: 1,
+          interval: 1, // Ensure interval has a default value
           unit: "weeks"
         },
         campaignStartDate: template.campaignStartDate ? new Date(template.campaignStartDate) : undefined,
@@ -301,7 +300,7 @@ const CampanhaForm = ({
         recurringDays: campaignToEdit.trigger?.recurringDays || [],
         recurringTime: campaignToEdit.trigger?.recurringTime || "",
         maxFrequency: campaignToEdit.maxFrequency || {
-          interval: 1,
+          interval: 1, // Ensure interval has a default value
           unit: "weeks"
         },
         campaignStartDate: campaignToEdit.campaignStartDate ? new Date(campaignToEdit.campaignStartDate) : undefined,
@@ -362,7 +361,7 @@ const CampanhaForm = ({
         recurringDays: [],
         recurringTime: "",
         maxFrequency: {
-          interval: 1,
+          interval: 1, // Ensure interval has a default value
           unit: "weeks"
         },
         campaignStartDate: undefined,
@@ -390,7 +389,7 @@ const CampanhaForm = ({
         recurringDays: [],
         recurringTime: "",
         maxFrequency: {
-          interval: 1,
+          interval: 1, // Ensure interval has a default value
           unit: "weeks"
         },
         isActive: false
