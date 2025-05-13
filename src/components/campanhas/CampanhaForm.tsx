@@ -418,7 +418,21 @@ const CampanhaForm = ({
           }
           return date.toISOString();
         })() : undefined,
+      // Fix for FrequencySettings - ensure interval is always defined
+      maxFrequency: {
+        interval: 1, // Default to 1 if not provided
+        unit: "weeks" // Default to weeks
+      }
     };
+    
+    // If custom maxFrequency is defined, use it but ensure interval is set
+    if (form.getValues("maxFrequency")) {
+      const userMaxFrequency = form.getValues("maxFrequency");
+      newCampaign.maxFrequency = {
+        interval: userMaxFrequency?.interval || 1, // Ensure interval has a default value
+        unit: userMaxFrequency?.unit || "weeks"
+      };
+    }
     
     // Store multi-channel info in campaign object
     (newCampaign as any).multiChannel = {
