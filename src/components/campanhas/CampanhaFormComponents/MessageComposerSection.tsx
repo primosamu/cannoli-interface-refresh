@@ -21,9 +21,10 @@ const MessageComposerSection = () => {
   
   return (
     <div className="space-y-4 border rounded-md p-4">
-      <h3 className="text-lg font-medium flex items-center gap-1">
-        <MessageSquare className="h-4 w-4" /> Composição da Mensagem
-      </h3>
+      <div className="flex items-center gap-1">
+        <MessageSquare className="h-4 w-4" />
+        <h3 className="text-lg font-medium">Composição da Mensagem</h3>
+      </div>
       
       <FormField
         control={form.control}
@@ -39,7 +40,7 @@ const MessageComposerSection = () => {
               />
             </FormControl>
             <FormDescription>
-              Use variáveis como {{nome}}, {{sobrenome}} para personalização.
+              Use variáveis como {"{{nome}}"}, {"{{sobrenome}}"} para personalização.
             </FormDescription>
             <FormMessage />
           </FormItem>

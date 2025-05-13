@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -192,7 +193,7 @@ const formSchema = z.object({
   campaignStartDate: z.date().optional(),
   campaignEndDate: z.date().optional(),
   maxFrequency: z.object({
-    interval: z.number().positive().default(1),  // Always provide default to ensure the property is not optional
+    interval: z.number().positive().default(1),
     unit: z.enum(["days", "weeks", "months"]).default("weeks")
   }),
   isActive: z.boolean().default(false)
@@ -242,7 +243,7 @@ const CampanhaForm = ({
       recurringDays: [],
       recurringTime: "",
       maxFrequency: {
-        interval: 1, // Always provide a default value for interval
+        interval: 1,
         unit: "weeks"
       },
       isActive: false
