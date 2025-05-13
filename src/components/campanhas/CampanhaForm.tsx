@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -23,7 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Campaign, CampaignChannel, CampaignExecutionType, CampaignTriggerType, CustomerSegment, FrequencySettings } from "@/types/campaign";
+import { Campaign, CampaignChannel, CampaignExecutionType, CampaignTriggerType, CustomerSegment } from "@/types/campaign";
 import { format } from "date-fns";
 import {
   BasicInfoSection,
@@ -183,19 +182,6 @@ const formSchema = z.object({
   scheduleTime: z.string().optional(),
   saveAsTemplate: z.boolean().default(false),
   executionType: z.enum(["one-time", "recurring"] as const).default("one-time"),
-  triggerType: z.enum([
-    "immediate", "scheduled", "client_inactivity", 
-    "first_purchase", "repeat_purchase", "birthday", 
-    "time_based", "manual"
-  ] as const).default("immediate"),
-  recurringDays: z.array(z.number()).default([]),
-  recurringTime: z.string().optional(),
-  campaignStartDate: z.date().optional(),
-  campaignEndDate: z.date().optional(),
-  maxFrequency: z.object({
-    interval: z.number().positive().default(1),
-    unit: z.enum(["days", "weeks", "months"]).default("weeks")
-  }),
   isActive: z.boolean().default(false)
 });
 
@@ -239,13 +225,6 @@ const CampanhaForm = ({
       imageUrl: "",
       saveAsTemplate: false,
       executionType: "one-time",
-      triggerType: "immediate",
-      recurringDays: [],
-      recurringTime: "",
-      maxFrequency: {
-        interval: 1, 
-        unit: "weeks"
-      },
       isActive: false
     },
   });
@@ -254,12 +233,6 @@ const CampanhaForm = ({
   useEffect(() => {
     if (predefinedCampaignId && predefinedCampaignTemplates[predefinedCampaignId]) {
       const template = predefinedCampaignTemplates[predefinedCampaignId];
-      
-      // Ensure maxFrequency always has an interval value
-      const maxFrequency: FrequencySettings = template.maxFrequency || {
-        interval: 1,
-        unit: "weeks"
-      };
       
       form.reset({
         name: template.name || "",
@@ -276,21 +249,9 @@ const CampanhaForm = ({
         imageUrl: template.imageUrl || "",
         saveAsTemplate: false,
         executionType: template.executionType || "one-time",
-        triggerType: template.trigger?.type as any || "immediate",
-        recurringDays: template.trigger?.recurringDays || [],
-        recurringTime: template.trigger?.recurringTime || "",
-        maxFrequency: maxFrequency,
-        campaignStartDate: template.campaignStartDate ? new Date(template.campaignStartDate) : undefined,
-        campaignEndDate: template.campaignEndDate ? new Date(template.campaignEndDate) : undefined,
-        isActive: template.isActive || false
+        isActive: false
       });
     } else if (campaignToEdit) {
-      // Ensure maxFrequency always has an interval value
-      const maxFrequency: FrequencySettings = campaignToEdit.maxFrequency || {
-        interval: 1,
-        unit: "weeks"
-      };
-
       form.reset({
         name: campaignToEdit.name,
         description: campaignToEdit.description || "",
@@ -306,12 +267,6 @@ const CampanhaForm = ({
         imageUrl: campaignToEdit.imageUrl || "",
         saveAsTemplate: false,
         executionType: campaignToEdit.executionType || "one-time",
-        triggerType: campaignToEdit.trigger?.type as any || "immediate",
-        recurringDays: campaignToEdit.trigger?.recurringDays || [],
-        recurringTime: campaignToEdit.trigger?.recurringTime || "",
-        maxFrequency: maxFrequency,
-        campaignStartDate: campaignToEdit.campaignStartDate ? new Date(campaignToEdit.campaignStartDate) : undefined,
-        campaignEndDate: campaignToEdit.campaignEndDate ? new Date(campaignToEdit.campaignEndDate) : undefined,
         isActive: campaignToEdit.isActive || false
       });
       
@@ -364,15 +319,6 @@ const CampanhaForm = ({
         imageUrl: "",
         saveAsTemplate: false,
         executionType: "one-time",
-        triggerType: "immediate",
-        recurringDays: [],
-        recurringTime: "",
-        maxFrequency: {
-          interval: 1,
-          unit: "weeks"
-        },
-        campaignStartDate: undefined,
-        campaignEndDate: undefined,
         isActive: false
       });
     } else {
@@ -392,13 +338,6 @@ const CampanhaForm = ({
         imageUrl: "",
         saveAsTemplate: false,
         executionType: "one-time",
-        triggerType: "immediate",
-        recurringDays: [],
-        recurringTime: "",
-        maxFrequency: {
-          interval: 1,
-          unit: "weeks"
-        },
         isActive: false
       });
     }
@@ -469,14 +408,6 @@ const CampanhaForm = ({
       status: data.executionType === "recurring" ? (data.isActive ? "active" : "paused") : (isScheduled ? "scheduled" : "active"),
       createdAt: campaignToEdit?.createdAt || new Date().toISOString(),
       executionType: data.executionType,
-      trigger: data.executionType === "recurring" ? {
-        type: data.triggerType,
-        recurringDays: data.triggerType === "scheduled" ? data.recurringDays : undefined,
-        recurringTime: data.triggerType === "scheduled" ? data.recurringTime : undefined,
-      } : undefined,
-      maxFrequency: data.executionType === "recurring" ? data.maxFrequency : undefined,
-      campaignStartDate: data.campaignStartDate?.toISOString(),
-      campaignEndDate: data.campaignEndDate?.toISOString(),
       isActive: data.isActive,
       scheduledAt: data.executionType === "one-time" && isScheduled && data.scheduleDate ? 
         (() => {

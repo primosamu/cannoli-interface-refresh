@@ -1,181 +1,231 @@
+import { CampaignTriggerType } from "@/types/campaign";
 
-import { Campaign } from "@/types/campaign";
-import { CustomerSegment } from "@/types/campaign";
+interface PredefinedCampaign {
+  id: string;
+  title: string;
+  description: string;
+  badge: string;
+  isActive?: boolean;
+  triggerType: CampaignTriggerType;
+  triggerConfig?: {
+    inactivityDays?: number;
+    purchaseCount?: number;
+  };
+}
 
-// Mock customer segments
-export const customerSegments: CustomerSegment[] = [
-  {
-    id: "seg-1",
-    name: "Todos os clientes",
-    description: "Todos os clientes cadastrados",
-    customerCount: 2500
-  },
-  {
-    id: "seg-2",
-    name: "Clientes VIP",
-    description: "Clientes com alto valor de compra",
-    customerCount: 350
-  },
-  {
-    id: "seg-3",
-    name: "Clientes inativos",
-    description: "Clientes sem compras nos últimos 30 dias",
-    customerCount: 1200
-  },
-  {
-    id: "seg-4",
-    name: "Novos clientes",
-    description: "Clientes que fizeram a primeira compra nos últimos 15 dias",
-    customerCount: 180
-  },
-  {
-    id: "seg-5",
-    name: "Aniversariantes do mês",
-    description: "Clientes que fazem aniversário este mês",
-    customerCount: 75
-  }
-];
+interface PredefinedCampaignGroups {
+  recuperacao: PredefinedCampaign[];
+  fidelizacao: PredefinedCampaign[];
+  padroesConsumo: PredefinedCampaign[];
+  migracaoCanal: PredefinedCampaign[];
+}
 
-// Predefined campaign templates
-export const predefinedCampaignTemplates: Record<string, Partial<Campaign>> = {
-  "sentimos-sua-falta": {
-    name: "Sentimos sua falta",
-    channel: "whatsapp",
-    whatsappType: "marketing",
-    content: "Olá, {{nome}}! Sentimos sua falta no restaurante. Já faz um tempo desde sua última visita e gostaríamos de te ver novamente. Que tal aproveitar um cupom de 15% de desconto na sua próxima refeição? Válido por 7 dias. Esperamos você!",
-    segment: customerSegments[2],
-    incentive: {
-      type: "coupon",
-      couponId: "auto-generated"
+export const predefinedCampaigns: PredefinedCampaignGroups = {
+  recuperacao: [
+    { 
+      id: "sentimos-sua-falta",
+      title: "Sentimos sua falta", 
+      description: "Recupera clientes que não pedem há X dias",
+      badge: "Reativação",
+      isActive: false,
+      triggerType: "client_inactivity",
+      triggerConfig: {
+        inactivityDays: 30
+      }
     },
-    executionType: "one-time"
-  },
-  "volte-para-nos": {
-    name: "Volte para nós",
-    channel: "whatsapp",
-    whatsappType: "marketing",
-    content: "Olá, {{nome}}! Estamos com saudades! Como incentivo para você voltar a nos visitar, preparamos um cupom especial de 20% de desconto em qualquer prato do cardápio. Válido por 5 dias. Esperamos você em breve!",
-    segment: customerSegments[2],
-    incentive: {
-      type: "coupon",
-      couponId: "auto-generated"
+    { 
+      id: "volte-para-nos",
+      title: "Volte para nós", 
+      description: "Enviada 7 dias após a campanha 'Sentimos sua falta'",
+      badge: "Reativação",
+      isActive: false,
+      triggerType: "client_inactivity",
+      triggerConfig: {
+        inactivityDays: 37
+      }
     },
-    executionType: "one-time"
-  },
-  "terca-da-pizza": {
-    name: "Terça da Pizza",
-    channel: "whatsapp",
-    whatsappType: "marketing",
-    content: "Olá, {{nome}}! Hoje é TERÇA DA PIZZA! 🍕 Todas as pizzas com 30% de desconto. Válido apenas hoje para delivery ou retirada. Faça seu pedido pelo WhatsApp ou pelo nosso app. Bom apetite!",
-    segment: customerSegments[0],
-    incentive: {
-      type: "none"
+    { 
+      id: "nos-de-outra-chance",
+      title: "Nos dê outra chance", 
+      description: "Enviada 15 dias após a campanha inicial",
+      badge: "Reativação",
+      isActive: false,
+      triggerType: "client_inactivity",
+      triggerConfig: {
+        inactivityDays: 45
+      }
     },
-    executionType: "one-time"
-  },
-  "quinta-do-hamburguer": {
-    name: "Quinta do Hambúrguer",
-    channel: "whatsapp",
-    whatsappType: "marketing",
-    content: "Olá, {{nome}}! Hoje é QUINTA DO HAMBÚRGUER! 🍔 Todos os hambúrgueres com 25% de desconto. Válido apenas hoje para delivery ou retirada. Faça seu pedido pelo WhatsApp ou pelo nosso app. Bom apetite!",
-    segment: customerSegments[0],
-    incentive: {
-      type: "none"
-    },
-    executionType: "one-time"
-  },
-  "aniversariantes-do-mes": {
-    name: "Aniversariantes do Mês",
-    channel: "whatsapp",
-    whatsappType: "marketing",
-    content: "Olá, {{nome}}! Feliz Aniversário! 🎂 Para celebrar o seu dia especial, estamos te oferecendo uma sobremesa grátis. Visite-nos durante o mês do seu aniversário e aproveite este presente. Basta mostrar este cupom!",
-    segment: customerSegments[4],
-    incentive: {
-      type: "coupon",
-      couponId: "auto-generated"
-    },
-    executionType: "recurring",
-    trigger: {
-      type: "birthday",
-      time: "12:00"
-    },
-    maxFrequency: {
-      interval: 12,
-      unit: "months"
+    { 
+      id: "ultima-chance",
+      title: "Última chance", 
+      description: "Enviada 30 dias após a campanha inicial",
+      badge: "Reativação", 
+      isActive: false,
+      triggerType: "client_inactivity",
+      triggerConfig: {
+        inactivityDays: 60
+      }
     }
-  },
-  "recuperacao-clientes": {
-    name: "Recuperação de Clientes",
-    channel: "whatsapp",
-    whatsappType: "marketing",
-    content: "Olá, {{nome}}! Sentimos sua falta! Já faz algum tempo que não nos visita, e gostaríamos de te ver novamente. Que tal voltar com um desconto especial de 15% no seu próximo pedido? Válido por 7 dias.",
-    segment: customerSegments[2],
-    incentive: {
-      type: "coupon",
-      couponId: "auto-generated"
+  ],
+  fidelizacao: [
+    { 
+      id: "primeiro-pedido",
+      title: "Obrigado pelo primeiro pedido", 
+      description: "Para clientes que realizaram o primeiro pedido",
+      badge: "Primeiros Passos",
+      isActive: false,
+      triggerType: "first_purchase"
     },
-    executionType: "recurring",
-    trigger: {
-      type: "client_inactivity",
-      inactivityDays: 30
+    { 
+      id: "segundo-pedido",
+      title: "Recompensa pelo segundo pedido", 
+      description: "Para clientes que realizaram o segundo pedido",
+      badge: "Engajamento",
+      isActive: false,
+      triggerType: "repeat_purchase",
+      triggerConfig: {
+        purchaseCount: 2
+      }
     },
-    maxFrequency: {
-      interval: 2,
-      unit: "months"
+    { 
+      id: "cliente-vip",
+      title: "Cliente VIP", 
+      description: "Para clientes que realizaram o terceiro pedido",
+      badge: "Fidelidade",
+      isActive: false,
+      triggerType: "repeat_purchase",
+      triggerConfig: {
+        purchaseCount: 3
+      }
+    },
+    { 
+      id: "clube-clientes",
+      title: "Clube de clientes frequentes", 
+      description: "Para clientes que realizaram 5 ou mais pedidos",
+      badge: "VIP",
+      isActive: false,
+      triggerType: "repeat_purchase",
+      triggerConfig: {
+        purchaseCount: 5
+      }
     }
-  }
+  ],
+  padroesConsumo: [
+    { 
+      id: "experimente-jantar",
+      title: "Experimente nosso jantar", 
+      description: "Para clientes que só almoçam",
+      badge: "Cross-selling",
+      isActive: false,
+      triggerType: "manual"
+    },
+    { 
+      id: "experimente-almoco",
+      title: "Experimente nosso almoço", 
+      description: "Para clientes que só jantam",
+      badge: "Cross-selling",
+      isActive: false,
+      triggerType: "manual"
+    },
+    { 
+      id: "menu-fds",
+      title: "Menu especial de final de semana", 
+      description: "Para clientes que só frequentam em dias da semana",
+      badge: "Cross-selling",
+      isActive: false,
+      triggerType: "manual"
+    },
+    { 
+      id: "promo-semana",
+      title: "Promoções dos dias da semana", 
+      description: "Para clientes que só frequentam nos finais de semana",
+      badge: "Cross-selling",
+      isActive: false,
+      triggerType: "manual"
+    },
+    { 
+      id: "visite-restaurante",
+      title: "Visite nosso restaurante", 
+      description: "Para clientes que só pedem no delivery",
+      badge: "Cross-selling",
+      isActive: false,
+      triggerType: "manual"
+    },
+    { 
+      id: "experimente-delivery",
+      title: "Experimente nosso delivery", 
+      description: "Para clientes que só vão à loja física",
+      badge: "Cross-selling",
+      isActive: false,
+      triggerType: "manual"
+    }
+  ],
+  migracaoCanal: [
+    { 
+      id: "mude-app",
+      title: "Mude para nosso app", 
+      description: "Para clientes que só pedem por marketplaces como iFood",
+      badge: "Migração",
+      isActive: false,
+      triggerType: "manual"
+    },
+    { 
+      id: "peca-whatsapp",
+      title: "Peça pelo nosso WhatsApp", 
+      description: "Para clientes de marketplaces",
+      badge: "Migração",
+      isActive: false,
+      triggerType: "manual"
+    }
+  ]
 };
 
-// Recurring campaigns data for automation section
-export const recurringCampaignsData = [
-  {
-    id: "aniversario",
-    title: "Aniversário",
-    description: "Parabenize seus clientes e ofereça um presente especial",
-    badge: "Alta conversão",
-    isActive: true
-  },
-  {
-    id: "recuperacao",
-    title: "Recuperação",
-    description: "Recupere clientes inativos com ofertas especiais",
-    badge: "Recomendado",
-    isActive: true
-  },
-  {
-    id: "novosPratos",
-    title: "Novos Pratos",
-    description: "Anuncie novidades no cardápio para clientes fiéis",
-    badge: "Engajamento",
-    isActive: false
-  },
-  {
-    id: "boasVindas",
-    title: "Boas-vindas",
-    description: "Mensagem automática para novos clientes",
-    badge: "Relacionamento",
-    isActive: true
-  }
-];
-
-// Data for predefined quick campaigns
-export const quickCampaignsData = [
-  {
-    id: "promocao-fim-semana",
-    title: "Promoção de Fim de Semana",
-    description: "Divulgue promoções especiais para o fim de semana",
-    badge: "Alta conversão"
-  },
-  {
-    id: "feriado-especial",
-    title: "Feriado Especial",
-    description: "Divulgue horários e promoções para feriados",
-    badge: "Ocasiões especiais"
-  },
-  {
-    id: "novo-cardapio",
-    title: "Novo Cardápio",
-    description: "Anuncie mudanças e novidades no cardápio",
-    badge: "Novidades"
-  }
-];
+export const restaurantCampaigns = {
+  promocoesSemanais: [
+    { 
+      id: "terca-da-pizza",
+      title: "Terça da Pizza", 
+      description: "Promoção especial de pizzas toda terça-feira",
+      badge: "Recorrente",
+      isActive: false,
+      triggerType: "time_based",
+      triggerConfig: {
+        weekday: 2 // Tuesday (0 = Sunday, 1 = Monday, etc.)
+      }
+    },
+    { 
+      id: "quinta-do-hamburguer",
+      title: "Quinta do Hambúrguer", 
+      description: "Descontos em hambúrgueres selecionados às quintas",
+      badge: "Recorrente",
+      isActive: false,
+      triggerType: "time_based",
+      triggerConfig: {
+        weekday: 4 // Thursday
+      }
+    },
+    { 
+      id: "sabado-feijoada",
+      title: "Sábado da Feijoada", 
+      description: "Feijoada completa com preço especial aos sábados",
+      badge: "Recorrente",
+      isActive: false,
+      triggerType: "time_based",
+      triggerConfig: {
+        weekday: 6 // Saturday
+      }
+    },
+    { 
+      id: "domingo-familia",
+      title: "Domingo em Família", 
+      description: "Descontos para refeições em grupo aos domingos",
+      badge: "Recorrente", 
+      isActive: false,
+      triggerType: "time_based",
+      triggerConfig: {
+        weekday: 0 // Sunday
+      }
+    }
+  ],
+  // ... keep existing code (for other campaign groups)
+};

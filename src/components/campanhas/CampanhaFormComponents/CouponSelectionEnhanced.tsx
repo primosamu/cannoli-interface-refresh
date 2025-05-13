@@ -1,183 +1,162 @@
 
 import React, { useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { Check, Tag, Plus, Ticket } from "lucide-react";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+} from "@/components/ui/form";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
-// Mock coupon data - this will be replaced with API data later
+// Mock coupon data
 const mockCoupons = [
-  {
-    id: "cpn-123",
-    code: "DESCONTO10",
-    discount: 10,
-    discountType: "percentage",
-    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "cpn-456",
-    code: "VOLTA20",
-    discount: 20,
-    discountType: "percentage",
-    expiresAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "cpn-789",
-    code: "FIDELIDADE15",
-    discount: 15,
-    discountType: "percentage",
-    expiresAt: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "cpn-321",
-    code: "DESC5REAIS",
-    discount: 5,
-    discountType: "fixed",
-    expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-  },
+  { id: "cpn-1", code: "DESC15", discount: 15, discountType: "percentage" as const, description: "15% de desconto em todo cardápio" },
+  { id: "cpn-2", code: "DESC20", discount: 20, discountType: "percentage" as const, description: "20% de desconto em pratos selecionados" },
+  { id: "cpn-3", code: "DESC10", discount: 10, discountType: "percentage" as const, description: "10% de desconto em bebidas" },
+  { id: "cpn-4", code: "FRETE", discount: 0, discountType: "percentage" as const, description: "Frete grátis" },
+  { id: "cpn-5", code: "10REAIS", discount: 10, discountType: "fixed" as const, description: "R$10 de desconto em pedidos acima de R$50" },
 ];
 
 const CouponSelectionEnhanced = () => {
   const form = useFormContext();
-  const incentiveType = form.watch("incentiveType");
-  const selectedCouponId = form.watch("couponId");
-  const [showManualDialog, setShowManualDialog] = useState(false);
-  const [manualCouponCode, setManualCouponCode] = useState("");
+  const { toast } = useToast();
   
-  // Format expiry date to dd/mm/yyyy
-  const formatExpiryDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+  const openCreateCoupon = () => {
+    // In a real implementation, this would open a coupon creation form or navigate to coupon creation page
+    toast({
+      title: "Criar novo cupom",
+      description: "Esta funcionalidade será implementada em breve."
+    });
   };
-
-  const handleAddManualCoupon = () => {
-    if (!manualCouponCode) return;
-    
-    // Create custom ID for manual coupon
-    const manualCouponId = `custom-${Date.now()}`;
-    
-    // Set the couponCode separately from couponId
-    form.setValue("couponId", manualCouponId);
-    form.setValue("couponCode", manualCouponCode);
-    
-    setShowManualDialog(false);
-  };
-
-  if (incentiveType !== "coupon") {
-    return null;
-  }
-
+  
   return (
-    <div className="space-y-4 border rounded-md p-4">
-      <h3 className="text-lg font-medium flex items-center gap-1">
-        <Ticket className="h-4 w-4" /> Cupom de Desconto
-      </h3>
-      
-      <FormItem className="space-y-3">
-        <FormLabel>Selecione um cupom</FormLabel>
-        <FormControl>
-          <RadioGroup
-            onValueChange={(value) => {
-              form.setValue("couponId", value);
-              // Clear custom coupon code if selecting a predefined coupon
-              if (value !== "manual-coupon") {
-                form.setValue("couponCode", "");
-              }
-            }}
-            value={selectedCouponId}
-            className="space-y-2"
-          >
-            {mockCoupons.map((coupon) => (
-              <div key={coupon.id} className="relative">
-                <RadioGroupItem
-                  value={coupon.id}
-                  id={coupon.id}
-                  className="peer sr-only"
-                />
-                <label
-                  htmlFor={coupon.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between w-full p-4 cursor-pointer rounded-md border-2 bg-white peer-data-[state=checked]:border-primary transition-all hover:bg-slate-50"
-                >
-                  <div className="flex items-center space-x-2">
-                    <Tag className="h-4 w-4 text-slate-500" />
-                    <span className="font-medium">{coupon.code}</span>
-                  </div>
-                  <div className="mt-2 sm:mt-0 flex items-center justify-between sm:justify-end w-full sm:w-auto space-x-4">
-                    <Badge variant="outline" className="bg-slate-100">
-                      {coupon.discountType === "percentage"
-                        ? `${coupon.discount}% de desconto`
-                        : `R$ ${coupon.discount.toFixed(2)} de desconto`}
-                    </Badge>
-                    <span className="text-xs text-slate-500">
-                      Válido até {formatExpiryDate(coupon.expiresAt)}
-                    </span>
-                  </div>
-                  <div className="absolute right-4 top-4 opacity-0 peer-data-[state=checked]:opacity-100 text-primary">
-                    <Check className="h-4 w-4" />
-                  </div>
-                </label>
-              </div>
-            ))}
-            
-            {/* Manual coupon code option */}
-            <div className="relative">
-              <RadioGroupItem
-                value="manual-coupon"
-                id="manual-coupon"
-                className="peer sr-only"
-              />
-              <label
-                htmlFor="manual-coupon"
-                onClick={() => setShowManualDialog(true)}
-                className="flex flex-row items-center justify-between w-full p-4 cursor-pointer rounded-md border-2 border-dashed bg-white peer-data-[state=checked]:border-primary transition-all hover:bg-slate-50"
+    <div className="space-y-4">
+      <FormField
+        control={form.control}
+        name="incentiveType"
+        render={({ field }) => (
+          <FormItem className="space-y-3">
+            <FormLabel>Tipo de incentivo</FormLabel>
+            <FormControl>
+              <RadioGroup
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                className="flex flex-col space-y-1"
               >
                 <div className="flex items-center space-x-2">
-                  <Plus className="h-4 w-4 text-slate-500" />
-                  <span className="font-medium">Inserir código de cupom manualmente</span>
+                  <RadioGroupItem value="none" id="incentive-none" />
+                  <Label htmlFor="incentive-none">Nenhum</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  {form.watch("couponCode") && (
-                    <Badge variant="outline" className="bg-slate-100">
-                      {form.watch("couponCode")}
-                    </Badge>
-                  )}
+                  <RadioGroupItem value="coupon" id="incentive-coupon" />
+                  <Label htmlFor="incentive-coupon">Cupom de desconto</Label>
                 </div>
-                <div className="absolute right-4 top-4 opacity-0 peer-data-[state=checked]:opacity-100 text-primary">
-                  <Check className="h-4 w-4" />
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="loyalty" id="incentive-loyalty" />
+                  <Label htmlFor="incentive-loyalty">Pontos de fidelidade</Label>
                 </div>
-              </label>
+              </RadioGroup>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
+      {form.watch("incentiveType") === "coupon" && (
+        <div className="border rounded-md p-4 space-y-4">
+          <FormField
+            control={form.control}
+            name="couponId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cupom</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um cupom" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {mockCoupons.map((coupon) => (
+                      <SelectItem key={coupon.id} value={coupon.id}>
+                        <div className="flex flex-col">
+                          <span>{coupon.code} - {coupon.description}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {coupon.discountType === "percentage" 
+                              ? `${coupon.discount}% de desconto` 
+                              : `R$${coupon.discount.toFixed(2)} de desconto`}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Selecione um cupom de desconto para incluir na mensagem
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          {/* Selected coupon details */}
+          {form.watch("couponId") && (
+            <div className="p-3 bg-slate-50 rounded-md">
+              <p className="text-sm font-medium mb-1">Cupom selecionado:</p>
+              {(() => {
+                const selectedCoupon = mockCoupons.find(c => c.id === form.watch("couponId"));
+                return selectedCoupon ? (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">{selectedCoupon.code}</Badge>
+                      <span className="text-xs">{selectedCoupon.description}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedCoupon.discountType === "percentage" 
+                        ? `${selectedCoupon.discount}% de desconto` 
+                        : `R$${selectedCoupon.discount.toFixed(2)} de desconto`}
+                    </p>
+                  </div>
+                ) : null;
+              })()}
             </div>
-          </RadioGroup>
-        </FormControl>
-        <FormMessage />
-
-        {/* Dialog for manual coupon entry */}
-        <Dialog open={showManualDialog} onOpenChange={setShowManualDialog}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Inserir código de cupom</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <FormLabel>Código do cupom</FormLabel>
-                <Input 
-                  placeholder="Ex: DESCONTO10" 
-                  value={manualCouponCode} 
-                  onChange={(e) => setManualCouponCode(e.target.value)}
-                />
-              </div>
-              <Button onClick={handleAddManualCoupon} className="w-full">
-                Adicionar cupom
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </FormItem>
+          )}
+          
+          <div className="pt-2">
+            <Button 
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-1 text-blue-600"
+              onClick={openCreateCoupon}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Criar novo cupom
+            </Button>
+          </div>
+        </div>
+      )}
+      
+      {form.watch("incentiveType") === "loyalty" && (
+        <div className="p-3 border rounded-md bg-blue-50">
+          <p className="text-sm">Serão adicionados <strong>10 pontos</strong> de fidelidade para os clientes que receberem esta mensagem.</p>
+        </div>
+      )}
     </div>
   );
 };
