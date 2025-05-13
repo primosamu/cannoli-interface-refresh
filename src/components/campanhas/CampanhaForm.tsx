@@ -22,7 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Campaign, CampaignChannel, CampaignExecutionType, CampaignTriggerType, CustomerSegment } from "@/types/campaign";
+import { Campaign, CampaignChannel, CampaignExecutionType, CampaignTriggerType, CustomerSegment, FrequencySettings } from "@/types/campaign";
 import { format } from "date-fns";
 import {
   BasicInfoSection,
@@ -156,7 +156,7 @@ let recentCampaigns = [...recentCampaignsMock];
 // Function to get recent campaigns (used by other components)
 export const getRecentCampaigns = () => recentCampaigns;
 
-// Updated form schema
+// Updated form schema to include maxFrequency
 const formSchema = z.object({
   name: z.string().min(3, {
     message: "O nome da campanha deve ter pelo menos 3 caracteres.",
@@ -182,7 +182,16 @@ const formSchema = z.object({
   scheduleTime: z.string().optional(),
   saveAsTemplate: z.boolean().default(false),
   executionType: z.enum(["one-time", "recurring"] as const).default("one-time"),
-  isActive: z.boolean().default(false)
+  isActive: z.boolean().default(false),
+  maxFrequency: z.object({
+    interval: z.number().min(1).default(1),
+    unit: z.enum(["days", "weeks", "months"] as const).default("weeks")
+  }).optional(),
+  triggerType: z.enum(["immediate", "scheduled"] as const).optional(),
+  recurringDays: z.array(z.number()).optional(),
+  recurringTime: z.string().optional(),
+  campaignStartDate: z.date().optional(),
+  campaignEndDate: z.date().optional()
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -418,19 +427,18 @@ const CampanhaForm = ({
           }
           return date.toISOString();
         })() : undefined,
-      // Fix for FrequencySettings - ensure interval is always defined
+      // Set default maxFrequency
       maxFrequency: {
-        interval: 1, // Default to 1 if not provided
-        unit: "weeks" // Default to weeks
+        interval: 1,
+        unit: "weeks"
       }
     };
     
-    // If custom maxFrequency is defined, use it but ensure interval is set
-    if (form.getValues("maxFrequency")) {
-      const userMaxFrequency = form.getValues("maxFrequency");
+    // If custom maxFrequency is defined, use it
+    if (data.maxFrequency) {
       newCampaign.maxFrequency = {
-        interval: userMaxFrequency?.interval || 1, // Ensure interval has a default value
-        unit: userMaxFrequency?.unit || "weeks"
+        interval: data.maxFrequency.interval,
+        unit: data.maxFrequency.unit
       };
     }
     
