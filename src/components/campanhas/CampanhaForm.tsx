@@ -32,6 +32,7 @@ import {
 } from "./CampanhaFormComponents";
 import CouponSelectionEnhanced from "./CampanhaFormComponents/CouponSelectionEnhanced";
 import MultiChannelPreview from "./CampanhaFormComponents/MultiChannelPreview";
+import { Plus } from "lucide-react";
 
 // Mock customer segments
 const customerSegments: CustomerSegment[] = [
@@ -531,6 +532,14 @@ const CampanhaForm = ({
         : "Criar Campanha";
   };
 
+  // Handle creating a new segmentation
+  const handleCreateNewSegmentation = () => {
+    toast({
+      title: "Criar nova segmentação",
+      description: "Esta funcionalidade será implementada em breve.",
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] p-0">
@@ -589,32 +598,46 @@ const CampanhaForm = ({
                       )}
                     />
                     
-                    <FormField
-                      control={form.control}
-                      name="segmentId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Segmento de Clientes</FormLabel>
-                          <FormControl>
-                            <select
-                              className="w-full px-3 py-2 border rounded-md"
-                              {...field}
-                            >
-                              <option value="">Selecione um segmento</option>
-                              {customerSegments.map((segment) => (
-                                <option key={segment.id} value={segment.id}>
-                                  {segment.name} ({segment.customerCount} clientes)
-                                </option>
-                              ))}
-                            </select>
-                          </FormControl>
-                          <FormDescription>
-                            Selecione qual grupo de clientes receberá esta campanha
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <FormLabel>Segmento de Clientes</FormLabel>
+                        <Button
+                          onClick={handleCreateNewSegmentation}
+                          size="sm"
+                          variant="ghost"
+                          className="flex items-center gap-1 text-purple-600 hover:bg-purple-50 hover:text-purple-700"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Criar Nova Segmentação
+                        </Button>
+                      </div>
+                      
+                      <FormField
+                        control={form.control}
+                        name="segmentId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <select
+                                className="w-full px-3 py-2 border rounded-md"
+                                {...field}
+                              >
+                                <option value="">Selecione um segmento</option>
+                                {customerSegments.map((segment) => (
+                                  <option key={segment.id} value={segment.id}>
+                                    {segment.name} ({segment.customerCount} clientes)
+                                  </option>
+                                ))}
+                              </select>
+                            </FormControl>
+                            <FormDescription>
+                              Selecione qual grupo de clientes receberá esta campanha
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     
                     <div className="space-y-2">
                       <FormLabel>Canal de Envio</FormLabel>
