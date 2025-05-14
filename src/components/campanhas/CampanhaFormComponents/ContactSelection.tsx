@@ -1,7 +1,6 @@
-
 import React, { useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { Upload, Users, File, Info, Check } from "lucide-react";
+import { Upload, Users, File, Info, Check, Plus } from "lucide-react";
 import { 
   FormControl, 
   FormField, 
@@ -26,6 +25,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CustomerSegment } from "@/types/campaign";
 import AdvancedSegmentFilter, { AdvancedSegmentFilterProps } from "./AdvancedSegmentFilter";
+import { useToast } from "@/hooks/use-toast";
 
 // Mock customer segments - this will be replaced with API data later
 const customerSegments: CustomerSegment[] = [
@@ -63,6 +63,7 @@ const customerSegments: CustomerSegment[] = [
 
 const ContactSelection = () => {
   const form = useFormContext();
+  const { toast } = useToast();
   const [showContactDialog, setShowContactDialog] = useState(false);
   const [contactMode, setContactMode] = useState<"segment" | "advanced-segment" | "upload" | "manual">("segment");
   const [manualContacts, setManualContacts] = useState("");
@@ -132,6 +133,14 @@ const ContactSelection = () => {
     form.setValue("advancedSegmentFilters", filterGroups);
   };
 
+  const handleCreateNewSegmentation = () => {
+    // Futuramente redirecionará para a tela de segmentação
+    toast({
+      title: "Criar nova segmentação",
+      description: "Esta funcionalidade será implementada em breve.",
+    });
+  };
+
   return (
     <FormItem className="space-y-3">
       <FormLabel>Destinatários</FormLabel>
@@ -179,9 +188,19 @@ const ContactSelection = () => {
             </TabsList>
             
             <TabsContent value="segment" className="space-y-4">
-              <FormDescription>
-                Selecione um segmento de clientes pré-definido
-              </FormDescription>
+              <div className="flex justify-between items-center">
+                <FormDescription>
+                  Selecione um segmento de clientes pré-definido
+                </FormDescription>
+                <Button 
+                  onClick={handleCreateNewSegmentation}
+                  size="sm"
+                  className="flex items-center gap-1 text-purple-600 bg-purple-50 hover:bg-purple-100 hover:text-purple-700"
+                >
+                  <Plus className="h-4 w-4" />
+                  Criar Nova Segmentação
+                </Button>
+              </div>
               
               <div className="space-y-2">
                 <RadioGroup value={selectedSegmentId} onValueChange={(value) => form.setValue("segmentId", value)}>
@@ -214,9 +233,19 @@ const ContactSelection = () => {
             </TabsContent>
             
             <TabsContent value="advanced-segment" className="space-y-4">
-              <FormDescription>
-                Crie um segmento personalizado com critérios avançados
-              </FormDescription>
+              <div className="flex justify-between items-center">
+                <FormDescription>
+                  Crie um segmento personalizado com critérios avançados
+                </FormDescription>
+                <Button 
+                  onClick={handleCreateNewSegmentation}
+                  size="sm"
+                  className="flex items-center gap-1 text-purple-600 bg-purple-50 hover:bg-purple-100 hover:text-purple-700"
+                >
+                  <Plus className="h-4 w-4" />
+                  Criar Nova Segmentação
+                </Button>
+              </div>
               
               <AdvancedSegmentFilter 
                 onChange={handleAdvancedFilterChange} 
