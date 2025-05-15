@@ -5,7 +5,8 @@ export type PromotionType =
   | "order_value_discount" 
   | "coupon" 
   | "loyalty_points"
-  | "combo_discount";
+  | "combo_discount"
+  | "buy_x_get_y";
 
 export type PromotionStatus = "active" | "scheduled" | "expired" | "draft";
 
@@ -18,6 +19,8 @@ export interface PromotionCondition {
   categories?: string[];
   usageLimit?: number;
   usageCount: number;
+  buyQuantity?: number;
+  getQuantity?: number;
 }
 
 export interface PromotionStatistics {
