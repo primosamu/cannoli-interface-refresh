@@ -27,7 +27,9 @@ import {
   Key,
   Target,
   Mail,
-  Phone
+  Phone,
+  Ticket,
+  PercentIcon
 } from "lucide-react";
 
 import { 
@@ -62,6 +64,7 @@ const menuItems = [
   },
   { icon: Users, label: "Clientes", path: "/membros" },
   { icon: Gift, label: "Cupons", path: "/cupons" },
+  { icon: PercentIcon, label: "Promoções", path: "/promocoes" },
   { 
     icon: Target, 
     label: "Campanhas", 
