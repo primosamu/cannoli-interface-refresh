@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -602,11 +601,11 @@ const PromocoesPage = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos os produtos/categorias</SelectItem>
-                  <SelectLabel>Produtos</SelectLabel>
+                  <div className="px-2 py-1.5 text-sm font-semibold">Produtos</div>
                   {mockProducts.map(product => (
                     <SelectItem key={product.id} value={product.id}>{product.name}</SelectItem>
                   ))}
-                  <SelectLabel>Categorias</SelectLabel>
+                  <div className="px-2 py-1.5 text-sm font-semibold">Categorias</div>
                   {mockCategories.map(category => (
                     <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
                   ))}
