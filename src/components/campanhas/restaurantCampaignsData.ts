@@ -26,7 +26,7 @@ export const restaurantCampaigns = {
       badge: "Recorrente" 
     }
   ],
-  // Adding restaurant field to match the structure expected in CampanhasPage.tsx
+  // Mantendo o campo restaurant para compatibilidade com CampanhasPage.tsx
   restaurant: [
     { 
       id: "happy-hour",

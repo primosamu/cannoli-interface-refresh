@@ -18,7 +18,7 @@ interface PredefinedCampaignGroups {
   fidelizacao: PredefinedCampaign[];
   padroesConsumo: PredefinedCampaign[];
   migracaoCanal: PredefinedCampaign[];
-  // Adding the missing campaign groups
+  // Campos necessários para o CampanhasPage.tsx
   oneTime: PredefinedCampaign[];
   contextual: PredefinedCampaign[];
 }
@@ -182,7 +182,7 @@ export const predefinedCampaigns: PredefinedCampaignGroups = {
       triggerType: "manual"
     }
   ],
-  // Add the missing campaign groups needed by CampanhasPage.tsx
+  // Adicionando os grupos de campanha necessários pelo CampanhasPage.tsx
   oneTime: [
     { 
       id: "aniversario-cliente",
@@ -221,7 +221,7 @@ export const predefinedCampaigns: PredefinedCampaignGroups = {
   ]
 };
 
-// Adding the recurring campaigns structure
+// Adicionando as campanhas recorrentes que são necessárias para o CampanhasPage.tsx
 export const recurringCampaigns = {
   automated: [
     { 
@@ -314,7 +314,7 @@ export const restaurantCampaigns = {
       }
     }
   ],
-  // Add the restaurant field needed by CampanhasPage.tsx
+  // Adicionando o campo necessário para o CampanhasPage.tsx
   restaurant: [
     { 
       id: "happy-hour",

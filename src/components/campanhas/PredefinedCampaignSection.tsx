@@ -2,9 +2,15 @@
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BarChart } from "lucide-react";
+import { ArrowRight, MoreVertical } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 interface CampaignItem {
   id: string;
@@ -76,37 +82,41 @@ const PredefinedCampaignSection = ({
               </div>
             </CardContent>
             <CardFooter className="flex justify-between items-center pt-0">
-              <div className="flex gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="gap-1"
-                  onClick={() => onSelectCampaign(campaign.id)}
-                >
-                  {isRecurring ? "Configurar" : "Usar modelo"} <ArrowRight className="h-4 w-4" />
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1"
-                  onClick={(e) => handleShowMetrics(campaign, e)}
-                >
-                  <BarChart className="h-4 w-4" /> Métricas
-                </Button>
-              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="gap-1"
+                onClick={() => onSelectCampaign(campaign.id)}
+              >
+                {isRecurring ? "Configurar" : "Usar modelo"} <ArrowRight className="h-4 w-4" />
+              </Button>
               
-              {onToggleCampaign && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">
-                    {campaign.isActive ? "Ativa" : "Inativa"}
-                  </span>
-                  <Switch
-                    checked={campaign.isActive}
-                    onCheckedChange={(checked) => onToggleCampaign(campaign.id, checked)}
-                  />
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                {onToggleCampaign && (
+                  <div className="flex items-center gap-1 mr-1">
+                    <span className="text-xs text-muted-foreground">
+                      {campaign.isActive ? "Ativa" : "Inativa"}
+                    </span>
+                    <Switch
+                      checked={campaign.isActive}
+                      onCheckedChange={(checked) => onToggleCampaign(campaign.id, checked)}
+                    />
+                  </div>
+                )}
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={(e) => handleShowMetrics(campaign, e)}>
+                      Ver métricas
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </CardFooter>
           </Card>
         ))}

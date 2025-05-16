@@ -12,13 +12,17 @@ import {
   Users, 
   Package,
   PercentIcon, 
-  LineChart, 
-  BarChart,
+  MoreVertical,
   PencilLine,
-  X,
   CreditCard
 } from "lucide-react";
 import { Promotion, PromotionType } from "@/types/promotion";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 // Helper function to get the appropriate icon for a promotion type
 export const getPromotionIcon = (type: PromotionType) => {
@@ -153,20 +157,24 @@ const PromotionCard: React.FC<PromotionCardProps> = ({
               Uso: {promotion.conditions.usageCount} vezes
             </div>
             <div className="flex space-x-2">
-              {/* Updated Analytics Button - more prominent */}
-              <Button 
-                onClick={() => onShowAnalytics(promotion)}
-                className="bg-primary hover:bg-primary/90 text-white"
-                size="sm"
-              >
-                <BarChart className="mr-1 h-4 w-4" /> Métricas
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => toast({
-                title: "Edição em breve",
-                description: "Esta funcionalidade será implementada em breve."
-              })}>
-                <PencilLine className="mr-1 h-4 w-4" /> Editar
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onShowAnalytics(promotion)}>
+                    Ver métricas
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => toast({
+                    title: "Edição em breve",
+                    description: "Esta funcionalidade será implementada em breve."
+                  })}>
+                    Editar promoção
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
