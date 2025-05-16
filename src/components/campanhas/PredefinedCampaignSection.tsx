@@ -1,9 +1,10 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, BarChart } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/hooks/use-toast";
 
 interface CampaignItem {
   id: string;
@@ -11,6 +12,14 @@ interface CampaignItem {
   description: string;
   badge: string;
   isActive?: boolean;
+  metrics?: {
+    usageCount: number;
+    revenue: number;
+    discountTotal: number;
+    averageOrderValue: number;
+    uniqueCustomers?: number;
+    itemsPerOrder?: number;
+  }
 }
 
 interface PredefinedCampaignSectionProps {
@@ -21,6 +30,7 @@ interface PredefinedCampaignSectionProps {
   onSelectCampaign: (id: string) => void;
   onToggleCampaign?: (id: string, isActive: boolean) => void;
   isRecurring?: boolean;
+  onShowMetrics?: (campaign: CampaignItem) => void;
 }
 
 const PredefinedCampaignSection = ({
@@ -31,7 +41,22 @@ const PredefinedCampaignSection = ({
   onSelectCampaign,
   onToggleCampaign,
   isRecurring = false,
+  onShowMetrics,
 }: PredefinedCampaignSectionProps) => {
+  const { toast } = useToast();
+  
+  const handleShowMetrics = (campaign: CampaignItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onShowMetrics) {
+      onShowMetrics(campaign);
+    } else {
+      toast({
+        title: "Métricas indisponíveis",
+        description: "As métricas para esta campanha ainda não estão disponíveis.",
+      });
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center gap-2 mb-4">
@@ -51,14 +76,25 @@ const PredefinedCampaignSection = ({
               </div>
             </CardContent>
             <CardFooter className="flex justify-between items-center pt-0">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="gap-1"
-                onClick={() => onSelectCampaign(campaign.id)}
-              >
-                {isRecurring ? "Configurar" : "Usar modelo"} <ArrowRight className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="gap-1"
+                  onClick={() => onSelectCampaign(campaign.id)}
+                >
+                  {isRecurring ? "Configurar" : "Usar modelo"} <ArrowRight className="h-4 w-4" />
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  onClick={(e) => handleShowMetrics(campaign, e)}
+                >
+                  <BarChart className="h-4 w-4" /> Métricas
+                </Button>
+              </div>
               
               {onToggleCampaign && (
                 <div className="flex items-center gap-2">

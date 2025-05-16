@@ -13,6 +13,7 @@ import {
   Package,
   PercentIcon, 
   LineChart, 
+  BarChart,
   PencilLine,
   X,
   CreditCard
@@ -152,8 +153,13 @@ const PromotionCard: React.FC<PromotionCardProps> = ({
               Uso: {promotion.conditions.usageCount} vezes
             </div>
             <div className="flex space-x-2">
-              <Button variant="outline" size="sm" onClick={() => onShowAnalytics(promotion)}>
-                <LineChart className="mr-1 h-4 w-4" /> Análise
+              {/* Updated Analytics Button - more prominent */}
+              <Button 
+                onClick={() => onShowAnalytics(promotion)}
+                className="bg-primary hover:bg-primary/90 text-white"
+                size="sm"
+              >
+                <BarChart className="mr-1 h-4 w-4" /> Métricas
               </Button>
               <Button variant="outline" size="sm" onClick={() => toast({
                 title: "Edição em breve",
