@@ -1,4 +1,3 @@
-
 import { Promotion } from "@/types/promotion";
 
 // Mockdata for promotions

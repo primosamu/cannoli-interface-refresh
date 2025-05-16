@@ -21,6 +21,7 @@ export interface PromotionCondition {
   usageCount: number;
   buyQuantity?: number;
   getQuantity?: number;
+  excludeProducts?: string[]; // Added missing property
 }
 
 export interface PromotionStatistics {
