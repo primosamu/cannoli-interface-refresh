@@ -26,6 +26,27 @@ export const restaurantCampaigns = {
       badge: "Recorrente" 
     }
   ],
+  // Adding restaurant field to match the structure expected in CampanhasPage.tsx
+  restaurant: [
+    { 
+      id: "happy-hour",
+      title: "Happy Hour", 
+      description: "Promoção de bebidas em horário específico",
+      badge: "Recorrente"
+    },
+    { 
+      id: "cardapio-executivo",
+      title: "Cardápio Executivo", 
+      description: "Promoção especial para o almoço executivo",
+      badge: "Diário"
+    },
+    { 
+      id: "festival-gastronomico",
+      title: "Festival Gastronômico", 
+      description: "Pratos especiais por tempo limitado",
+      badge: "Sazonal"
+    }
+  ],
   delivery: [
     { 
       id: "delivery-rapido",
