@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Filter, Plus, PercentIcon } from "lucide-react";
 import { Promotion } from "@/types/promotion";
 
-// Import all the newly created components
+// Import all the components
 import PromotionCard from "@/components/promocoes/PromotionCard";
 import PromotionFiltersDialog from "@/components/promocoes/PromotionFiltersDialog";
 import PromotionAnalyticsDialog from "@/components/promocoes/PromotionAnalyticsDialog";
@@ -70,6 +70,12 @@ const PromocoesPage = () => {
   };
 
   const handleCreatePromotion = (data: PromotionFormValues) => {
+    // Combine start date and time
+    const startDateTime = new Date(`${data.startDate}T${data.startTime || '00:00'}:00`);
+    
+    // Combine end date and time
+    const endDateTime = new Date(`${data.endDate}T${data.endTime || '23:59'}:59`);
+    
     const newPromotion: Promotion = {
       id: `promo${promotions.length + 1}`,
       name: data.name,
@@ -77,19 +83,20 @@ const PromocoesPage = () => {
       type: data.type as any,
       discountValue: data.discountValue,
       discountType: data.discountType as "percentage" | "fixed",
-      startDate: new Date(data.startDate).toISOString(),
-      endDate: new Date(data.endDate).toISOString(),
+      startDate: startDateTime.toISOString(),
+      endDate: endDateTime.toISOString(),
       status: "active",
       conditions: {
         minOrderValue: data.minOrderValue,
         maxOrderValue: data.maxOrderValue,
         customerGroups: data.customerGroups,
         paymentMethods: data.paymentMethods,
-        products: data.products,
+        products: [...(data.products || []), ...(data.includeProducts || [])],
         categories: data.categories,
         usageCount: 0,
         buyQuantity: data.buyQuantity,
         getQuantity: data.getQuantity,
+        excludeProducts: data.excludeProducts
       },
       isAccumulative: data.isAccumulative,
       priority: 1,
