@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import CampanhaForm from "./CampanhaForm";
 import PredefinedCampaignSection from "./PredefinedCampaignSection";
-import { predefinedCampaigns, restaurantCampaigns } from "./predefinedCampaignsData";
+import { predefinedCampaigns } from "./predefinedCampaignsData";
+import { restaurantCampaigns } from "./restaurantCampaignsData";
 import AudienceSegmentationInfo from "./AudienceSegmentationInfo";
 import RecentCampaignsInfo from "./RecentCampaignsInfo";
 import SavedCampaignsList from "./SavedCampaignsList";
@@ -27,6 +29,7 @@ import CampaignPriority from "./CampaignPriority";
 import { Campaign, CampaignExecutionType } from "@/types/campaign";
 import { getRecentCampaigns } from "./CampanhaForm";
 import { cn } from "@/lib/utils";
+import CampaignMetricsDialog from "./CampaignMetricsDialog";
 
 const CampanhasMensageria = () => {
   const { toast } = useToast();
@@ -38,6 +41,8 @@ const CampanhasMensageria = () => {
   const [customCampaigns, setCustomCampaigns] = useState<Campaign[]>([]);
   const [isReordering, setIsReordering] = useState(false);
   const [draggedCampaignId, setDraggedCampaignId] = useState<string | null>(null);
+  const [showMetricsDialog, setShowMetricsDialog] = useState(false);
+  const [selectedMetricsCampaign, setSelectedMetricsCampaign] = useState(null);
   
   // Deep clone predefined campaign data to allow modifying isActive status
   const [campaigns, setCampaigns] = useState({
@@ -97,6 +102,11 @@ const CampanhasMensageria = () => {
     }
   };
 
+  const handleShowMetrics = (campaign) => {
+    setSelectedMetricsCampaign(campaign);
+    setShowMetricsDialog(true);
+  };
+  
   const handleToggleReordering = () => {
     setIsReordering(!isReordering);
     if (isReordering) {
@@ -234,6 +244,7 @@ const CampanhasMensageria = () => {
             onSelectCampaign={handleOpenPredefinedCampaign}
             onToggleCampaign={handleToggleCampaign}
             isRecurring={true}
+            onShowMetrics={handleShowMetrics}
           />
 
           {/* Campanhas de Fidelização */}
@@ -245,6 +256,7 @@ const CampanhasMensageria = () => {
             onSelectCampaign={handleOpenPredefinedCampaign}
             onToggleCampaign={handleToggleCampaign}
             isRecurring={true}
+            onShowMetrics={handleShowMetrics}
           />
 
           {/* Campanhas por Padrões de Consumo */}
@@ -256,6 +268,7 @@ const CampanhasMensageria = () => {
             onSelectCampaign={handleOpenPredefinedCampaign}
             onToggleCampaign={handleToggleCampaign}
             isRecurring={true}
+            onShowMetrics={handleShowMetrics}
           />
 
           {/* Campanhas de Migração de Canal */}
@@ -267,6 +280,7 @@ const CampanhasMensageria = () => {
             onSelectCampaign={handleOpenPredefinedCampaign}
             onToggleCampaign={handleToggleCampaign}
             isRecurring={true}
+            onShowMetrics={handleShowMetrics}
           />
           
           {/* Promoções Semanais */}
@@ -278,6 +292,7 @@ const CampanhasMensageria = () => {
             onSelectCampaign={handleOpenPredefinedCampaign}
             onToggleCampaign={handleToggleCampaign}
             isRecurring={true}
+            onShowMetrics={handleShowMetrics}
           />
           
           {/* Campanhas Personalizadas */}
@@ -395,6 +410,13 @@ const CampanhasMensageria = () => {
         predefinedCampaignId={selectedPredefinedCampaign}
         selectedChannel={selectedChannel}
         campaignType={campaignType}
+      />
+      
+      {/* Campaign Metrics Dialog */}
+      <CampaignMetricsDialog
+        open={showMetricsDialog}
+        onOpenChange={setShowMetricsDialog}
+        campaign={selectedMetricsCampaign}
       />
     </div>
   );
