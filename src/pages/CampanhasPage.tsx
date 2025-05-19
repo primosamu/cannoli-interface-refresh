@@ -21,7 +21,7 @@ const CampanhasPage = () => {
 
   const handleOpenCustomCampaign = () => {
     setSelectedCampaign(null);
-    setOpenCampaignForm(true);
+    setOpenForm(true); // Changed from setOpenCampaignForm to setOpenForm
   };
 
   return (
@@ -57,10 +57,7 @@ const CampanhasPage = () => {
       <Button 
         className="fixed right-6 bottom-6 shadow-lg z-10"
         size="lg"
-        onClick={() => {
-          setSelectedCampaign(null);
-          setOpenForm(true);
-        }}
+        onClick={handleOpenCustomCampaign} // Using the handler function
       >
         <Plus className="mr-2 h-5 w-5" />
         Nova Campanha
