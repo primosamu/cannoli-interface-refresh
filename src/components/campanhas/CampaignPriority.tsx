@@ -9,26 +9,11 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Save, MoveVertical, PlusCircle, Trash2 } from "lucide-react";
-import {
-  FormControl,
-  FormItem,
-} from "@/components/ui/form";
-import {
-  ToggleGroup,
-  ToggleGroupItem
-} from "@/components/ui/toggle-group";
+import { Save, MoveVertical } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Define campaign types for priority matrix
@@ -41,20 +26,15 @@ const campaignTypes = [
   { id: "custom", name: "Campanhas Personalizadas" }
 ];
 
-type PeriodType = "day" | "week" | "month" | "year";
-
-interface CampaignLimit {
-  id: string;
-  maxCampaigns: number;
-  periodType: PeriodType;
-}
-
 const CampaignPriority = () => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
-  const [campaignLimits, setCampaignLimits] = useState<CampaignLimit[]>([
-    { id: "1", maxCampaigns: 2, periodType: "day" }
-  ]);
+  const [campaignLimits, setCampaignLimits] = useState({
+    day: "",
+    week: "",
+    month: "",
+    year: ""
+  });
   const [priorityOrder, setPriorityOrder] = useState<string[]>(
     campaignTypes.map(c => c.id)
   );
@@ -84,44 +64,11 @@ const CampaignPriority = () => {
     setPriorityOrder(newPriorityOrder);
   };
 
-  const addCampaignLimit = () => {
-    const newLimit: CampaignLimit = {
-      id: Date.now().toString(),
-      maxCampaigns: 5,
-      periodType: "week"
-    };
-    setCampaignLimits([...campaignLimits, newLimit]);
-  };
-
-  const removeCampaignLimit = (id: string) => {
-    if (campaignLimits.length <= 1) {
-      toast({
-        title: "Não é possível remover",
-        description: "É necessário manter ao menos uma configuração de limite.",
-        variant: "destructive"
-      });
-      return;
-    }
-    setCampaignLimits(campaignLimits.filter(limit => limit.id !== id));
-  };
-
-  const updateCampaignLimit = (id: string, field: keyof CampaignLimit, value: any) => {
-    setCampaignLimits(campaignLimits.map(limit => {
-      if (limit.id === id) {
-        return { ...limit, [field]: value };
-      }
-      return limit;
-    }));
-  };
-
-  const getPeriodLabel = (periodType: PeriodType) => {
-    switch (periodType) {
-      case "day": return "por dia";
-      case "week": return "por semana";
-      case "month": return "por mês";
-      case "year": return "por ano";
-      default: return "por dia";
-    }
+  const handleLimitChange = (period: string, value: string) => {
+    setCampaignLimits({
+      ...campaignLimits,
+      [period]: value
+    });
   };
 
   return (
@@ -129,62 +76,60 @@ const CampaignPriority = () => {
       {/* Maximum campaigns per customer */}
       <div className="space-y-2">
         <Label>Limite de campanhas por cliente</Label>
-        <p className="text-sm text-muted-foreground mb-4">
+        <p className="text-sm text-muted-foreground mb-2">
           Define quantas campanhas um mesmo cliente pode receber em diferentes períodos de tempo.
+          Deixe em branco ou com valor 0 caso não queira definir limites para algum período.
         </p>
         
-        {campaignLimits.map((limit) => (
-          <div key={limit.id} className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-4 border p-3 rounded-md">
-            <div className={`flex ${isMobile ? "flex-col w-full" : "flex-row"} items-start ${isMobile ? "gap-2" : "gap-4"}`}>
-              <div className={`flex items-center ${isMobile ? "w-full" : ""} gap-2`}>
-                <Label htmlFor={`maxCampaigns-${limit.id}`} className="whitespace-nowrap">Máximo de</Label>
-                <Input
-                  id={`maxCampaigns-${limit.id}`}
-                  type="number"
-                  min={1}
-                  max={100}
-                  value={limit.maxCampaigns}
-                  onChange={(e) => updateCampaignLimit(limit.id, "maxCampaigns", Number(e.target.value))}
-                  className={isMobile ? "w-full" : "max-w-[80px]"}
-                />
-              </div>
-              <div className={`flex ${isMobile ? "flex-col w-full" : "flex-row items-center"} gap-2`}>
-                <Label htmlFor={`periodType-${limit.id}`} className={`${isMobile ? "" : "whitespace-nowrap"}`}>campanhas</Label>
-                <ToggleGroup 
-                  type="single" 
-                  value={limit.periodType} 
-                  onValueChange={(value) => {
-                    if (value) updateCampaignLimit(limit.id, "periodType", value as PeriodType);
-                  }}
-                  className={`border rounded-md ${isMobile ? "w-full" : ""}`}
-                >
-                  <ToggleGroupItem value="day" className={isMobile ? "flex-1" : ""}>Dia</ToggleGroupItem>
-                  <ToggleGroupItem value="week" className={isMobile ? "flex-1" : ""}>Semana</ToggleGroupItem>
-                  <ToggleGroupItem value="month" className={isMobile ? "flex-1" : ""}>Mês</ToggleGroupItem>
-                  <ToggleGroupItem value="year" className={isMobile ? "flex-1" : ""}>Ano</ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-            </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => removeCampaignLimit(limit.id)}
-              className="ml-auto"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4 border rounded-md">
+          <div className="space-y-2">
+            <Label htmlFor="day-limit">Por dia</Label>
+            <Input
+              id="day-limit"
+              type="number"
+              min={0}
+              placeholder="Sem limite"
+              value={campaignLimits.day}
+              onChange={(e) => handleLimitChange("day", e.target.value)}
+            />
           </div>
-        ))}
-        
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={addCampaignLimit}
-          className="mt-2"
-        >
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Adicionar outro limite de tempo
-        </Button>
+          
+          <div className="space-y-2">
+            <Label htmlFor="week-limit">Por semana</Label>
+            <Input
+              id="week-limit"
+              type="number"
+              min={0}
+              placeholder="Sem limite"
+              value={campaignLimits.week}
+              onChange={(e) => handleLimitChange("week", e.target.value)}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="month-limit">Por mês</Label>
+            <Input
+              id="month-limit"
+              type="number"
+              min={0}
+              placeholder="Sem limite"
+              value={campaignLimits.month}
+              onChange={(e) => handleLimitChange("month", e.target.value)}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="year-limit">Por ano</Label>
+            <Input
+              id="year-limit"
+              type="number"
+              min={0}
+              placeholder="Sem limite"
+              value={campaignLimits.year}
+              onChange={(e) => handleLimitChange("year", e.target.value)}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Campaign priority matrix */}
