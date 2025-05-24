@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form } from "@/components/ui/form";
 import BasicInfoTab from "./NewPromotionDialog/BasicInfoTab";
+import DiscountConfigTab from "./NewPromotionDialog/DiscountConfigTab";
 import ProductsTab from "./NewPromotionDialog/ProductsTab";
 import ClientsTab from "./NewPromotionDialog/ClientsTab";
 import ConditionsTab from "./NewPromotionDialog/ConditionsTab";
@@ -117,15 +118,20 @@ const NewPromotionDialog: React.FC<NewPromotionDialogProps> = ({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onCreatePromotion)} className="space-y-6">
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid grid-cols-4 mb-4">
+              <TabsList className="grid grid-cols-5 mb-4">
                 <TabsTrigger value="basic">Informações Básicas</TabsTrigger>
+                <TabsTrigger value="discount">Configuração</TabsTrigger>
                 <TabsTrigger value="products">Produtos</TabsTrigger>
                 <TabsTrigger value="clients">Clientes</TabsTrigger>
-                <TabsTrigger value="conditions">Condições e Regras</TabsTrigger>
+                <TabsTrigger value="conditions">Condições</TabsTrigger>
               </TabsList>
               
               <TabsContent value="basic">
                 <BasicInfoTab form={form} />
+              </TabsContent>
+              
+              <TabsContent value="discount">
+                <DiscountConfigTab form={form} />
               </TabsContent>
               
               <TabsContent value="products">
