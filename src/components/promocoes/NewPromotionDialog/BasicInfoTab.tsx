@@ -21,6 +21,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
   const [timeSlots, setTimeSlots] = useState<{ start: string; end: string }[]>([
     { start: "08:00", end: "12:00" }
   ]);
+  const [limitationType, setLimitationType] = useState<"none" | "occurrences" | "items">("none");
 
   const daysOfWeek = [
     { value: "monday", label: "Segunda" },
@@ -221,6 +222,83 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
               )}
             />
           </>
+        )}
+      </div>
+
+      {/* Limitações da Promoção */}
+      <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+        <h4 className="text-sm font-medium">Limitações da Promoção</h4>
+        
+        <div>
+          <FormLabel className="text-sm font-medium mb-2 block">Limitar por:</FormLabel>
+          <Select value={limitationType} onValueChange={setLimitationType}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione o tipo de limitação" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Sem limitação</SelectItem>
+              <SelectItem value="occurrences">Por Ocorrências</SelectItem>
+              <SelectItem value="items">Por número de itens</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {limitationType === "occurrences" && (
+          <div className="space-y-3">
+            <FormDescription className="text-xs">
+              Esta opção permite que você escolha quantos cupons poderão ser vendidos que participarão da promoção. 
+              Exemplo: Os 50 primeiros clientes que comprarem o produto em promoção.
+            </FormDescription>
+            <FormField
+              control={form.control}
+              name="usageLimit"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>N° de Ocorrências</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      {...field} 
+                      min={1} 
+                      placeholder="Ex: 50" 
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Quantidade limite de cupons que podem ser utilizados
+                  </FormDescription>
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
+
+        {limitationType === "items" && (
+          <div className="space-y-3">
+            <FormDescription className="text-xs">
+              Esta opção permite que você escolha quantos itens participarão da promoção. 
+              Exemplo: Apenas os 50 primeiros produtos vendidos terão desconto.
+            </FormDescription>
+            <FormField
+              control={form.control}
+              name="itemLimit"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Quantidade de Itens</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      {...field} 
+                      min={1} 
+                      placeholder="Ex: 50" 
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Quantidade limite de itens que podem ter desconto
+                  </FormDescription>
+                </FormItem>
+              )}
+            />
+          </div>
         )}
       </div>
 

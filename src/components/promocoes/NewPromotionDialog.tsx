@@ -42,6 +42,8 @@ const promotionFormSchema = z.object({
   maxOrderValue: z.coerce.number().optional(),
   buyQuantity: z.coerce.number().optional(),
   getQuantity: z.coerce.number().optional(),
+  usageLimit: z.coerce.number().optional(),
+  itemLimit: z.coerce.number().optional(),
 });
 
 export type PromotionFormValues = z.infer<typeof promotionFormSchema>;
