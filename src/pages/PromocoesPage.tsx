@@ -1,19 +1,15 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Filter, Plus, PercentIcon } from "lucide-react";
 import { Promotion } from "@/types/promotion";
 
 // Import all the components
-import PromotionCard from "@/components/promocoes/PromotionCard";
+import PromotionsPageHeader from "@/components/promocoes/PromotionsPageHeader";
+import PromotionsList from "@/components/promocoes/PromotionsList";
 import PromotionFiltersDialog from "@/components/promocoes/PromotionFiltersDialog";
 import PromotionAnalyticsDialog from "@/components/promocoes/PromotionAnalyticsDialog";
 import NewPromotionDialog from "@/components/promocoes/NewPromotionDialog";
-import ActiveFilters from "@/components/promocoes/ActiveFilters";
-import EmptyPromotionState from "@/components/promocoes/EmptyPromotionState";
 import { mockPromotions, mockCustomerGroups, mockProducts, mockCategories, mockPaymentMethods } from "@/components/promocoes/mockData";
 import { PromotionFormValues } from "@/components/promocoes/NewPromotionDialog";
 
@@ -91,12 +87,12 @@ const PromocoesPage = () => {
         maxOrderValue: data.maxOrderValue,
         customerGroups: data.customerGroups,
         paymentMethods: data.paymentMethods,
-        products: data.productCodes || [], // Use productCodes instead of products
-        categories: [], // Set empty array since we're not using categories anymore
+        products: data.productCodes || [],
+        categories: [],
         usageCount: 0,
         buyQuantity: data.buyQuantity,
         getQuantity: data.getQuantity,
-        excludeProducts: [] // Set empty array since we're not using excludeProducts anymore
+        excludeProducts: []
       },
       isAccumulative: data.isAccumulative,
       priority: 1,
@@ -126,24 +122,10 @@ const PromocoesPage = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Promoções</h1>
-          <p className="text-muted-foreground">Gerencie suas promoções e descontos</p>
-        </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => setIsFiltersDialogOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <Filter className="h-4 w-4" /> Filtros
-          </Button>
-          <Button onClick={() => setIsNewPromotionDialogOpen(true)} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" /> Nova Promoção
-          </Button>
-        </div>
-      </div>
+      <PromotionsPageHeader 
+        onFiltersClick={() => setIsFiltersDialogOpen(true)}
+        onNewPromotionClick={() => setIsNewPromotionDialogOpen(true)}
+      />
       
       <Tabs defaultValue="todas" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -155,52 +137,25 @@ const PromocoesPage = () => {
         </TabsList>
         
         <TabsContent value={activeTab} className="mt-4">
-          <Card className="bg-white/50 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Gerenciamento de Promoções</CardTitle>
-              <CardDescription>
-                {activeTab === "todas" && "Todas as promoções disponíveis"}
-                {activeTab === "ativas" && "Promoções atualmente ativas"}
-                {activeTab === "agendadas" && "Promoções agendadas para iniciar futuramente"}
-                {activeTab === "expiradas" && "Promoções que já expiraram"}
-                {activeTab === "rascunhos" && "Rascunhos de promoções não publicadas"}
-                
-                <ActiveFilters 
-                  typeFilter={typeFilter}
-                  productFilter={productFilter}
-                  customerGroupFilter={customerGroupFilter}
-                  paymentMethodFilter={paymentMethodFilter}
-                  setTypeFilter={setTypeFilter}
-                  setProductFilter={setProductFilter}
-                  setCustomerGroupFilter={setCustomerGroupFilter}
-                  setPaymentMethodFilter={setPaymentMethodFilter}
-                  resetFilters={resetFilters}
-                  mockProducts={mockProducts}
-                  mockCategories={mockCategories}
-                  mockCustomerGroups={mockCustomerGroups}
-                  mockPaymentMethods={mockPaymentMethods}
-                />
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {filteredPromotions.length === 0 ? (
-                  <EmptyPromotionState onNewPromotion={() => setIsNewPromotionDialogOpen(true)} />
-                ) : (
-                  filteredPromotions.map(promotion => (
-                    <PromotionCard 
-                      key={promotion.id}
-                      promotion={promotion}
-                      onShowAnalytics={handleShowAnalytics}
-                      mockCustomerGroups={mockCustomerGroups}
-                      mockProducts={mockProducts}
-                      mockPaymentMethods={mockPaymentMethods}
-                    />
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <PromotionsList 
+            promotions={filteredPromotions}
+            activeTab={activeTab}
+            typeFilter={typeFilter}
+            productFilter={productFilter}
+            customerGroupFilter={customerGroupFilter}
+            paymentMethodFilter={paymentMethodFilter}
+            setTypeFilter={setTypeFilter}
+            setProductFilter={setProductFilter}
+            setCustomerGroupFilter={setCustomerGroupFilter}
+            setPaymentMethodFilter={setPaymentMethodFilter}
+            resetFilters={resetFilters}
+            onShowAnalytics={handleShowAnalytics}
+            onNewPromotion={() => setIsNewPromotionDialogOpen(true)}
+            mockProducts={mockProducts}
+            mockCategories={mockCategories}
+            mockCustomerGroups={mockCustomerGroups}
+            mockPaymentMethods={mockPaymentMethods}
+          />
         </TabsContent>
       </Tabs>
       
