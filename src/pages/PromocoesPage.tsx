@@ -91,12 +91,12 @@ const PromocoesPage = () => {
         maxOrderValue: data.maxOrderValue,
         customerGroups: data.customerGroups,
         paymentMethods: data.paymentMethods,
-        products: [...(data.products || []), ...(data.includeProducts || [])],
-        categories: data.categories,
+        products: data.productCodes || [], // Use productCodes instead of products
+        categories: [], // Set empty array since we're not using categories anymore
         usageCount: 0,
         buyQuantity: data.buyQuantity,
         getQuantity: data.getQuantity,
-        excludeProducts: data.excludeProducts
+        excludeProducts: [] // Set empty array since we're not using excludeProducts anymore
       },
       isAccumulative: data.isAccumulative,
       priority: 1,
