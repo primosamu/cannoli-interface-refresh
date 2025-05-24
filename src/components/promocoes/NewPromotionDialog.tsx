@@ -17,7 +17,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form } from "@/components/ui/form";
 import BasicInfoTab from "./NewPromotionDialog/BasicInfoTab";
 import ProductsTab from "./NewPromotionDialog/ProductsTab";
-import ClientsTab from "./NewPromotionDialog/ClientsTab";
 import ConditionsTab from "./NewPromotionDialog/ConditionsTab";
 import { Promotion, PromotionType } from "@/types/promotion";
 
@@ -86,12 +85,20 @@ const NewPromotionDialog: React.FC<NewPromotionDialogProps> = ({
     }
   });
 
-  const handleClientSelection = (selection: {
-    type: 'segment' | 'manual';
-    data: string[] | string;
+  const handleProductClientSelection = (selection: {
+    products?: {
+      type: 'codes' | 'segments';
+      condition: 'equal' | 'different';
+      data: string[];
+    };
+    clients?: {
+      type: 'codes' | 'segments';
+      condition: 'equal' | 'different';
+      data: string[];
+    };
   }) => {
-    console.log("Seleção de clientes para promoção:", selection);
-    // Aqui você pode implementar a lógica para usar a seleção de clientes
+    console.log("Seleção de produtos e clientes para promoção:", selection);
+    // Aqui você pode implementar a lógica para usar a seleção
   };
 
   return (
@@ -107,10 +114,9 @@ const NewPromotionDialog: React.FC<NewPromotionDialogProps> = ({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onCreatePromotion)} className="space-y-6">
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid grid-cols-4 mb-4">
+              <TabsList className="grid grid-cols-3 mb-4">
                 <TabsTrigger value="basic">Informações Básicas</TabsTrigger>
-                <TabsTrigger value="products">Produtos</TabsTrigger>
-                <TabsTrigger value="clients">Clientes</TabsTrigger>
+                <TabsTrigger value="products">Produtos e Clientes</TabsTrigger>
                 <TabsTrigger value="conditions">Condições e Regras</TabsTrigger>
               </TabsList>
               
@@ -119,11 +125,7 @@ const NewPromotionDialog: React.FC<NewPromotionDialogProps> = ({
               </TabsContent>
               
               <TabsContent value="products">
-                <ProductsTab />
-              </TabsContent>
-              
-              <TabsContent value="clients">
-                <ClientsTab onSelectionChange={handleClientSelection} />
+                <ProductsTab onSelectionChange={handleProductClientSelection} />
               </TabsContent>
               
               <TabsContent value="conditions">
