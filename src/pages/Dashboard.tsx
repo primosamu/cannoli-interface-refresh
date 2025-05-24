@@ -161,8 +161,8 @@ const Dashboard = () => {
               <div key={promotion.id} className="flex items-center justify-between border-b pb-2">
                 <div className="flex items-center gap-2">
                   {promotion.type === 'product_discount' && <Tag className="h-4 w-4 text-primary" />}
-                  {promotion.type === 'time_limited' && <Calendar className="h-4 w-4 text-primary" />}
-                  {promotion.type === 'order_value_discount' && <DollarSign className="h-4 w-4 text-primary" />}
+                  {promotion.type === 'happy_hour' && <Calendar className="h-4 w-4 text-primary" />}
+                  {promotion.type === 'minimum_order' && <DollarSign className="h-4 w-4 text-primary" />}
                   {promotion.type === 'buy_x_get_y' && <PercentIcon className="h-4 w-4 text-primary" />}
                   <div>
                     <p className="font-medium">{promotion.name}</p>
