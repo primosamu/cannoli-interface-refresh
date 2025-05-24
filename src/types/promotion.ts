@@ -21,7 +21,9 @@ export interface PromotionCondition {
   usageCount: number;
   buyQuantity?: number;
   getQuantity?: number;
-  excludeProducts?: string[]; // Added missing property
+  excludeProducts?: string[];
+  scheduledDays?: string[]; // dias da semana para horários escalonados
+  timeSlots?: Array<{ start: string; end: string }>; // horários específicos
 }
 
 export interface PromotionStatistics {
@@ -36,6 +38,7 @@ export interface PromotionStatistics {
 export interface Promotion {
   id: string;
   name: string;
+  code: string; // novo campo código
   description: string;
   type: PromotionType;
   discountValue: number;
@@ -43,6 +46,7 @@ export interface Promotion {
   startDate: string;
   endDate: string;
   status: PromotionStatus;
+  isActive: boolean; // novo campo para ativar/desativar
   conditions: PromotionCondition;
   isAccumulative: boolean;
   priority: number;
@@ -51,7 +55,6 @@ export interface Promotion {
   updatedAt?: string;
   createdBy?: string;
   targetCustomers?: string[];
-  code?: string;
   categoryRestrictions?: string[];
   maxUsagesPerCustomer?: number;
 }

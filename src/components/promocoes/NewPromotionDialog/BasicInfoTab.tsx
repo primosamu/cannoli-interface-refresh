@@ -1,9 +1,14 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { Input } from "@/components/ui/input";
-import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { PromotionFormValues } from "../NewPromotionDialog";
 
 interface BasicInfoTabProps {
@@ -11,17 +16,82 @@ interface BasicInfoTabProps {
 }
 
 const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
+  const [useScheduledHours, setUseScheduledHours] = useState(false);
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [timeSlots, setTimeSlots] = useState<{ start: string; end: string }[]>([
+    { start: "08:00", end: "12:00" }
+  ]);
+
+  const daysOfWeek = [
+    { value: "monday", label: "Segunda" },
+    { value: "tuesday", label: "Terça" },
+    { value: "wednesday", label: "Quarta" },
+    { value: "thursday", label: "Quinta" },
+    { value: "friday", label: "Sexta" },
+    { value: "saturday", label: "Sábado" },
+    { value: "sunday", label: "Domingo" }
+  ];
+
+  const handleDayToggle = (day: string) => {
+    setSelectedDays(prev => 
+      prev.includes(day) 
+        ? prev.filter(d => d !== day)
+        : [...prev, day]
+    );
+  };
+
+  const addTimeSlot = () => {
+    setTimeSlots(prev => [...prev, { start: "08:00", end: "12:00" }]);
+  };
+
+  const removeTimeSlot = (index: number) => {
+    setTimeSlots(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const updateTimeSlot = (index: number, field: 'start' | 'end', value: string) => {
+    setTimeSlots(prev => prev.map((slot, i) => 
+      i === index ? { ...slot, [field]: value } : slot
+    ));
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-6">
+      {/* Status da Promoção */}
+      <div className="flex items-center space-x-2">
+        <FormField
+          control={form.control}
+          name="isActive"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>
+                  Promoção Ativa
+                </FormLabel>
+                <FormDescription>
+                  Ative ou desative esta promoção
+                </FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
+      </div>
+
+      {/* Informações Básicas */}
+      <div className="grid grid-cols-1 gap-4">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nome</FormLabel>
+              <FormLabel>Nome da Promoção</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Nome da promoção" />
+                <Input {...field} placeholder="Ex: Black Friday 2024" />
               </FormControl>
             </FormItem>
           )}
@@ -29,10 +99,43 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
         
         <FormField
           control={form.control}
+          name="code"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Código da Promoção</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Ex: BLACKFRIDAY2024" />
+              </FormControl>
+              <FormDescription>
+                Código único para identificar a promoção no sistema
+              </FormDescription>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Descrição</FormLabel>
+              <FormControl>
+                <Textarea 
+                  {...field} 
+                  placeholder="Descrição detalhada da promoção"
+                  className="min-h-[80px]"
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tipo</FormLabel>
+              <FormLabel>Tipo de Promoção</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -54,19 +157,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
         />
       </div>
 
-      <FormField
-        control={form.control}
-        name="description"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Descrição</FormLabel>
-            <FormControl>
-              <Input {...field} placeholder="Descrição breve da promoção" />
-            </FormControl>
-          </FormItem>
-        )}
-      />
-
+      {/* Configuração de Desconto */}
       <div className="grid grid-cols-2 gap-4">
         {form.watch("type") === "buy_x_get_y" ? (
           <>
@@ -133,63 +224,142 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <FormLabel>Data e Hora de Início</FormLabel>
-          <div className="grid grid-cols-2 gap-2 mt-1">
-            <FormField
-              control={form.control}
-              name="startDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="startTime"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input type="time" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+      {/* Período da Promoção */}
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <FormLabel>Data e Hora de Início</FormLabel>
+            <div className="grid grid-cols-2 gap-2 mt-1">
+              <FormField
+                control={form.control}
+                name="startDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="startTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input type="time" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+          <div>
+            <FormLabel>Data e Hora de Término</FormLabel>
+            <div className="grid grid-cols-2 gap-2 mt-1">
+              <FormField
+                control={form.control}
+                name="endDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="endTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input type="time" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
         </div>
-        <div>
-          <FormLabel>Data e Hora de Término</FormLabel>
-          <div className="grid grid-cols-2 gap-2 mt-1">
-            <FormField
-              control={form.control}
-              name="endDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
+
+        {/* Horários Escalonados */}
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="scheduled-hours"
+              checked={useScheduledHours}
+              onCheckedChange={setUseScheduledHours}
             />
-            <FormField
-              control={form.control}
-              name="endTime"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input type="time" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            <label
+              htmlFor="scheduled-hours"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Configurar horários específicos
+            </label>
           </div>
+
+          {useScheduledHours && (
+            <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+              <div>
+                <FormLabel className="text-sm font-medium">Dias da Semana</FormLabel>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {daysOfWeek.map((day) => (
+                    <Badge
+                      key={day.value}
+                      variant={selectedDays.includes(day.value) ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => handleDayToggle(day.value)}
+                    >
+                      {day.label}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <FormLabel className="text-sm font-medium">Horários</FormLabel>
+                  <Button type="button" variant="outline" size="sm" onClick={addTimeSlot}>
+                    + Adicionar Horário
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {timeSlots.map((slot, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Input
+                        type="time"
+                        value={slot.start}
+                        onChange={(e) => updateTimeSlot(index, 'start', e.target.value)}
+                        className="w-24"
+                      />
+                      <span className="text-sm text-muted-foreground">até</span>
+                      <Input
+                        type="time"
+                        value={slot.end}
+                        onChange={(e) => updateTimeSlot(index, 'end', e.target.value)}
+                        className="w-24"
+                      />
+                      {timeSlots.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeTimeSlot(index)}
+                        >
+                          Remover
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* Condições Especiais */}
       {form.watch("type") === "order_value_discount" && (
         <div className="grid grid-cols-2 gap-4">
           <FormField

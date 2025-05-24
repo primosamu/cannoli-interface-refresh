@@ -75,13 +75,15 @@ const PromocoesPage = () => {
     const newPromotion: Promotion = {
       id: `promo${promotions.length + 1}`,
       name: data.name,
+      code: data.code, // novo campo código
       description: data.description || "",
       type: data.type as any,
       discountValue: data.discountValue,
       discountType: data.discountType as "percentage" | "fixed",
       startDate: startDateTime.toISOString(),
       endDate: endDateTime.toISOString(),
-      status: "active",
+      status: data.isActive ? "active" : "draft", // status baseado no campo isActive
+      isActive: data.isActive, // novo campo
       conditions: {
         minOrderValue: data.minOrderValue,
         maxOrderValue: data.maxOrderValue,

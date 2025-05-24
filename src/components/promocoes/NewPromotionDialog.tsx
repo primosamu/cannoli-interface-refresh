@@ -21,9 +21,10 @@ import ClientsTab from "./NewPromotionDialog/ClientsTab";
 import ConditionsTab from "./NewPromotionDialog/ConditionsTab";
 import { Promotion, PromotionType } from "@/types/promotion";
 
-// Form schema for new promotion - simplified
+// Form schema for new promotion - updated with new fields
 const promotionFormSchema = z.object({
   name: z.string().min(3, { message: "Nome deve ter pelo menos 3 caracteres" }),
+  code: z.string().min(3, { message: "Código deve ter pelo menos 3 caracteres" }),
   description: z.string().optional(),
   type: z.string(),
   discountValue: z.coerce.number().min(0),
@@ -32,6 +33,7 @@ const promotionFormSchema = z.object({
   startTime: z.string().default("00:00"),
   endDate: z.string(),
   endTime: z.string().default("23:59"),
+  isActive: z.boolean().default(true),
   isAccumulative: z.boolean().default(false),
   customerGroups: z.array(z.string()).optional(),
   productCodes: z.array(z.string()).default([]),
@@ -67,6 +69,7 @@ const NewPromotionDialog: React.FC<NewPromotionDialogProps> = ({
     resolver: zodResolver(promotionFormSchema),
     defaultValues: {
       name: "",
+      code: "",
       description: "",
       type: "product_discount",
       discountValue: 0,
@@ -75,6 +78,7 @@ const NewPromotionDialog: React.FC<NewPromotionDialogProps> = ({
       startTime: "00:00",
       endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       endTime: "23:59",
+      isActive: true,
       isAccumulative: false,
       customerGroups: [],
       productCodes: [],
@@ -92,7 +96,7 @@ const NewPromotionDialog: React.FC<NewPromotionDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Nova Promoção</DialogTitle>
           <DialogDescription>
