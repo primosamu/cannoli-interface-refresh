@@ -1,14 +1,14 @@
-
-
 export type PromotionType = 
   | "product_discount"     // Desconto em produtos específicos
   | "combo_promotion"      // Combo de produtos
   | "happy_hour"          // Promoções por horário
+  | "time_limited"        // Alias for happy_hour (legacy support)
   | "loyalty_reward"      // Fidelidade (cashback, pontos)
   | "coupon_discount"     // Cupom de desconto
   | "buy_x_get_y"         // Compre X Ganhe Y
   | "free_delivery"       // Frete grátis
-  | "minimum_order";      // Desconto por valor mínimo
+  | "minimum_order"       // Desconto por valor mínimo
+  | "order_value_discount"; // Alias for minimum_order (legacy support)
 
 export type PromotionCategory = "desconto" | "combo" | "fidelidade" | "horario" | "cupom";
 
