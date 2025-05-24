@@ -34,6 +34,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import ProductCodeSelector from "./ProductCodeSelector";
+import PromotionClientSelector from "./PromotionClientSelector";
 import { Promotion, PromotionType } from "@/types/promotion";
 
 // Form schema for new promotion - simplified
@@ -97,6 +98,14 @@ const NewPromotionDialog: React.FC<NewPromotionDialogProps> = ({
     }
   });
 
+  const handleClientSelection = (selection: {
+    type: 'segment' | 'manual';
+    data: string[] | string;
+  }) => {
+    console.log("Seleção de clientes para promoção:", selection);
+    // Aqui você pode implementar a lógica para usar a seleção de clientes
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
@@ -110,9 +119,10 @@ const NewPromotionDialog: React.FC<NewPromotionDialogProps> = ({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onCreatePromotion)} className="space-y-6">
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid grid-cols-3 mb-4">
+              <TabsList className="grid grid-cols-4 mb-4">
                 <TabsTrigger value="basic">Informações Básicas</TabsTrigger>
                 <TabsTrigger value="products">Produtos</TabsTrigger>
+                <TabsTrigger value="clients">Clientes</TabsTrigger>
                 <TabsTrigger value="conditions">Condições e Regras</TabsTrigger>
               </TabsList>
               
@@ -327,6 +337,10 @@ const NewPromotionDialog: React.FC<NewPromotionDialogProps> = ({
               
               <TabsContent value="products" className="space-y-4">
                 <ProductCodeSelector />
+              </TabsContent>
+              
+              <TabsContent value="clients" className="space-y-4">
+                <PromotionClientSelector onSelectionChange={handleClientSelection} />
               </TabsContent>
               
               <TabsContent value="conditions" className="space-y-4">
