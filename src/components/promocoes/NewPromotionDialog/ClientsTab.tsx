@@ -1,18 +1,257 @@
 
-import React from "react";
-import PromotionClientSelector from "../PromotionClientSelector";
+import React, { useState } from "react";
+import { Info, Upload, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+
+// Mock client segments
+const clientSegments = [
+  { id: "all", name: "TODOS" },
+  { id: "vip", name: "Clientes VIP" },
+  { id: "novos", name: "Clientes Novos" },
+  { id: "recorrentes", name: "Clientes Recorrentes" },
+  { id: "inativos", name: "Clientes Inativos" },
+  { id: "aniversariantes", name: "Aniversariantes" },
+];
 
 interface ClientsTabProps {
   onSelectionChange?: (selection: {
-    type: 'segment' | 'manual';
-    data: string[] | string;
+    type: 'codes' | 'segments';
+    condition: 'equal' | 'different';
+    data: string[];
   }) => void;
 }
 
 const ClientsTab: React.FC<ClientsTabProps> = ({ onSelectionChange }) => {
+  const [activeTab, setActiveTab] = useState("codes");
+  const [codeCondition, setCodeCondition] = useState<"equal" | "different">("equal");
+  const [segmentCondition, setSegmentCondition] = useState<"equal" | "different">("equal");
+  const [manualCodes, setManualCodes] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedSegments, setSelectedSegments] = useState<string[]>([]);
+
+  const notifyChange = () => {
+    const codes = manualCodes.split('\n').map(line => line.trim()).filter(line => line);
+    
+    onSelectionChange?.({
+      type: activeTab === "codes" ? "codes" : "segments",
+      condition: activeTab === "codes" ? codeCondition : segmentCondition,
+      data: activeTab === "codes" ? codes : selectedSegments
+    });
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      setSelectedFile(files[0]);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        setManualCodes(content);
+        notifyChange();
+      };
+      reader.readAsText(files[0]);
+    }
+  };
+
+  const handleManualCodesChange = (value: string) => {
+    setManualCodes(value);
+    notifyChange();
+  };
+
+  const handleSegmentToggle = (segmentId: string) => {
+    let newSelectedSegments: string[];
+    
+    if (segmentId === "all") {
+      newSelectedSegments = selectedSegments.includes("all") ? [] : ["all"];
+    } else {
+      const withoutAll = selectedSegments.filter(id => id !== "all");
+      if (withoutAll.includes(segmentId)) {
+        newSelectedSegments = withoutAll.filter(id => id !== segmentId);
+      } else {
+        newSelectedSegments = [...withoutAll, segmentId];
+      }
+    }
+    
+    setSelectedSegments(newSelectedSegments);
+    notifyChange();
+  };
+
+  const clearCodes = () => {
+    setManualCodes("");
+    setSelectedFile(null);
+    notifyChange();
+  };
+
+  const clearSegments = () => {
+    setSelectedSegments([]);
+    notifyChange();
+  };
+
+  const manualCodesList = manualCodes.split('\n').map(line => line.trim()).filter(line => line);
+
   return (
     <div className="space-y-4">
-      <PromotionClientSelector onSelectionChange={onSelectionChange} />
+      <div className="bg-blue-50 p-3 rounded-md flex items-start gap-2">
+        <Info className="h-4 w-4 text-blue-500 mt-0.5" />
+        <span className="text-sm text-blue-700">
+          Configure quais clientes serão incluídos ou excluídos da promoção.
+        </span>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-2 mb-4">
+          <TabsTrigger value="codes">CPF/Telefone</TabsTrigger>
+          <TabsTrigger value="segments">Segmentos de Clientes</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="codes" className="space-y-4">
+          <div>
+            <Label className="text-sm font-medium mb-2 block">Condição</Label>
+            <Select value={codeCondition} onValueChange={(value: "equal" | "different") => setCodeCondition(value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="equal">IGUAL - Aplicar apenas nos CPF/telefones informados</SelectItem>
+                <SelectItem value="different">DIFERENTE DE - Aplicar em todos exceto os CPF/telefones informados</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="border-2 border-dashed rounded-md p-4">
+            <div className="text-center">
+              <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground mb-2">
+                Arraste um arquivo CSV/TXT ou clique para fazer upload
+              </p>
+              <Button variant="outline" size="sm" className="relative">
+                Selecionar arquivo
+                <Input
+                  type="file"
+                  accept=".csv,.txt"
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  onChange={handleFileUpload}
+                />
+              </Button>
+              {selectedFile && (
+                <p className="text-sm text-green-600 mt-2">
+                  Arquivo: {selectedFile.name}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-sm font-medium">Ou digite os CPF/telefones manualmente:</Label>
+            <Textarea
+              placeholder="12345678901
+11999999999
+98765432109"
+              value={manualCodes}
+              onChange={(e) => handleManualCodesChange(e.target.value)}
+              className="mt-1 h-32 font-mono text-sm"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Um CPF ou telefone por linha
+            </p>
+          </div>
+
+          {manualCodesList.length > 0 && (
+            <div className="border rounded-md p-3">
+              <div className="flex justify-between items-center mb-2">
+                <Label className="text-sm font-medium">
+                  CPF/Telefones {codeCondition === "equal" ? "incluídos" : "excluídos"} ({manualCodesList.length})
+                </Label>
+                <Button variant="ghost" size="sm" onClick={clearCodes}>
+                  <X className="h-4 w-4 mr-1" />
+                  Limpar
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                {manualCodesList.map((code, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
+                    {code}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="segments" className="space-y-4">
+          <div>
+            <Label className="text-sm font-medium mb-2 block">Condição</Label>
+            <Select value={segmentCondition} onValueChange={(value: "equal" | "different") => setSegmentCondition(value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="equal">IGUAL - Aplicar apenas nos segmentos selecionados</SelectItem>
+                <SelectItem value="different">DIFERENTE DE - Aplicar em todos exceto os segmentos selecionados</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label className="text-sm font-medium mb-3 block">Selecione os segmentos:</Label>
+            <div className="space-y-2">
+              {clientSegments.map((segment) => (
+                <Card
+                  key={segment.id}
+                  className={`cursor-pointer transition-all hover:bg-slate-50 ${
+                    selectedSegments.includes(segment.id) ? "border-primary bg-primary/5" : ""
+                  }`}
+                  onClick={() => handleSegmentToggle(segment.id)}
+                >
+                  <CardContent className="p-3">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        checked={selectedSegments.includes(segment.id)}
+                        onChange={() => {}}
+                      />
+                      <Label className={`cursor-pointer ${segment.id === "all" ? "font-semibold" : ""}`}>
+                        {segment.name}
+                      </Label>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {selectedSegments.length > 0 && (
+            <div className="border rounded-md p-3">
+              <div className="flex justify-between items-center mb-2">
+                <Label className="text-sm font-medium">
+                  Segmentos {segmentCondition === "equal" ? "incluídos" : "excluídos"} ({selectedSegments.length})
+                </Label>
+                <Button variant="ghost" size="sm" onClick={clearSegments}>
+                  <X className="h-4 w-4 mr-1" />
+                  Limpar
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {selectedSegments.map((segmentId) => {
+                  const segment = clientSegments.find(s => s.id === segmentId);
+                  return (
+                    <Badge key={segmentId} variant="secondary" className="text-xs">
+                      {segment?.name}
+                    </Badge>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
