@@ -1,3 +1,4 @@
+
 import { Promotion } from "@/types/promotion";
 
 // Mockdata for promotions
@@ -5,6 +6,7 @@ export const mockPromotions: Promotion[] = [
   {
     id: "promo1",
     name: "Desconto de Verão",
+    code: "VERAO15",
     description: "Aproveite 15% de desconto em todos os produtos da categoria Verão",
     type: "product_discount", 
     discountType: "percentage",
@@ -12,6 +14,7 @@ export const mockPromotions: Promotion[] = [
     startDate: new Date(2025, 5, 1).toISOString(),
     endDate: new Date(2025, 8, 31).toISOString(),
     status: "active",
+    isActive: true,
     conditions: {
       customerGroups: ["group1", "group2"],
       categories: ["cat3"],
@@ -30,6 +33,7 @@ export const mockPromotions: Promotion[] = [
   {
     id: "promo2",
     name: "Compre 1 Ganhe 1",
+    code: "COMPRE1GANHE1",
     description: "Compre um hamburguer e ganhe outro grátis",
     type: "buy_x_get_y",
     discountType: "percentage",
@@ -37,6 +41,7 @@ export const mockPromotions: Promotion[] = [
     startDate: new Date(2025, 4, 15).toISOString(),
     endDate: new Date(2025, 4, 30).toISOString(),
     status: "active",
+    isActive: true,
     conditions: {
       customerGroups: ["group1"],
       products: ["prod1", "prod2"],
@@ -57,6 +62,7 @@ export const mockPromotions: Promotion[] = [
   {
     id: "promo3",
     name: "Frete Grátis",
+    code: "FRETEGRATIS",
     description: "Frete grátis para compras acima de R$100",
     type: "order_value_discount",
     discountType: "fixed",
@@ -64,6 +70,7 @@ export const mockPromotions: Promotion[] = [
     startDate: new Date(2025, 0, 1).toISOString(),
     endDate: new Date(2025, 11, 31).toISOString(),
     status: "active",
+    isActive: true,
     conditions: {
       minOrderValue: 100,
       paymentMethods: ["credit_card", "pix", "cash"],
@@ -81,6 +88,7 @@ export const mockPromotions: Promotion[] = [
   {
     id: "promo4",
     name: "Desconto de Aniversário",
+    code: "ANIVERSARIO20",
     description: "20% de desconto para clientes aniversariantes",
     type: "time_limited",
     discountType: "percentage",
@@ -88,6 +96,7 @@ export const mockPromotions: Promotion[] = [
     startDate: new Date(2025, 0, 1).toISOString(),
     endDate: new Date(2025, 11, 31).toISOString(),
     status: "expired",
+    isActive: false,
     conditions: {
       customerGroups: ["birthdate_clients"],
       usageCount: 0,
@@ -104,6 +113,7 @@ export const mockPromotions: Promotion[] = [
   {
     id: "promo5",
     name: "Black Friday",
+    code: "BLACKFRIDAY70",
     description: "Até 70% de desconto em produtos selecionados",
     type: "product_discount",
     discountType: "percentage",
@@ -111,6 +121,7 @@ export const mockPromotions: Promotion[] = [
     startDate: new Date(2025, 10, 25).toISOString(),
     endDate: new Date(2025, 10, 30).toISOString(),
     status: "scheduled",
+    isActive: false,
     conditions: {
       products: ["prod5", "prod12", "prod18"],
       usageCount: 0,
@@ -127,6 +138,7 @@ export const mockPromotions: Promotion[] = [
   {
     id: "promo6",
     name: "Teste de Cupom",
+    code: "TESTECUPOM",
     description: "Cupom de desconto para testes",
     type: "coupon",
     discountType: "fixed",
@@ -134,6 +146,7 @@ export const mockPromotions: Promotion[] = [
     startDate: new Date(2025, 3, 15).toISOString(),
     endDate: new Date(2025, 5, 15).toISOString(),
     status: "draft",
+    isActive: false,
     conditions: {
       usageCount: 0,
     },
