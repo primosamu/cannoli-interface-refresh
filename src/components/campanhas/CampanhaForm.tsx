@@ -253,7 +253,6 @@ const CampanhaForm = ({
       segmentId: "",
       content: "",
       incentiveType: "none",
-      couponId: undefined,
       couponCode: "",
       imageUrl: "",
       saveAsTemplate: false,
@@ -277,7 +276,6 @@ const CampanhaForm = ({
         segmentId: template.segment?.id || "",
         content: template.content || "",
         incentiveType: template.incentive?.type || "none",
-        couponId: template.incentive?.couponId || undefined,
         couponCode: "",
         imageUrl: template.imageUrl || "",
         saveAsTemplate: false,
@@ -295,7 +293,6 @@ const CampanhaForm = ({
         segmentId: campaignToEdit.segment.id,
         content: campaignToEdit.content,
         incentiveType: campaignToEdit.incentive.type,
-        couponId: campaignToEdit.incentive.couponId || undefined,
         couponCode: "",
         imageUrl: campaignToEdit.imageUrl || "",
         saveAsTemplate: false,
@@ -347,7 +344,6 @@ const CampanhaForm = ({
         segmentId: customerSegments[0].id,
         content: defaultContent,
         incentiveType: "none",
-        couponId: undefined,
         couponCode: "",
         imageUrl: "",
         saveAsTemplate: false,
@@ -366,7 +362,6 @@ const CampanhaForm = ({
         segmentId: customerSegments[0].id,
         content: "",
         incentiveType: "none",
-        couponId: undefined,
         couponCode: "",
         imageUrl: "",
         saveAsTemplate: false,
@@ -617,7 +612,7 @@ const CampanhaForm = ({
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-6">
                   {/* Basic Information Section */}
-                  <BasicInfoSection />
+                  <BasicInfoSection customerSegments={customerSegments} />
                   
                   {/* Schedule Section */}
                   <ScheduleSection 
