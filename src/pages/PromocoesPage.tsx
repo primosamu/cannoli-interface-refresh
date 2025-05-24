@@ -118,7 +118,10 @@ const PromocoesPage = () => {
         getQuantity: data.getQuantity,
         excludeProducts: [],
         scheduledDays: data.scheduledDays,
-        timeSlots: data.timeSlots,
+        timeSlots: data.timeSlots?.map(slot => ({
+          start: slot.start || "00:00",
+          end: slot.end || "23:59"
+        })),
         maxUsagePerCustomer: data.maxUsagesPerCustomer
       },
       isAccumulative: data.isAccumulative || false,

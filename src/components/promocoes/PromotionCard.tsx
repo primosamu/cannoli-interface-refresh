@@ -14,7 +14,9 @@ import {
   PercentIcon, 
   MoreVertical,
   PencilLine,
-  CreditCard
+  CreditCard,
+  Truck,
+  Gift
 } from "lucide-react";
 import { Promotion, PromotionType } from "@/types/promotion";
 import { 
@@ -29,18 +31,20 @@ export const getPromotionIcon = (type: PromotionType) => {
   switch (type) {
     case "product_discount":
       return <ShoppingBag className="h-5 w-5" />;
-    case "time_limited":
+    case "happy_hour":
       return <Clock className="h-5 w-5" />;
-    case "order_value_discount":
+    case "minimum_order":
       return <DollarSign className="h-5 w-5" />;
-    case "coupon":
+    case "coupon_discount":
       return <Ticket className="h-5 w-5" />;
-    case "loyalty_points":
+    case "loyalty_reward":
       return <Users className="h-5 w-5" />;
-    case "combo_discount":
-      return <ShoppingBag className="h-5 w-5" />;
-    case "buy_x_get_y":
+    case "combo_promotion":
       return <Package className="h-5 w-5" />;
+    case "buy_x_get_y":
+      return <Gift className="h-5 w-5" />;
+    case "free_delivery":
+      return <Truck className="h-5 w-5" />;
     default:
       return <PercentIcon className="h-5 w-5" />;
   }
@@ -181,6 +185,21 @@ const PromotionCard: React.FC<PromotionCardProps> = ({
       </div>
     </Card>
   );
+};
+
+// Helper function to format date
+export const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+};
+
+// Helper to calculate days remaining
+export const getDaysRemaining = (dateString: string) => {
+  const endDate = new Date(dateString);
+  const today = new Date();
+  const diffTime = endDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays > 0 ? diffDays : 0;
 };
 
 export default PromotionCard;

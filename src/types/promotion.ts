@@ -1,4 +1,5 @@
 
+
 export type PromotionType = 
   | "product_discount"     // Desconto em produtos específicos
   | "combo_promotion"      // Combo de produtos
