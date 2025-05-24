@@ -33,6 +33,7 @@ import {
 import CouponSelectionEnhanced from "./CampanhaFormComponents/CouponSelectionEnhanced";
 import MultiChannelPreview from "./CampanhaFormComponents/MultiChannelPreview";
 import { Plus } from "lucide-react";
+import IncentiveConfigSection from "./CampanhaFormComponents/IncentiveConfigSection";
 
 // Mock customer segments
 const customerSegments: CustomerSegment[] = [
@@ -157,7 +158,7 @@ let recentCampaigns = [...recentCampaignsMock];
 // Function to get recent campaigns (used by other components)
 export const getRecentCampaigns = () => recentCampaigns;
 
-// Updated form schema to include maxFrequency
+// Updated form schema to include new incentive fields
 const formSchema = z.object({
   name: z.string().min(3, {
     message: "O nome da campanha deve ter pelo menos 3 caracteres.",
@@ -175,9 +176,31 @@ const formSchema = z.object({
   content: z.string().min(10, {
     message: "A mensagem deve ter pelo menos 10 caracteres.",
   }),
-  incentiveType: z.enum(["none", "coupon", "loyalty"] as const),
-  couponId: z.string().optional(),
+  incentiveType: z.enum(["none", "coupon", "loyalty", "cashback"] as const),
+  
+  // Coupon fields
+  couponName: z.string().optional(),
   couponCode: z.string().optional(),
+  couponDiscount: z.coerce.number().optional(),
+  couponDiscountType: z.enum(["percentage", "fixed"] as const).optional(),
+  couponMinOrderValue: z.coerce.number().optional(),
+  couponMaxUsage: z.coerce.number().optional(),
+  couponExpirationDays: z.coerce.number().optional(),
+  
+  // Loyalty fields
+  loyaltyPointsPerReal: z.coerce.number().optional(),
+  loyaltyPointValue: z.coerce.number().optional(),
+  loyaltyMinimumPoints: z.coerce.number().optional(),
+  loyaltyBonusMultiplier: z.coerce.number().optional(),
+  loyaltyExpirationDays: z.coerce.number().optional(),
+  
+  // Cashback fields
+  cashbackPercentage: z.coerce.number().optional(),
+  cashbackMinOrderValue: z.coerce.number().optional(),
+  cashbackMaxValue: z.coerce.number().optional(),
+  cashbackCreditDays: z.coerce.number().optional(),
+  cashbackExpirationDays: z.coerce.number().optional(),
+  
   imageUrl: z.string().optional(),
   scheduleDate: z.date().optional(),
   scheduleTime: z.string().optional(),
@@ -400,17 +423,55 @@ const CampanhaForm = ({
       primaryChannel = "sms";
     }
     
+    // Create incentive object based on type
+    let incentive: any = { type: data.incentiveType };
+    
+    if (data.incentiveType === "coupon") {
+      incentive = {
+        type: "coupon",
+        coupon: {
+          id: `cpn-${Date.now()}`,
+          name: data.couponName || "Cupom da Campanha",
+          code: data.couponCode || `CUPOM${Date.now()}`,
+          discount: data.couponDiscount || 10,
+          discountType: data.couponDiscountType || "percentage",
+          expiresAt: new Date(Date.now() + (data.couponExpirationDays || 30) * 24 * 60 * 60 * 1000).toISOString(),
+          minOrderValue: data.couponMinOrderValue,
+          maxUsage: data.couponMaxUsage,
+          usageCount: 0,
+        }
+      };
+    } else if (data.incentiveType === "loyalty") {
+      incentive = {
+        type: "loyalty",
+        loyaltyConfig: {
+          pointsPerReal: data.loyaltyPointsPerReal || 1,
+          pointsValue: data.loyaltyPointValue || 0.01,
+          minimumPoints: data.loyaltyMinimumPoints || 100,
+          bonusMultiplier: data.loyaltyBonusMultiplier,
+          expirationDays: data.loyaltyExpirationDays,
+        }
+      };
+    } else if (data.incentiveType === "cashback") {
+      incentive = {
+        type: "cashback",
+        cashbackConfig: {
+          percentage: data.cashbackPercentage || 5,
+          minOrderValue: data.cashbackMinOrderValue,
+          maxCashback: data.cashbackMaxValue,
+          creditDays: data.cashbackCreditDays || 7,
+          expirationDays: data.cashbackExpirationDays || 90,
+        }
+      };
+    }
+    
     // Create campaign object
     const newCampaign: Campaign = {
       id: campaignToEdit?.id || `camp-${Date.now()}`,
       name: data.name,
       description: data.description,
       segment: selectedSegment,
-      incentive: {
-        type: data.incentiveType,
-        couponId: data.incentiveType === "coupon" ? data.couponId || `cpn-${Date.now()}` : undefined,
-        loyaltyPoints: data.incentiveType === "loyalty" ? 10 : undefined,
-      },
+      incentive,
       channel: primaryChannel,
       whatsappType: data.channelWhatsapp ? data.whatsappType : undefined,
       content: data.content,
@@ -555,177 +616,8 @@ const CampanhaForm = ({
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-6">
-                  {/* Basic Information Section with description field */}
-                  <div className="space-y-4 border rounded-md p-4">
-                    <h3 className="text-lg font-medium">Informações Básicas</h3>
-                    
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Título da Campanha</FormLabel>
-                          <FormControl>
-                            <input
-                              className="w-full px-3 py-2 border rounded-md"
-                              placeholder="Digite o título da campanha"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Subtítulo/Descrição</FormLabel>
-                          <FormControl>
-                            <input
-                              className="w-full px-3 py-2 border rounded-md"
-                              placeholder="Digite uma breve descrição da campanha"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Um breve texto explicativo sobre sua campanha
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <FormLabel>Segmento de Clientes</FormLabel>
-                        <Button
-                          onClick={handleCreateNewSegmentation}
-                          size="sm"
-                          variant="ghost"
-                          className="flex items-center gap-1 text-purple-600 hover:bg-purple-50 hover:text-purple-700"
-                        >
-                          <Plus className="h-4 w-4" />
-                          Criar Nova Segmentação
-                        </Button>
-                      </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="segmentId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <select
-                                className="w-full px-3 py-2 border rounded-md"
-                                {...field}
-                              >
-                                <option value="">Selecione um segmento</option>
-                                {customerSegments.map((segment) => (
-                                  <option key={segment.id} value={segment.id}>
-                                    {segment.name} ({segment.customerCount} clientes)
-                                  </option>
-                                ))}
-                              </select>
-                            </FormControl>
-                            <FormDescription>
-                              Selecione qual grupo de clientes receberá esta campanha
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <FormLabel>Canal de Envio</FormLabel>
-                      <div className="flex flex-wrap gap-4">
-                        <FormField
-                          control={form.control}
-                          name="channelWhatsapp"
-                          render={({ field }) => (
-                            <FormItem className="flex items-center space-x-2">
-                              <FormControl>
-                                <input
-                                  type="checkbox"
-                                  className="h-4 w-4"
-                                  checked={field.value}
-                                  onChange={field.onChange}
-                                />
-                              </FormControl>
-                              <FormLabel className="font-normal">WhatsApp</FormLabel>
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="channelEmail"
-                          render={({ field }) => (
-                            <FormItem className="flex items-center space-x-2">
-                              <FormControl>
-                                <input
-                                  type="checkbox"
-                                  className="h-4 w-4"
-                                  checked={field.value}
-                                  onChange={field.onChange}
-                                />
-                              </FormControl>
-                              <FormLabel className="font-normal">Email</FormLabel>
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="channelSms"
-                          render={({ field }) => (
-                            <FormItem className="flex items-center space-x-2">
-                              <FormControl>
-                                <input
-                                  type="checkbox"
-                                  className="h-4 w-4"
-                                  checked={field.value}
-                                  onChange={field.onChange}
-                                />
-                              </FormControl>
-                              <FormLabel className="font-normal">SMS</FormLabel>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <FormDescription>
-                        Selecione quais canais serão utilizados para envio
-                      </FormDescription>
-                    </div>
-                    
-                    {form.watch("channelWhatsapp") && (
-                      <FormField
-                        control={form.control}
-                        name="whatsappType"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Tipo de Mensagem WhatsApp</FormLabel>
-                            <FormControl>
-                              <select
-                                className="w-full px-3 py-2 border rounded-md"
-                                {...field}
-                              >
-                                <option value="utility">Utilitária</option>
-                                <option value="marketing">Marketing</option>
-                              </select>
-                            </FormControl>
-                            <FormDescription>
-                              Utilitárias: transacionais e urgentes. Marketing: promocionais.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
-                  </div>
+                  {/* Basic Information Section */}
+                  <BasicInfoSection />
                   
                   {/* Schedule Section */}
                   <ScheduleSection 
@@ -734,15 +626,15 @@ const CampanhaForm = ({
                     executionType={form.watch("executionType")}
                   />
                   
-                  {/* Enhanced Coupon Selection */}
-                  <CouponSelectionEnhanced />
+                  {/* NEW: Incentive Configuration Section */}
+                  <IncentiveConfigSection form={form} />
                   
                   {/* Save As Template Section */}
                   <SaveAsTemplateSection />
                 </div>
                 
                 <div className="space-y-6">
-                  {/* Message Composer Section with integrated image upload */}
+                  {/* Message Composer Section */}
                   <MessageComposerSection />
                   
                   {/* Multi-channel Preview */}

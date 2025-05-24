@@ -1,7 +1,7 @@
 export type CampaignChannel = "sms" | "whatsapp" | "email";
 export type WhatsAppMessageType = "utility" | "marketing";
 export type CampaignStatus = "draft" | "scheduled" | "active" | "completed" | "paused";
-export type IncentiveType = "none" | "coupon" | "loyalty";
+export type IncentiveType = "none" | "coupon" | "loyalty" | "cashback";
 export type AdPlatform = "meta" | "google" | "tiktok";
 export type AdCampaignType = "local_visitors" | "delivery_orders" | "new_dish" | "special_event" | "brand_awareness";
 export type CampaignExecutionType = "one-time" | "recurring";
@@ -51,15 +51,44 @@ export interface CustomerSegment {
 export interface Coupon {
   id: string;
   code: string;
+  name: string;
   discount: number;
   discountType: "percentage" | "fixed";
   expiresAt: string;
+  minOrderValue?: number;
+  maxUsage?: number;
+  usageCount?: number;
+  conditions?: {
+    products?: string[];
+    categories?: string[];
+    customerGroups?: string[];
+    paymentMethods?: string[];
+  };
+}
+
+export interface LoyaltyConfig {
+  pointsPerReal: number; // Quantos pontos por real gasto
+  pointsValue: number; // Valor de cada ponto em reais
+  minimumPoints: number; // Mínimo de pontos para resgate
+  bonusMultiplier?: number; // Multiplicador de bônus (ex: 2x pontos)
+  expirationDays?: number; // Dias para expirar os pontos
+}
+
+export interface CashbackConfig {
+  percentage: number; // Percentual de cashback
+  minOrderValue?: number; // Valor mínimo do pedido
+  maxCashback?: number; // Valor máximo de cashback
+  creditDays: number; // Dias para creditar o cashback
+  expirationDays?: number; // Dias para expirar o cashback
 }
 
 export interface CampaignIncentive {
   type: IncentiveType;
   couponId?: string;
+  coupon?: Coupon; // Dados completos do cupom
   loyaltyPoints?: number;
+  loyaltyConfig?: LoyaltyConfig;
+  cashbackConfig?: CashbackConfig;
 }
 
 export interface CampaignTrigger {
