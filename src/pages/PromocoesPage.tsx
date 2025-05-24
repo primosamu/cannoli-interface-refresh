@@ -72,18 +72,40 @@ const PromocoesPage = () => {
     // Combine end date and time
     const endDateTime = new Date(`${data.endDate}T${data.endTime || '23:59'}:59`);
     
+    // Determinar categoria baseada no tipo
+    const getCategory = (type: string) => {
+      switch (type) {
+        case "product_discount":
+        case "minimum_order":
+        case "free_delivery":
+          return "desconto";
+        case "combo_promotion":
+        case "buy_x_get_y":
+          return "combo";
+        case "happy_hour":
+          return "horario";
+        case "loyalty_reward":
+          return "fidelidade";
+        case "coupon_discount":
+          return "cupom";
+        default:
+          return "desconto";
+      }
+    };
+    
     const newPromotion: Promotion = {
       id: `promo${promotions.length + 1}`,
       name: data.name,
-      code: data.code, // novo campo código
+      code: data.code || `PROMO${promotions.length + 1}`,
       description: data.description || "",
       type: data.type as any,
+      category: getCategory(data.type) as any,
       discountValue: data.discountValue,
       discountType: data.discountType as "percentage" | "fixed",
       startDate: startDateTime.toISOString(),
       endDate: endDateTime.toISOString(),
-      status: data.isActive ? "active" : "draft", // status baseado no campo isActive
-      isActive: data.isActive, // novo campo
+      status: data.isActive ? "active" : "draft",
+      isActive: data.isActive,
       conditions: {
         minOrderValue: data.minOrderValue,
         maxOrderValue: data.maxOrderValue,
@@ -94,9 +116,12 @@ const PromocoesPage = () => {
         usageCount: 0,
         buyQuantity: data.buyQuantity,
         getQuantity: data.getQuantity,
-        excludeProducts: []
+        excludeProducts: [],
+        scheduledDays: data.scheduledDays,
+        timeSlots: data.timeSlots,
+        maxUsagePerCustomer: data.maxUsagesPerCustomer
       },
-      isAccumulative: data.isAccumulative,
+      isAccumulative: data.isAccumulative || false,
       priority: 1,
       statistics: {
         usageCount: 0,
@@ -110,8 +135,8 @@ const PromocoesPage = () => {
     setIsNewPromotionDialogOpen(false);
     
     toast({
-      title: "Promoção criada",
-      description: `A promoção "${data.name}" foi criada com sucesso!`,
+      title: "Promoção criada com sucesso! 🎉",
+      description: `A promoção "${data.name}" está ${data.isActive ? 'ativa' : 'salva como rascunho'}.`,
     });
   };
 

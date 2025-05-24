@@ -1,12 +1,15 @@
 
 export type PromotionType = 
-  | "product_discount" 
-  | "time_limited" 
-  | "order_value_discount" 
-  | "coupon" 
-  | "loyalty_points"
-  | "combo_discount"
-  | "buy_x_get_y";
+  | "product_discount"     // Desconto em produtos específicos
+  | "combo_promotion"      // Combo de produtos
+  | "happy_hour"          // Promoções por horário
+  | "loyalty_reward"      // Fidelidade (cashback, pontos)
+  | "coupon_discount"     // Cupom de desconto
+  | "buy_x_get_y"         // Compre X Ganhe Y
+  | "free_delivery"       // Frete grátis
+  | "minimum_order";      // Desconto por valor mínimo
+
+export type PromotionCategory = "desconto" | "combo" | "fidelidade" | "horario" | "cupom";
 
 export type PromotionStatus = "active" | "scheduled" | "expired" | "draft";
 
@@ -22,8 +25,10 @@ export interface PromotionCondition {
   buyQuantity?: number;
   getQuantity?: number;
   excludeProducts?: string[];
-  scheduledDays?: string[]; // dias da semana para horários escalonados
-  timeSlots?: Array<{ start: string; end: string }>; // horários específicos
+  scheduledDays?: string[];
+  timeSlots?: Array<{ start: string; end: string }>;
+  deliveryZones?: string[];
+  maxUsagePerCustomer?: number;
 }
 
 export interface PromotionStatistics {
@@ -38,15 +43,16 @@ export interface PromotionStatistics {
 export interface Promotion {
   id: string;
   name: string;
-  code: string; // novo campo código
+  code: string;
   description: string;
   type: PromotionType;
+  category: PromotionCategory;
   discountValue: number;
   discountType: "percentage" | "fixed";
   startDate: string;
   endDate: string;
   status: PromotionStatus;
-  isActive: boolean; // novo campo para ativar/desativar
+  isActive: boolean;
   conditions: PromotionCondition;
   isAccumulative: boolean;
   priority: number;
