@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Users, Activity, CreditCard, PercentIcon, Tag, Calendar } from "lucide-react";
 import {
@@ -48,6 +47,7 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
+      
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card className="bg-white/50 backdrop-blur-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -91,6 +91,7 @@ const Dashboard = () => {
         </Card>
       </div>
 
+      
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="bg-white/50 backdrop-blur-sm">
           <CardHeader>
