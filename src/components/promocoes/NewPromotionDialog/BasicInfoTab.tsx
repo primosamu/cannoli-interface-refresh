@@ -55,6 +55,12 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
     ));
   };
 
+  const handleLimitationTypeChange = (value: string) => {
+    if (value === "none" || value === "occurrences" || value === "items") {
+      setLimitationType(value);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Status da Promoção */}
@@ -231,7 +237,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ form }) => {
         
         <div>
           <FormLabel className="text-sm font-medium mb-2 block">Limitar por:</FormLabel>
-          <Select value={limitationType} onValueChange={setLimitationType}>
+          <Select value={limitationType} onValueChange={handleLimitationTypeChange}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione o tipo de limitação" />
             </SelectTrigger>
